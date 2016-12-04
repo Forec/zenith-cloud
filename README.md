@@ -7,8 +7,8 @@
 > This repository is the web server for my simple [cloud storage system](https://github.com/Forec/cloud-storage), based on Flask.
 
 ## TODO
-* Login
-* Register
+* ~~Login~~
+* ~~Register~~
 * Mail confirm
 * file list
 * download
@@ -17,10 +17,17 @@
 * fork
 * delete
 * manage
-* administor
+* ~~administor~~
 
 ## Update-Logs
 * 2016-12-4: Build this repository
+* 2016-12-5: Finish some functions, left:
+ * yun cloud file list
+ * move file, delete file
+ * cd into a path
+ * upload
+ * download
+* 2016-12-5: Need to do today: mail confirm, yun cloud file list, remove something guests shouldn't see.
 
 # License
 All codes in this repository are licensed under the terms you may find in the file named "LICENSE" in this directory.
