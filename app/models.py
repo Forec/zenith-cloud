@@ -318,6 +318,7 @@ class CFILE(db.Model):
             if not chunk:
                 break
             midterm += hashlib.md5(chunk).hexdigest()
+            print(midterm)
         f.close()
         return hashlib.md5(midterm.encode('utf-8')).hexdigest().upper()
     @staticmethod
