@@ -14,6 +14,7 @@ class Config:
     ZENITH_FOLLOWERS_PER_PAGE = 20
     ZENITH_COMMENTS_PER_PAGE = 15
     PROFILE_ZENITH_FILES_PER_PAGE = 6
+    ZENITH_MESSAGES_PER_PAGE = 20
     EMAIL_ADMIN ='forec@bupt.edu.cn'
     @staticmethod
     def init_app(app):

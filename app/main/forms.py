@@ -6,17 +6,13 @@ from flask_pagedown.fields import PageDownField
 from ..models import Role, User, File
 
 class EditProfileForm(FlaskForm):
-    name = StringField('昵称', validators=[Length(0, 64)])
-    location = StringField('地址', validators=[Length(0, 64)])
-    contactE = StringField('联系方式', validators=[Length(0,64)])
+    nickname = StringField('昵称', validators=[Length(0, 64)])
     about_me = TextAreaField('关于我')
     submit = SubmitField('提交')
 
 class EditProfileAdminForm(FlaskForm):
     email = StringField('电子邮箱', validators=[Required(), Length(5,64), Email()])
-    username = StringField('昵称', validators=[
-        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9_]*$', 0,
-                                          '用户名仅能包含字母、数字和下划线')])
+    nickname = StringField('昵称', validators=[Required(), Length(1, 64)])
     confirmed = BooleanField('Confirmed')
     role = SelectField('身份', coerce=int)
     about_me = TextAreaField('关于我')
@@ -33,13 +29,13 @@ class EditProfileAdminForm(FlaskForm):
                 User.query.filter_by(email=field.data).first():
             raise ValidationError('该邮箱已注册.')
 
-    def validate_username(self, field):
-        if field.data != self.user.username and \
-                User.query.filter_by(username=field.data).first():
-            raise ValidationError('该用户名已被使用.')
+    def validate_nickname(self, field):
+        if field.data != self.user.nickname and \
+                User.query.filter_by(nickname=field.data).first():
+            raise ValidationError('该昵称已被使用.')
 
 class FileForm(FlaskForm):
-    file = FileField("选择文件", validators=[Required()])
+    file = FileField('', validators=[Required()])
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）", validators=[Required()])
     submit = SubmitField('确定上传')
     def validate_body(self, field):

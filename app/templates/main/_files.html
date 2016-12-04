@@ -2,8 +2,8 @@
     {% for file in files %}
     <li class="post">
         <div class="post-thumbnail">
-            <a href="{{ url_for('.user', username=post.author.username) }}">
-                <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
+            <a href="{{ url_for('.user', id=file.owner.uid) }}">
+                <img class="img-rounded profile-thumbnail" src="{{ file.owner.gravatar(size=40) }}">
             </a>
         </div>
         <div class="post-content">
@@ -27,7 +27,7 @@
                 <a href="{{ url_for('.file', id=file.uid) }}">
                     <span class="label label-default">资源外链</span>
                 </a>
-                <a href="{{ url_for('.file', id=file.uid) }}#comments">
+               <a href="{{ url_for('.file', id=file.uid) }}#comments">
                     {% if file.comments.count() == 0 %}
                         <span class="label label-default">暂无评论</span>
                     {% else %}

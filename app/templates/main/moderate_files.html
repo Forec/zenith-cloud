@@ -3,17 +3,17 @@
 
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}CodeBattles - 文章管理{% endblock %}
+{% block title %}起点云 - 文件管理{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
     {{ wtf.quick_form(form) }}
 </div>
 {% set moderate = True %}
-{% include 'main/_posts.html' %}
+{% include 'main/_files.html' %}
 {% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, '.moderate_posts') }}
+    {{ macros.pagination_widget(pagination, '.moderate_files') }}
 </div>
 {% endif %}
 {% endblock %}

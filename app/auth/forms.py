@@ -18,9 +18,7 @@ class RegistrationForm(FlaskForm):
     email = StringField('电子邮箱', validators=[Required(),
                                              Length(5,64),
                                              Email()])
-    username = StringField('用户名', validators=[Required(),
-            Length(4,64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-            '用户名仅能包含字母、数字和下划线')])
+    nickname = StringField('昵称', validators=[Required(),Length(4,64)])
     password = PasswordField('密码', validators=[Required(),
             EqualTo('password2', message='两次输入密码不一致')])
     password2 = PasswordField('确认密码', validators=[Required()])
@@ -28,9 +26,9 @@ class RegistrationForm(FlaskForm):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('该邮箱已被注册')
-    def validate_username(self, field):
-        if User.query.filter_by(username=field.data).first():
-            raise ValidationError('该用户名已被使用')
+    def validate_nickname(self, field):
+        if User.query.filter_by(nickname=field.data).first():
+            raise ValidationError('该昵称已被使用')
 
 class ChangePasswordForm(FlaskForm):
     oldPassword = PasswordField('旧密码', validators=[Required(),
@@ -46,15 +44,13 @@ class ChangePasswordForm(FlaskForm):
 
 
 class ChangeProfileForm(FlaskForm):
-    newUsername = StringField('新用户名', validators=[Required(),
-            Length(4,64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-            '用户名仅能包含字母、数字和下划线')])
+    newNickname = StringField('新昵称', validators=[Required(),Length(4,64)])
     password = PasswordField('输入密码', validators=[Required(),
                                                             Length(4,64)])
     submit = SubmitField('修改')
-    def validate_newUsername(self, field):
-        if User.query.filter_by(username=field.data).first():
-            raise ValidationError('该用户名已被使用.')
+    def validate_newNickname(self, field):
+        if User.query.filter_by(nickname=field.data).first():
+            raise ValidationError('该昵称已被使用.')
 
 
 class ChangeEmailForm(FlaskForm):

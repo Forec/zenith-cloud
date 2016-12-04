@@ -15,7 +15,7 @@
 {% include 'main/_comments.html' %}
 {% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, '.file', fragment='#comments', id=files[0].id) }}
+    {{ macros.pagination_widget(pagination, '.file', fragment='#comments', id=files[0].uid) }}
 </div>
 {% endif %}
 {% endblock %}

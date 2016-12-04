@@ -45,6 +45,7 @@ def init():
 	CFILE.generate_fake(5)
 	User.generate_fake(5)
 	File.generate_fake(20)
+	Comment.generate_fake(50)
 
 if __name__ == "__main__":
 	manager.run()

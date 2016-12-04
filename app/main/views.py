@@ -24,7 +24,7 @@ def index():
                     description= form.body.data
                     )
         db.session.add(file)
-        # db.session.commit()
+        #db.session.commit()
         return redirect(url_for('.index'))
     show_followed = False
     if current_user.is_authenticated:
@@ -32,14 +32,17 @@ def index():
     if show_followed:
         query = current_user.followed_files
     else:
-        query = File.query
+        if current_user.is_authenticated:
+            query = File.query.filter("private=0 or ownerid=:id").params(id=current_user.uid)
+        else:
+            query = File.query.filter("private=0")
     page = request.args.get('page', 1, type=int)
     pagination = query.order_by(File.created.desc()).paginate(
         page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
         error_out=False
     )
     files = pagination.items
-    return render_template('index.html', form = form, posts = files,
+    return render_template('index.html', form = form, files = files,
                            pagination = pagination, show_followed=show_followed)
 
 @main.route('/all')
@@ -70,7 +73,7 @@ def user(id):
         error_out=False
     )
     files = pagination_file.items
-    return render_template('main/user.html', user = user, posts= files,
+    return render_template('main/user.html', user = user, files= files,
                            pagination_post=pagination_file)
 
 
@@ -79,18 +82,14 @@ def user(id):
 def edit_profile():
     form = EditProfileForm()
     if form.validate_on_submit():
-        current_user.username = form.name.data
-        current_user.contactE = form.contactE.data
-        current_user.location = form.location.data
+        current_user.nickname = form.nickname.data
         current_user.about_me = form.about_me.data
         db.session.add(current_user)
         db.session.commit()
         flash('您的资料已更新')
-        return redirect(url_for('.user', username = current_user.username))
-    form.name.data = current_user.username
-    form.location.data = current_user.location
+        return redirect(url_for('.user', id=current_user.uid))
+    form.nickname.data = current_user.nickname
     form.about_me.data = current_user.about_me
-    form.contactE.data = current_user.contactE
     return render_template('main/edit_profile.html', form=form)
 
 @main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
@@ -101,23 +100,17 @@ def edit_profile_admin(id):
     form = EditProfileAdminForm(user=user)
     if form.validate_on_submit():
         user.email = form.email.data
-        user.username = form.username.data
         user.confirmed = form.confirmed.data
-        user.contactE = form.contactE.data
         user.role = Role.query.get(form.role.data)
-        user.name = form.name.data
-        user.location = form.location.data
+        user.nickname = form.nickname.data
         user.about_me = form.about_me.data
         db.session.add(user)
-        flash('用户 ' + user.username +' 资料已更新')
-        return redirect(url_for('.user', username=user.username))
+        flash('用户 ' + user.nickname +' 资料已更新')
+        return redirect(url_for('.user',id=user.uid))
     form.email.data = user.email
-    form.username.data = user.username
     form.confirmed.data = user.confirmed
     form.role.data = user.role_id
-    form.name.data = user.name
-    form.location.data = user.location
-    form.contactE.data = user.contactE
+    form.nickname.data = user.nickname
     form.about_me.data = user.about_me
     return render_template('main/edit_profile.html', form=form)
 
@@ -155,10 +148,10 @@ def follow(id):
         return redirect(url_for('.index'))
     if current_user.is_following(user):
         flash('您已关注该用户')
-        return redirect(url_for('.user', uid=id))
+        return redirect(url_for('.user', id=user.uid))
     current_user.follow(user)
     flash('您已关注用户 %s' % user.nickname)
-    return redirect(url_for('.user', uid=id))
+    return redirect(url_for('.user', id=user.uid))
 
 
 @main.route('/unfollow/<int:id>')
@@ -339,7 +332,7 @@ def message():
         order_by(Message.created.desc())
     page = request.args.get('page', 1, type=int)
     pagination = uncheck_messages.paginate(
-        page, per_page=current_app.config['CODEBATTLES_ADVICES_PER_PAGE'],
+        page, per_page=current_app.config['ZENITH_MESSAGES_PER_PAGE'],
         error_out=False
     )
     cur_messages = pagination.items
@@ -349,4 +342,9 @@ def message():
 @main.route('/cloud/')
 @login_required
 def cloud():
-    pass
+    return "TODO"
+
+@main.route('/download/<int:id>')
+@login_required
+def download(id):
+    return "TODO"

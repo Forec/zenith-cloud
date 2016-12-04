@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_, and_
 from . import login_manager
 from flask_login import UserMixin, AnonymousUserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer
@@ -116,7 +117,8 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         db.session.commit()
         return True
-
+    def get_id(self):
+        return self.uid
     def confirm(self, token):
         s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY']) # match logged user
         try:
@@ -216,7 +218,7 @@ class User(UserMixin, db.Model):
     @property
     def followed_files(self):
         return File.query.join(Follow, Follow.followed_id==File.ownerid).\
-            filter(Follow.follower_id==self.uid)
+            filter(Follow.follower_id==self.uid).filter("private=0 or ownerid=:id").params(id=self.uid)
 
     @staticmethod
     def generate_fake(count=5):
@@ -255,7 +257,7 @@ class Permission:
     COMMENT = 0x02  # comment on other users' articles
     WRITE_ARTICLES = 0x04  # write articles
     MODERATE_COMMENTS = 0x08  # moderate users' comments
-    MODERATE_TASKS = 0x10
+    MODERATE_FILES = 0x10
     ADMINISTER = 0x80  # administer
 #  anynomous 0x00 0b00000000   read only
 #  user	 0x07 0b00000111   write articles, comment, follow ( default user )
@@ -284,7 +286,7 @@ class Role(db.Model):
             'Moderator_tasks':(
                 Permission.COMMENT |
                 Permission.WRITE_ARTICLES |
-                Permission.MODERATE_TASKS, False
+                Permission.MODERATE_FILES, False
             ),
             'Administrator': (0xff, False)
         }
@@ -430,7 +432,8 @@ class AnonymousUser(AnonymousUserMixin):
         return False
 
 login_manager.anonymous_user = AnonymousUser
-#
-# @login_manager.user_loader
-# def load_user(user_id):
-# 	return User.query.get(int(user_id))
+login_manager.login_message = u"您需要先登录才能访问此界面！"
+
+@login_manager.user_loader
+def load_user(user_id):
+	return User.query.get(int(user_id))
