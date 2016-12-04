@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "main/_macros.html" as macros %}
+
+{% block title %}CodeBattles - 查看建议{% endblock %}
+
+{% block page_content %}
+{% include 'prob/_tasks.html' %}
+<br class="comment-form">
+    {% for task in tasks %}
+    <b>贡献参与者：{% for user in task.contributers %}<a href="{{ url_for('main.user',username = user.username) }}">{{ user.username }}</a> {% endfor %}</b>
+    {% endfor %}
+    </br>
+    </br>
+    {% for advice in advices %}
+    <b><h4>建议编号： {{ advice.id }}</h4></b>
+    {% endfor%}
+    {% include 'main/_advices.html' %}
+</div>
+{% endblock %}

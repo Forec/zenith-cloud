@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% import "main/_macros_for_posts.html" as macros_post %}
+{% import "main/_macros_for_tasks.html" as macros_task %}
+{% block title %}CodeBattles - {{ user.username }}{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
+    <div class="profile-header">
+        <h1>{{ user.username }}</h1>
+        {% if user.name or user.location %}
+
+            {% if user.location %}
+                <p>地址：  <a href="http://www.bing.com/maps/?q={{ user.location }}">{{ user.location }}</a></p>
+            {% endif %}
+
+        {% endif %}
+        {% if user.contactE %}
+        <p>
+            联系方式： {{ user.contactE }}
+        </p>
+        {% endif %}
+        {% if current_user.is_administrator() or current_user == user %}
+        <p>注册邮箱：<a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+        {% endif %}
+        {% if user.about_me %}<p>关于我： {{ user.about_me }}</p>{% endif %}
+        <p>注册日期：{{ moment(user.member_since).format('L') }} 上次登录：{{ moment(user.last_seen).fromNow() }}.</p>
+        <p>
+            积分：<span class="badge">{{ user.score }}</span>&nbsp;&nbsp;
+            获得赞同数：<span class="badge">{{ user.agree }}</span>&nbsp;&nbsp;
+            <a href="{{ url_for('.followers', username=user.username) }}">关注者：<span class="badge">{{ user.followers.count()-1 }}</span></a>&nbsp;&nbsp;
+            <a href="{{ url_for('.followed_by', username=user.username) }}">{% if current_user==user %}我{% else %}他{% endif %}关注的： <span class="badge">{{ user.followed.count()-1 }}</span></a>&nbsp;&nbsp;
+            {% if current_user.is_authenticated and user != current_user and user.is_following(current_user) %}
+            | <span class="label label-default">该用户已关注你</span>
+            {% endif %}
+        </p>
+
+        <p>
+            {% if current_user.can(Permission.FOLLOW) and user != current_user %}
+                {% if not current_user.is_following(user) %}
+                <a href="{{ url_for('.follow', username=user.username) }}" class="btn btn-primary">Follow</a>
+                {% else %}
+                <a href="{{ url_for('.unfollow', username=user.username) }}" class="btn btn-default">Unfollow</a>
+                {% endif %}
+            {% endif %}
+            {% if user == current_user %}
+            <a class="btn btn-default" href="{{ url_for('.edit_profile') }}">编辑资料</a>
+            {% endif %}
+            {% if current_user.is_administrator() %}
+            <a class="btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.id) }}">编辑资料 [管理员]</a>
+            {% endif %}
+        </p>
+    </div>
+</div>
+<h3>用户 {{ user.username }} 发布的文章  共 {{ user.posts.count() }} 篇</h3>
+{% include 'main/_posts.html' %}
+{% if pagination_post %}
+<div class="pagination">
+    {{ macros_post.pagination_widget(pagination_post, 'main.user',username=user.username) }}
+</div>
+{% endif %}
+</br>
+<h3>用户 {{ user.username }} 发布的任务  共 {{ user.publishs.count() }} 项</h3>
+{% include 'prob/_tasks.html' %}
+{% if pagination_task %}
+<div class="pagination">
+    {{ macros_task.pagination_widget(pagination_task, 'main.user',username=user.username) }}
+</div>
+{% endif %}
+{% endblock %}

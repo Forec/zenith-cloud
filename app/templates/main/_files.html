@@ -1,0 +1,41 @@
+<ul class="posts">
+    {% for file in files %}
+    <li class="post">
+        <div class="post-thumbnail">
+            <a href="{{ url_for('.user', username=post.author.username) }}">
+                <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
+            </a>
+        </div>
+        <div class="post-content">
+            <div class="post-date">发布时间：{{ moment(file.created).fromNow() }}</div>
+            <div class="post-author">作者：<a href="{{ url_for('.user', id=file.owner.uid) }}">{{ file.owner.nickname }}</a> &nbsp;&nbsp;&nbsp; 文件名：<a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a> </div>
+            <div class="post-footer">
+                {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
+                <a href="{{ url_for('main.download', id=file.uid) }}">
+                    <span class="label label-primary">下载</span>
+                </a>
+                {% endif %}
+                {% if current_user == file.owner %}
+	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
+		            <span class="label label-danger">删除</span>
+		        </a>
+	            {% elif current_user.is_administrator() %}
+	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
+		            <span class="label label-danger">删除 [管理员]</span>
+		        </a>
+	            {% endif %}
+                <a href="{{ url_for('.file', id=file.uid) }}">
+                    <span class="label label-default">资源外链</span>
+                </a>
+                <a href="{{ url_for('.file', id=file.uid) }}#comments">
+                    {% if file.comments.count() == 0 %}
+                        <span class="label label-default">暂无评论</span>
+                    {% else %}
+                        <span class="label label-info">{{ file.comments.count() }} 条评论</span>
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

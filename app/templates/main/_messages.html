@@ -1,0 +1,74 @@
+<ul class="posts">
+    {% for message in messages %}
+    <li class="post">
+        <div class="post-thumbnail">
+            <a href="{{ url_for('main.user', username=message.author.username) }}">
+                <img class="img-rounded profile-thumbnail" src="{{ message.author.gravatar(size=40) }}">
+            </a>
+        </div>
+        <div class="post-content">
+            <div class="post-date">时间：{{ moment(message.timestamp).fromNow() }}</div>
+            <div class="post-author">建议提交者：<a href="{{ url_for('main.user', username=message.author.username) }}">{{ message.author.username }}</a></div>
+            {% if not message.viewed %}
+            <div class="post-body alert alert-info">
+                    {% if message.body_html %}
+                        {{ message.body_html | safe }}
+                    {% else %}
+                        {{ message.body }}
+                    {% endif %}
+            </div>
+            {% else %}
+            <div class="post-body">
+                    {% if message.body_html %}
+                        {{ message.body_html | safe }}
+                    {% else %}
+                        {{ message.body }}
+                    {% endif %}
+            </div>
+            {% endif %}
+            <div class="post-footer">
+                {% if current_user == message.author %}
+                <a href="{{ url_for('main.edit_advice', id=message.id) }}">
+                    <span class="label label-primary">编辑</span>
+                </a>
+                {% elif current_user.is_administrator() %}
+                <a href="{{ url_for('main.edit_advice', id=message.id) }}">
+                    <span class="label label-danger">编辑 [管理员]</span>
+                </a>
+                {% endif %}
+                {% if current_user == message.author %}
+	            <a href="{{ url_for('main.delete_advice',id=message.id) }}">
+		            <span class="label label-danger">删除</span>
+		        </a>
+	            {% elif current_user.is_administrator() %}
+	            <a href="{{ url_for('main.delete_advice',id=message.id) }}">
+		            <span class="label label-danger">删除 [管理员]</span>
+		        </a>
+	            {% endif %}
+                <a href="{{ url_for('main.advice', id=message.id) }}">
+                    <span class="label label-default">外链</span>
+                </a>
+                {% if message.target == current_user %}
+                    <span class=" dropdown">
+                        <a class = " dropdown-toggle" data-toggle="dropdown">
+                            <span class = "label label-info ">处理建议<span class="caret"></span></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('main.accept_advice', id = message.id) }}" class="bg-success">接受</a></li>
+                            <li><a href="{{ url_for('main.close_advice', id = message.id) }}" class="bg-danger">关闭</a></li>
+                            <li><a href="{{ url_for('main.reply_advice', id = message.id) }}" class="bg-primary">回复</a></li>
+                          </ul>
+                    </span>
+                {% endif %}
+                {% if message.close %}
+                    <span class="label label-danger">建议已关闭</span>
+                {% elif message.accept %}
+                    <span class="label label-success">建议已接受</span>
+                {% else %}
+                    <span class="label label-warning">建议待处理</span>
+                {% endif %}
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

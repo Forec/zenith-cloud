@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "main/_macros.html" as macros %}
+
+{% block title %}CodeBattles - 消息列表{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>消息列表</h1>
+</div>
+<div class="post-tabs">
+    {% include 'main/_messages.html' %}
+</div>
+{% if pagination %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, 'main.message') }}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}顶点云 - 账户验证{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>
+        您好， {{ current_user.username }}!
+    </h1>
+    <h3>您的帐户尚未通过验证。</h3>
+    <p>
+        在您得到此地址的访问权限前，您需要验证您的帐户。
+        请检查您注册邮箱的收件箱，您应该收到了一封包含确认链接的邮件。
+    </p>
+    <p>
+        需要重发一封确认邮件？
+        <a href="{{ url_for('auth.resend_confirmation') }}">点击此处重发</a>
+    </p>
+</div>
+{% endblock %}

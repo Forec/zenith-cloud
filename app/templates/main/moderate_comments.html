@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import "main/_macros.html" as macros %}
+
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}CodeBattles - 评论管理{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    {{ wtf.quick_form(form) }}
+</div>
+{% set moderate = True %}
+{% include 'main/_comments.html' %}
+{% if pagination %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, '.moderate_comments') }}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}

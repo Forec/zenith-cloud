@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "main/_macros.html" as macros %}
+
+{% block title %}顶点云 - 文件{% endblock %}
+
+{% block page_content %}
+{% include 'main/_files.html' %}
+<h4 id="comments">评论 共 {{ file.comments.count() }} 条</h4>
+{% if current_user.can(Permission.COMMENT) %}
+<div class="comment-form">
+    {{ wtf.quick_form(form) }}
+</div>
+{% endif %}
+{% include 'main/_comments.html' %}
+{% if pagination %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, '.file', fragment='#comments', id=files[0].id) }}
+</div>
+{% endif %}
+{% endblock %}

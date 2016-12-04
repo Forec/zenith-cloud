@@ -1,0 +1,6 @@
+cloud-storage-venv
+__pycache__
+.idea
+*.db
+*.*~
+*config.*

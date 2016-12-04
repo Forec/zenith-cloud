@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}顶点云 - 确认您的操作{% endblock %}
+
+{% block page_content %}
+<div>
+  <h1>确认您的删除操作</h1>
+</div>
+<div>
+  {{ wtf.quick_form(form) }}
+</div>
+</br>
+<div>
+  <a class="btn btn-danger" href="{{ url_for('main.delete_file_confirm',token=token) }}">确认删除</a>
+  <a class="btn btn-default" style="margin-left:15px" href="{{ url_for('main.file',id=file.uid) }}">取消</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}
+
