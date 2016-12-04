@@ -38,7 +38,7 @@
                     </a>
                     <ul class="dropdown-menu">
                         {% if current_user.can(Permission.MODERATE_TASKS) %}
-                        <li><a href="{{ url_for('main.moderate_tasks') }}">管理文件</a></li>
+                        <li><a href="{{ url_for('main.moderate_files') }}">管理文件</a></li>
                         {% endif %}
                         <li><a href="{{ url_for('main.moderate_comments') }}">管理评论</a></li>
                     </ul>

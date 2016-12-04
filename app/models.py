@@ -47,7 +47,7 @@ class Follow(db.Model):
                              primary_key = True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'cuser'
     uid = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64),unique=True)
@@ -307,6 +307,7 @@ class CFILE(db.Model):
     size = db.Column(db.Integer)
     ref = db.Column(db.Integer, default=0)
     created = db.Column(db.DateTime,default=datetime.utcnow)
+    records = db.relationship('File', backref='cfile', lazy='dynamic')
 
     @staticmethod
     def md5FromFile(filepath):
@@ -318,7 +319,6 @@ class CFILE(db.Model):
             if not chunk:
                 break
             midterm += hashlib.md5(chunk).hexdigest()
-            print(midterm)
         f.close()
         return hashlib.md5(midterm.encode('utf-8')).hexdigest().upper()
     @staticmethod
@@ -333,7 +333,7 @@ class CFILE(db.Model):
         import forgery_py
         seed()
         for i in range(count):
-            _size= randint(128,128*1024)
+            _size= randint(128,512*1024)
             c = CFILE(size=_size,
                       ref=0,
                       md5=""
@@ -349,7 +349,7 @@ class File(db.Model):
     __tablename__ = 'ufile'
     uid = db.Column(db.Integer, primary_key=True)
     ownerid = db.Column(db.Integer, db.ForeignKey('cuser.uid'))
-    cfileid = db.Column(db.Integer)
+    cfileid = db.Column(db.Integer, db.ForeignKey('cfile.uid'))
     path = db.Column(db.String(256))
     perlink = db.Column(db.String(128))
     created = db.Column(db.DateTime, default =datetime.utcnow)
@@ -372,18 +372,18 @@ class File(db.Model):
         cfile_count = CFILE.query.count()
         for i in range(count):
             u = User.query.offset(randint(0, user_count-1)).first()
-            _cfileid = randint(0, cfile_count-1),
-            cfile = CFILE.query.filter_by(uid=_cfileid).first()
-            cfile.ref += 1
-            db.session.add(cfile)
+            _cfile = CFILE.query.offset(randint(0, cfile_count-1)).first()
+            _cfile.ref += 1
+            db.session.add(_cfile)
             f = File(path = '/',
                      filename = forgery_py.lorem_ipsum.word(),
                      perlink = forgery_py.lorem_ipsum.word(),
-                     cfileid=_cfileid,
-                     linkpass = str(randint(1,1000)),
+                     cfile= _cfile,
+                     linkpass = str(randint(1000,9999)),
                      private = randint(0,1),
                      created=forgery_py.date.date(True),
-                     owner = u)
+                     owner = u,
+                     description ='')
             db.session.add(f)
         db.session.commit()
 
@@ -430,3 +430,7 @@ class AnonymousUser(AnonymousUserMixin):
         return False
 
 login_manager.anonymous_user = AnonymousUser
+#
+# @login_manager.user_loader
+# def load_user(user_id):
+# 	return User.query.get(int(user_id))
