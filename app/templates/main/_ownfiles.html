@@ -1,0 +1,69 @@
+<ul class="posts">
+    {% for file, file_type in files %}
+    <li class="post">
+        <div class="post-thumbnail">
+            {% if file.isdir == True %}
+            <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='director.png') }}">
+            {% else %}
+                {% if file_type == "video" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='video.png') }}">
+                {% elif file_type == "photo" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='photo.png') }}">
+                {% elif file_type == "compress" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='compress.png') }}">
+                {% elif file_type == "doc" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='doc.png') }}">
+                {% elif file_type == "ppt" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='ppt.png') }}">
+                {% elif file_type == "excel" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='excel.png') }}">
+                {% elif file_type == "txt" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='txt.png') }}">
+                {% elif file_type == "md" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='md.png') }}">
+                {% elif file_type == "music" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='music.png') }}">
+                {% else %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='file.png') }}">
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="post-content">
+            <div class="post-date">创建时间：{{ moment(file.created).fromNow() }}</div>
+            <div class="post-author">
+                {% if file.isdir == True %}
+                <a href="{{ url_for('.cloud', path=curpath ~ file.filename ~ '/') }}">{{ file.filename }}</a>
+                {% else %}
+                <a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a>
+                {% endif %}
+            </div>
+            <div class="post-footer">
+                {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
+                <a href="{{ url_for('main.download', id=file.uid) }}">
+                    <span class="label label-primary">下载</span>
+                </a>
+                {% endif %}
+                {% if current_user == file.owner %}
+	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
+		            <span class="label label-danger">删除</span>
+		        </a>
+	            {% elif current_user.is_administrator() %}
+	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
+		            <span class="label label-danger">删除 [管理员]</span>
+		        </a>
+	            {% endif %}
+                <a href="{{ url_for('.file', id=file.uid) }}">
+                    <span class="label label-default">资源外链</span>
+                </a>
+               <a href="{{ url_for('.file', id=file.uid) }}#comments">
+                    {% if file.comments.count() == 0 %}
+                        <span class="label label-default">暂无评论</span>
+                    {% else %}
+                        <span class="label label-info">{{ file.comments.count() }} 条评论</span>
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

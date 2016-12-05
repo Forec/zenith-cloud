@@ -4,7 +4,7 @@
 
 {% block page_content %}
 <div class="page-header">
-    <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
+    <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=192) }}">
     <div class="profile-header">
         <h1>{{ user.nickname }}</h1>
         {% if current_user.is_administrator() or current_user == user %}

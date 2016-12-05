@@ -81,7 +81,6 @@ class User(UserMixin, db.Model):
     recvMessages = db.relationship('Message', backref='receiver', lazy='dynamic',
                                foreign_keys = [Message.targetid])
 
-    current_path = '/'
     def __repr__(self):
         return '<User %r>' % self.nickname
 
@@ -233,7 +232,18 @@ class User(UserMixin, db.Model):
                      confirmed = True,
                      about_me = forgery_py.lorem_ipsum.sentence(),
                      member_since = forgery_py.date.date(True))
+            f = File(path = '/',
+                     filename = 'public',
+                     perlink = '',
+                     cfileid= -1,
+                     isdir=True,
+                     linkpass = '',
+                     private = 0,
+                     created= u.member_since,
+                     owner = u,
+                     description ='')
             db.session.add(u)
+            db.session.add(f)
             try:
                 db.session.commit()
             except IntegrityError:
@@ -372,13 +382,45 @@ class File(db.Model):
         seed()
         user_count = User.query.count()
         cfile_count = CFILE.query.count()
+        suffixList = [['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv'],
+                      ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd'],
+                      ['.doc', '.ppt', '.pptx', '.docx', '.xls', '.xlsx', '.txt', '.md', '.rst', '.note'],
+                      ['.rar', '.zip', '.gz', '.gzip', '.tar', '.7z'],
+                      ['.mp3', '.wav', '.wma', '.ogg'],
+                      ['']]
         for i in range(count):
             u = User.query.offset(randint(0, user_count-1)).first()
             _cfile = CFILE.query.offset(randint(0, cfile_count-1)).first()
             _cfile.ref += 1
             db.session.add(_cfile)
-            f = File(path = '/',
-                     filename = forgery_py.lorem_ipsum.word(),
+            pathDeep = randint(0, 5)
+            pathPart = '/'
+            for j in range(0, pathDeep):
+                folder = forgery_py.lorem_ipsum.word()
+                isFile = File.query.filter_by(path=pathPart).\
+                    filter_by(filename=folder).\
+                    filter_by(isdir=True).first()
+                if isFile is not None:
+                    pathPart += folder
+                    pathPart += '/'
+                    continue
+                f = File(path = pathPart,
+                         filename=folder,
+                         perlink = '',
+                         cfileid = -1,
+                         isdir=True,
+                         linkpass = str(randint(1000,9999)),
+                         created=forgery_py.date.date(True),
+                         owner=u,
+                         description='')
+                pathPart += folder
+                pathPart += '/'
+            # parhPart is now the dest path
+            suffixType = randint(0, 5)
+            suffixTypeIndex = randint(0, len(suffixList[suffixType])-1)
+            f = File(path = pathPart,
+                     filename = forgery_py.lorem_ipsum.word() +
+                                suffixList[suffixType][suffixTypeIndex],
                      perlink = forgery_py.lorem_ipsum.word(),
                      cfile= _cfile,
                      linkpass = str(randint(1000,9999)),

@@ -44,7 +44,7 @@ def init():
 	db.session.commit()
 	CFILE.generate_fake(5)
 	User.generate_fake(5)
-	File.generate_fake(20)
+	File.generate_fake(100)
 	Comment.generate_fake(50)
 
 if __name__ == "__main__":

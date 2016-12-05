@@ -2,8 +2,19 @@
     position: absolute;
 }
 .profile-header {
-    min-height: 260px;
-    margin-left: 305px;
+    min-height: 192px;
+    margin-left: 230px;
+}
+div.link-block{
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    background-color: #ffd2d2;
+}
+a.link-item{
+    font-size: 20px;
+    background-color: #85fe91;
 }
 .navbar-inverse{
  #   background-color: #0e84e7;

@@ -9,10 +9,12 @@
     <h1>{% if current_user.is_authenticated %}{{ current_user.nickname }}{% else %}游客{% endif %}，您好!</h1>
 </div>
 <div>
-    <h2>与世界分享你的文件</h2>
+    <h2 class="md-col-4" style="display:inline">与世界分享你的文件</h2>
+    <div style="float:right">
     {% if current_user.can(Permission.WRITE_ARTICLES) %}
-    {{ wtf.quick_form(form) }}
+    <a href="{{ url_for('main.upload', path='/public/') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
     {% endif %}
+    </div>
 </div>
 <div class="post-tabs">
     <ul class="nav nav-tabs">

@@ -12,20 +12,6 @@ from ..decorators import admin_required, permission_required
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    form = FileForm()
-    if current_user.can(Permission.WRITE_ARTICLES) and \
-        form.validate_on_submit():
-        if form.file.data == '' or form.file.data is None:
-            flash("您上传的文件不合法！")
-            return redirect(url_for('.index'))
-        file = File(path = current_user.current_path,
-                    filename = form.file.name,
-                    owner = current_user._get_current_object(),
-                    description= form.body.data
-                    )
-        db.session.add(file)
-        #db.session.commit()
-        return redirect(url_for('.index'))
     show_followed = False
     if current_user.is_authenticated:
         show_followed = bool(request.cookies.get('show_followed', ''))
@@ -33,7 +19,8 @@ def index():
         query = current_user.followed_files
     else:
         if current_user.is_authenticated:
-            query = File.query.filter("private=0 or ownerid=:id").params(id=current_user.uid)
+            query = File.query.filter("private=0 or ownerid=:id").\
+                filter("isdir=0").params(id=current_user.uid)
         else:
             query = File.query.filter("private=0")
     page = request.args.get('page', 1, type=int)
@@ -42,8 +29,9 @@ def index():
         error_out=False
     )
     files = pagination.items
-    return render_template('index.html', form = form, files = files,
-                           pagination = pagination, show_followed=show_followed)
+    return render_template('index.html', files = files,
+                           pagination = pagination,
+                           show_followed=show_followed)
 
 @main.route('/all')
 @login_required
@@ -342,9 +330,82 @@ def message():
 @main.route('/cloud/')
 @login_required
 def cloud():
-    return "TODO"
+    videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
+    photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']
+    docList = ['.doc', '.ppt', '.pptx', '.docx', '.xls', '.xlsx', '.txt', '.md',
+               '.rst', '.note']
+    compressList = ['.rar', '.zip', '.gz', '.gzip', '.tar', '.7z']
+    musicList = ['.mp3', '.wav', '.wma', '.ogg']
+    def generateFilelike(list):
+        string = ""
+        for suffix in list:
+            string += "or filename like '%" + suffix + "' "
+        return string[3:]
+    def generatePathList(p):
+        ans = []
+        parts = p.split('/')[:-1]
+        sum = ''
+        for i in range(0, len(parts)):
+            parts[i] = parts[i] + '/'
+            sum += parts[i]
+            ans.append((sum, parts[i]))
+        return ans
+    type = request.args.get('type', 'all', type=str)
+    path = request.args.get('path', '/', type=str)
+    if path == '':
+        path = '/'
+    if type == 'video':
+        query = current_user.files.filter(generateFilelike(videoList))
+    elif type == 'document':
+        query = current_user.files.filter(generateFilelike(docList))
+    elif type == 'photo':
+        query = current_user.files.filter(generateFilelike(photoList))
+    elif type == 'music':
+        query = current_user.files.filter(generateFilelike(musicList))
+    elif type == 'compress':
+        query = current_user.files.filter(generateFilelike(compressList))
+    else:
+        query = current_user.files.filter("path=:p").params(p=path)
+    page = request.args.get('page', 1, type=int)
+    pagination = query.order_by(File.created.desc()).paginate(
+        page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+        error_out=False
+    )
+    files = pagination.items
+    file_types = []
+    for file in files:
+        filetype = 'file'
+        suffix = '.'+file.filename.split('.')[-1]
+        if suffix in videoList:
+            filetype = 'video'
+        elif suffix in musicList:
+            filetype = 'music'
+        elif suffix == '.txt':
+            filetype = 'txt'
+        elif suffix == '.md' or suffix == '.rst':
+            filetype = 'md'
+        elif suffix == '.ppt' or suffix == '.pptx':
+            filetype = 'ppt'
+        elif suffix == '.xls' or suffix == '.xlsx':
+            filetype = 'excel'
+        elif suffix in docList:
+            filetype = 'doc'
+        elif suffix in photoList:
+            filetype = 'photo'
+        elif suffix in compressList:
+            filetype = 'compress'
+        file_types.append((file, filetype))
+    if file_types == []:
+        files = None
+    return render_template('main/cloud.html', files = file_types, curpath=path, _type=type,
+                           pagination = pagination, pathlists=generatePathList(path))
 
 @main.route('/download/<int:id>')
 @login_required
 def download(id):
     return "TODO"
+
+@main.route('/upload/')
+@login_required
+def upload():
+    return 'TODO'
