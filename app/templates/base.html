@@ -24,7 +24,8 @@
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li><a href="/">主页</a></li>
-                <li><a href="{{ url_for('main.cloud', page = 1, type='all', path='/') }}">我的云盘</a></li>
+                <li><a href="{{ url_for('main.cloud', page = 1, type='all', path='/', order='name', direction='front') }}">
+                    我的云盘</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
@@ -52,7 +53,11 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('main.user', id=current_user.uid) }}">用户资料</a></li>
-                        <li><a href="{{ url_for('main.cloud', page=1, type='all', path='/') }}">我的云盘</a></li>
+                        <li>
+                            <a href="{{ url_for('main.cloud', page=1, type='all', path='/', order='time', direction='front') }}">
+                                我的云盘
+                            </a>
+                        </li>
                         <li><a href="{{ url_for('auth.secure_center') }}">安全中心</a></li>
                         <li><a href="{{ url_for('auth.logout') }}">登出</a></li>
                     </ul>

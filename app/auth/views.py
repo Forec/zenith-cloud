@@ -51,9 +51,9 @@ def confirm(token):
     if current_user.confirmed:
         return redirect(url_for('main.index'))
     if current_user.confirm(token):
-        flash('You have confirmed your account. Thanks!')
+        flash('您已经验证了您的邮箱！感谢您的支持！')
     else:
-        flash('The confirmation link is invalid or has expired')
+        flash('此验证链接无效或已过期！')
     return redirect(url_for('main.index'))
 
 @auth.route('/confirm')

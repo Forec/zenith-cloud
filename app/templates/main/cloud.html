@@ -10,18 +10,62 @@
 </div>
 <div>
     <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
-    <a href="{{ url_for('main.cloud', type='all') }}"><button type="button" class="btn btn-default">全部</button></a>
-    <a href="{{ url_for('main.cloud', type='music') }}"><button type="button" class="btn btn-default">音乐</button></a>
-    <a href="{{ url_for('main.cloud', type='video') }}"><button type="button" class="btn btn-default">视频</button></a>
-    <a href="{{ url_for('main.cloud', type='document') }}"><button type="button" class="btn btn-default">文档</button></a>
-    <a href="{{ url_for('main.cloud', type='photo') }}"><button type="button" class="btn btn-default">图片</button></a>
-    <a href="{{ url_for('main.cloud', type='compress') }}"><button type="button" class="btn btn-default">压缩文件</button></a>
+    <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-default">全部</button>
+    </a>
+    <a href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-default">音乐</button>
+    </a>
+    <a href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-default">视频</button>
+    </a>
+    <a href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-default">文档</button>
+    </a>
+    <a href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-default">图片</button>
+    </a>
+    <a href="{{ url_for('main.cloud', type='compress', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-default">压缩文件</button>
+    </a>
+
+    {% if _order == "time" %}
+        {% if _direction == "front" %}
+        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, direction='reverse') }}">
+            <button type="button" class="btn btn-primary">按时间排序</button>
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, direction='front') }}">
+            <button type="button" class="btn btn-success">按时间排序</button>
+        </a>
+        {% endif %}
+    {% else %}
+        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, direction='front') }}">
+            <button type="button" class="btn btn-default">按时间排序</button>
+        </a>
+    {% endif %}
+
+    {% if _order == "name" %}
+        {% if _direction == "front" %}
+        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='reverse') }}">
+            <button type="button" class="btn btn-primary">按文件名排序</button>
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='front') }}">
+            <button type="button" class="btn btn-success">按文件名排序</button>
+        </a>
+        {% endif %}
+    {% else %}
+        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='front') }}">
+            <button type="button" class="btn btn-default">按文件名排序</button>
+        </a>
+    {% endif %}
 </div>
 {% if _type == "all" %}
 <div class="link-block">
     路径：
     {% for _path, _pathView in pathlists %}
-        <a class="link-item" href="{{ url_for('main.cloud', path=_path) }}">{{ _pathView }}</a>
+        <a class="link-item" href="{{ url_for('main.cloud', path=_path, order=_order) }}">{{ _pathView }}</a>
     {% endfor %}
 </div>
 {% endif %}
@@ -34,7 +78,7 @@
 </div>
 {% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, 'main.cloud', type=_type) }}
+    {{ macros.pagination_widget(pagination, 'main.cloud', type=_type, order=_order, direction=_direction) }}
 </div>
 {% endif %}
 {% endblock %}

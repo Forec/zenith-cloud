@@ -352,6 +352,8 @@ def cloud():
         return ans
     type = request.args.get('type', 'all', type=str)
     path = request.args.get('path', '/', type=str)
+    order = request.args.get('order', 'time', type=str)
+    direction = request.args.get('direction', 'front', type=str)
     if path == '':
         path = '/'
     if type == 'video':
@@ -367,7 +369,17 @@ def cloud():
     else:
         query = current_user.files.filter("path=:p").params(p=path)
     page = request.args.get('page', 1, type=int)
-    pagination = query.order_by(File.created.desc()).paginate(
+    if order == 'name':
+        if direction == 'reverse':
+            query = query.order_by(File.filename.desc())
+        else:
+            query = query.order_by(File.filename.asc())
+    else:
+        if direction == 'reverse':
+            query = query.order_by(File.created.asc())
+        else:
+            query = query.order_by(File.created.desc())
+    pagination = query.paginate(
         page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
         error_out=False
     )
@@ -397,8 +409,8 @@ def cloud():
         file_types.append((file, filetype))
     if file_types == []:
         files = None
-    return render_template('main/cloud.html', files = file_types, curpath=path, _type=type,
-                           pagination = pagination, pathlists=generatePathList(path))
+    return render_template('main/cloud.html', files = file_types, _type=type, _order=order,
+                          _direction=direction ,pagination = pagination, pathlists=generatePathList(path))
 
 @main.route('/download/<int:id>')
 @login_required
