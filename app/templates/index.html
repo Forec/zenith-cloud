@@ -9,7 +9,7 @@
     <h1>{% if current_user.is_authenticated %}{{ current_user.nickname }}{% else %}游客{% endif %}，您好!</h1>
 </div>
 <div>
-    <p><b>分享新的文件（文件将被所有人可见）</b></p>
+    <h2>与世界分享你的文件</h2>
     {% if current_user.can(Permission.WRITE_ARTICLES) %}
     {{ wtf.quick_form(form) }}
     {% endif %}

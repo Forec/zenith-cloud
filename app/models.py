@@ -83,7 +83,7 @@ class User(UserMixin, db.Model):
 
     current_path = '/'
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User %r>' % self.nickname
 
     @property
     def password(self):
