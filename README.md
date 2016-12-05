@@ -9,13 +9,13 @@
 ## TODO
 * ~~Login~~
 * ~~Register~~
-* Mail confirm
-* file list
+* ~~Mail confirm~~
+* ~~file list~~
 * download
 * upload
 * move
 * fork
-* delete
+* ~~delete~~
 * manage
 * ~~administor~~
 

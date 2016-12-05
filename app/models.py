@@ -170,7 +170,22 @@ class User(UserMixin, db.Model):
         file = File.query.filter_by(uid=fileid).first()
         if file is None or (file.ownerid != self.uid and not user.can(Permission.ADMINISTER)):
             return False
-        db.session.delete(file)
+        if file.isdir == False:
+            if file.cfileid > 0:
+                cfile = file.cfile
+                cfile.ref -= 1
+                db.session.add(cfile)
+            db.session.delete(file)
+        else:
+            files_related = File.query.filter(File.path.like(file.path+file.filename+'/%')).all()
+            for _file in files_related:
+                print(_file.filename)
+                if _file.cfileid > 0:
+                    cfile = _file.cfile
+                    cfile.ref -= 1
+                    db.session.add(cfile)
+                db.session.delete(_file)
+            db.session.delete(file)
         db.session.commit()
         return True
     def gravatar(self, size=100, default='identicon', rating='g'):

@@ -32,7 +32,8 @@
             <div class="post-date">创建时间：{{ moment(file.created).fromNow() }}</div>
             <div class="post-author">
                 {% if file.isdir == True %}
-                <a href="{{ url_for('.cloud', path=curpath ~ file.filename ~ '/') }}">{{ file.filename }}</a>
+                <a href="{{ url_for('.cloud', path= curpath ~ file.filename ~ '/', direction=_direction, order=_order) }}">
+                    {{ file.filename }}</a>
                 {% else %}
                 <a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a>
                 {% endif %}

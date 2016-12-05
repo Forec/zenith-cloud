@@ -220,7 +220,7 @@ def delete_file(id):
 def delete_file_confirm(token):
     if current_user.delete_file(token):
         flash('文件已被删除')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.cloud', path='/', direction='front', type='all'))
     else:
         abort(403)
 
@@ -409,7 +409,7 @@ def cloud():
         file_types.append((file, filetype))
     if file_types == []:
         files = None
-    return render_template('main/cloud.html', files = file_types, _type=type, _order=order,
+    return render_template('main/cloud.html', files = file_types, _type=type, _order=order, curpath=path,
                           _direction=direction ,pagination = pagination, pathlists=generatePathList(path))
 
 @main.route('/download/<int:id>')

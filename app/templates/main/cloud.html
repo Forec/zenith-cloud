@@ -64,8 +64,9 @@
 {% if _type == "all" %}
 <div class="link-block">
     路径：
-    {% for _path, _pathView in pathlists %}
-        <a class="link-item" href="{{ url_for('main.cloud', path=_path, order=_order) }}">{{ _pathView }}</a>
+    {% for __path, _pathView in pathlists %}
+        <a class="link-item" href="{{ url_for('main.cloud', path=__path, order=_order, direction=_direction) }}">
+            {{ _pathView }}</a>
     {% endfor %}
 </div>
 {% endif %}
