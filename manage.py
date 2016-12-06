@@ -48,7 +48,7 @@ def init():
 	User.generate_fake(5)
 	File.generate_fake(100)
 	Comment.generate_fake(50)
-	Message.generate_fake(30)
+	Message.generate_fake(100)
 
 if __name__ == "__main__":
 	manager.run()

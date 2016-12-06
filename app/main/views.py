@@ -329,11 +329,13 @@ def messages():
         chatUserIdList = []
         messageList = []
         for message in uncheck_messages:
-            if message.sender.uid in chatUserIdList:
-                continue
+            for i in range(0, len(chatUserIdList)):
+                if message.sender.uid == chatUserIdList[i]:
+                    messageList[i][1] += 1
+                    break
             else:
                 chatUserIdList.append(message.sender.uid)
-                messageList.append(message)
+                messageList.append([message, 0])
         _message = messageList
     else:
         _messages = Message.query.filter(and_(Message.message.like('%' + key + '%'),
@@ -341,7 +343,9 @@ def messages():
         pagination = _messages.order_by(Message.created.desc()).paginate(
         page, per_page=current_app.config['ZENITH_MESSAGES_PER_PAGE'],
         error_out=False)
-        _message = pagination.items
+        _message = []
+        for message in  pagination.items:
+            _message.append((message, 1))
         if _message == []:
             _message = None
     return render_template('main/messages.html', messages = _message, key=key,

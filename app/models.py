@@ -39,6 +39,7 @@ class Message(db.Model):
                      sender=u1,
                      receiver=u2,
                      message=forgery_py.lorem_ipsum.sentences(randint(2,3)),
+                     created=forgery_py.date.date(True),
                      sended=False)
             db.session.add(m)
         db.session.commit()
