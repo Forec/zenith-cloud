@@ -1,6 +1,7 @@
 import os
 from app import create_app, db
-from app.models import User, Role, File, Permission, Comment, CFILE
+from app.models import User, Role, File, Permission, \
+    Comment, CFILE, Message
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
@@ -16,6 +17,7 @@ def make_shell_context():
 				File = File,
                 CFILE= CFILE,
                 Comment = Comment,
+                Message = Message,
 				Permission=Permission)
 
 manager.add_command("shell", Shell(make_context=make_shell_context))
@@ -46,6 +48,7 @@ def init():
 	User.generate_fake(5)
 	File.generate_fake(100)
 	Comment.generate_fake(50)
+	Message.generate_fake(30)
 
 if __name__ == "__main__":
 	manager.run()

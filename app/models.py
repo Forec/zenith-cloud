@@ -29,12 +29,16 @@ class Message(db.Model):
         seed()
         user_count = User.query.count()
         for i in range(count):
-            u1 = User.query.offset(randint(0, user_count-1)).first()
-            u2 = User.query.offset(randint(0, user_count-1)).first()
+            u1Index = randint(0, user_count-1)
+            u2Index = randint(0, user_count-1)
+            while u1Index == u2Index:
+                u2Index = randint(0, user_count-1)
+            u1 = User.query.offset(u1Index).first()
+            u2 = User.query.offset(u2Index).first()
             m = Message(
                      sender=u1,
                      receiver=u2,
-                     message=forgery_py.lorem_ipsum.sentence(randint(2,3)),
+                     message=forgery_py.lorem_ipsum.sentences(randint(2,3)),
                      sended=False)
             db.session.add(m)
         db.session.commit()

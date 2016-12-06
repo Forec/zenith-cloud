@@ -315,7 +315,7 @@ def moderate_files_delete(id):
 
 @main.route('/messages/')
 @login_required
-def message():
+def messages():
     uncheck_messages = current_user.recvMessages.order_by(Message.viewed.asc()).\
         order_by(Message.created.desc())
     page = request.args.get('page', 1, type=int)
@@ -324,7 +324,7 @@ def message():
         error_out=False
     )
     cur_messages = pagination.items
-    return render_template('main/message.html', messages = cur_messages,
+    return render_template('main/messages.html', messages = cur_messages,
                            pagination = pagination)
 
 videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
@@ -505,4 +505,34 @@ def fork():
 @main.route('/newfolder/')
 @login_required
 def newfolder():
+    pass
+
+
+@main.route('/delete-message/<int:id>')
+@login_required
+def delete_message(id):
+    message = Message.query.get_or_404(id)
+    if message.receiver == current_user:
+        db.session.delete(message)
+        flash('消息已被删除')
+        return redirect(url_for('main.chat', id=message.sender.uid))
+    elif message.sender == current_user:
+        if message.created - datetime.utcnow() > 2 * datetime.minute:
+            flash('消息发送超过两分钟，无法撤回')
+        else:
+            db.session.delete(message)
+            flash('消息已被撤回')
+        return redirect(url_for('main.chat', id=message.receiver.uid))
+    else:
+        abort(403)
+
+@main.route('/chat/<int:id>')
+@login_required
+def chat(id):
+    pass
+
+@main.route('/close-message/<int:id>')
+@login_required
+def close_message(id):
+    # TODO
     pass
