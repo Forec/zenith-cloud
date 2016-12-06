@@ -31,7 +31,7 @@
                 {% if current_user.is_authenticated %}
                 <li>
                         {% set UserIdList = [] %}
-                        {% set uncheck_messages = current_user.recvMessages.all() %}
+                        {% set uncheck_messages = current_user.recvMessages.filter_by(viewed=0).all() %}
                         <span style="display:none">
                         {% for message in uncheck_messages %}
                             {% if message.sender.uid not in UserIdList %}

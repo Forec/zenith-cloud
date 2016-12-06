@@ -17,7 +17,7 @@
             <div>
             {% if not message.viewed and message.receiver == current_user %}
                 <b>
-                <p class="text-warning">
+                <p class="text-mute" style="background-color:#f0ffff">
                     {{ message.message }}
                 </p>
                 </b>

@@ -10,10 +10,14 @@
     <div style="float:right">
         <a href="{{ url_for('main.chat', id=sender.uid) }}">
             <button type="button" class="btn btn-success">
-                刷新
+                刷新（请先保存您正在编辑的消息）
             </button>
         </a>
     </div>
+</div>
+
+<div class="page-header">
+    {{ wtf.quick_form(form) }}
 </div>
 
 {% if messages %}

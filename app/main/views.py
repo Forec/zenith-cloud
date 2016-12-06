@@ -4,7 +4,8 @@ from flask import render_template, session, redirect, url_for, \
 from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, \
-    FileForm, CommentForm, SearchForm, FileDeleteConfirmForm
+    FileForm, CommentForm, SearchForm, FileDeleteConfirmForm, \
+    ChatForm
 from sqlalchemy import or_, and_
 from .. import db
 from ..models import User, Role, Permission, File, Comment, Message
@@ -338,7 +339,7 @@ def messages():
             for i in range(0, len(chatUserIdList)):
                 if targetid == chatUserIdList[i]:
                     find = True
-                    if current_user == message.receiver:
+                    if current_user == message.receiver and message.viewed == False:
                         messageList[i][1] += 1
                     break
             if not find:
@@ -398,7 +399,6 @@ def generateFileTypes(files):
         file_types = None
     return file_types
 
-
 def generatePathList(p):
     ans = []
     parts = p.split('/')[:-1]
@@ -426,7 +426,7 @@ def cloud():
 
     # check whether the path is valid
     if path != '/':
-        if len(path.split('/')) < 3:
+        if len(path.split('/')) < 3 or path[-1] != '/':
             abort(403)
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
@@ -495,7 +495,7 @@ def copy():
     direction = request.args.get('direction', 'front', type=str)
     # check whether the path is valid
     if path != '/':
-        if len(path.split('/')) < 3:
+        if len(path.split('/')) < 3 or path[-1] != '/':
             abort(403)
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
@@ -528,10 +528,64 @@ def copy():
     return render_template('main/copy.html', _file=file, _path=path, files=file_types,_order=order,curpath=path,
                            _direction=direction, pagination = pagination, pathlists=generatePathList(path))
 
-@main.route('/copy_check')
+@main.route('/copy_check', methods=['GET', 'POST'])
 @login_required
 def copy_check():
-    pass
+    _path = request.args.get('path', None, type=str)
+    _fileid = request.args.get('id', None, type=int)
+    if _path is None or _fileid is None or _fileid <= 0:
+        abort(403)
+    # check whether the path is valid
+    if _path != '/':
+        if len(_path.split('/')) < 3 or _path[-1] != '/':
+            abort(403)
+        ___filename = _path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = _path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
+            params(p=___path, f=___filename).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+    file = File.query.get_or_404(_fileid)
+    if file.owner != current_user:
+        abort(403)
+
+    newRootFile = File(ownerid=file.ownerid,
+                    cfileid=file.cfileid,
+                    path=_path,
+                    perlink='',
+                    filename=file.filename,
+                    linkpass='',
+                    isdir=file.isdir,
+                    description=file.description)
+    db.session.add(newRootFile)
+    db.session.commit()
+    newRootFile.perlink = url_for('main.file', id=newRootFile.uid)
+    db.session.add(newRootFile)
+    # if the file is a folder
+    if file.isdir:
+        movePath = file.path + file.filename + '/'
+        filelist = File.query.filter("path like :p and ownerid=:id").\
+            params(id=current_user.uid, p=movePath+'/%')
+        baseLen = len(file.path)
+        for _file in filelist:
+            newPath = _path + _file.path[baseLen:]
+            newFile = File(ownerid=_file.ownerid,
+                           cfileid=_file.cfileid,
+                           path=newPath,
+                           perlink='',
+                           filename=_file.filename,
+                           linkpass='',
+                           isdir=_file.isdir,
+                           description=_file.description
+                           )
+            db.session.add(newFile)
+            newFile.perlink = url_for('main.file', id=newFile.uid)
+            db.session.add(newFile)
+        flash('文件夹 ' + movePath + ' 已拷贝到 ' + _path + '下')
+    else:
+        flash('文件 ' + file.path + file.filename + ' 已拷贝到 ' + _path + '下')
+    return redirect(url_for('main.file', id=newRootFile.uid))
 
 @main.route('/fork/')
 @login_required
@@ -562,22 +616,39 @@ def delete_message(id):
     else:
         abort(403)
 
-@main.route('/chat/<int:id>')
+@main.route('/chat/<int:id>', methods=['GET', 'POST'])
 @login_required
 def chat(id):
-    sender = User.query.get_or_404(id)
+    form = ChatForm()
+    remote = User.query.get_or_404(id)
+    if form.validate_on_submit():
+        newMessage = Message(
+            sender=current_user,
+            receiver=remote,
+            message=form.body.data,
+        )
+        db.session.add(newMessage)
+        db.session.commit()
+        flash("消息已发送")
+        form.body.data= ''
+        return redirect(url_for('main.chat', id=id))
     page = request.args.get('page', 1, type=int)
     _messages = Message.query.filter("(sendid=:sid and targetid=:tid) or (sendid=:tid and targetid=:sid)").\
-        params(sid=sender.uid, tid=current_user.uid)
+        params(sid=remote.uid, tid=current_user.uid)
     pagination = _messages.order_by(Message.created.desc()).\
         paginate(page, per_page=current_app.config['ZENITH_MESSAGES_PER_PAGE'],
         error_out=False)
     _message = pagination.items
-    return render_template('main/chat.html', sender=sender, messages = _message,
+    return render_template('main/chat.html', sender=remote, messages = _message, form=form,
                            page=page, pagination=pagination)
 
 @main.route('/close-message/<int:id>')
 @login_required
 def close_message(id):
-    # TODO
-    pass
+    message = Message.query.get_or_404(id)
+    if message.receiver == current_user or current_user.can(Permission.ADMINISTER):
+        message.viewed = True
+        db.session.add(message)
+        return redirect(url_for('main.chat', id=message.sender.uid))
+    else:
+        abort(403)

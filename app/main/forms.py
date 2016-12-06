@@ -57,3 +57,10 @@ class CommentForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     key = StringField('搜索', validators=[])
+
+class ChatForm(FlaskForm):
+    body = TextAreaField('发送消息', validators=[Length(0, 300)])
+    submit = SubmitField('发送')
+    def validate_body(self, field):
+        if len(field.data) > 300:
+            raise ValidationError('消息过长，请限制在300字内')
