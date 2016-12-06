@@ -417,6 +417,7 @@ class File(db.Model):
             db.session.add(_cfile)
             pathDeep = randint(0, 5)
             pathPart = '/'
+            prePrivate = 1
             for j in range(0, pathDeep):
                 folder = forgery_py.lorem_ipsum.word()
                 isFile = File.query.filter_by(path=pathPart).\
@@ -426,6 +427,8 @@ class File(db.Model):
                     pathPart += folder
                     pathPart += '/'
                     continue
+                if prePrivate == 1:
+                    prePrivate = randint(0, 1)
                 f = File(path = pathPart,
                          filename=folder,
                          perlink = '',
@@ -434,22 +437,25 @@ class File(db.Model):
                          linkpass = str(randint(1000,9999)),
                          created=forgery_py.date.date(True),
                          owner=u,
-                         description='')
+                         private = prePrivate,
+                         description=forgery_py.lorem_ipsum.sentences(randint(3,5)))
                 pathPart += folder
                 pathPart += '/'
             # parhPart is now the dest path
             suffixType = randint(0, 5)
             suffixTypeIndex = randint(0, len(suffixList[suffixType])-1)
+            if prePrivate == 1:
+                prePrivate = randint(0, 1)
             f = File(path = pathPart,
                      filename = forgery_py.lorem_ipsum.word() +
                                 suffixList[suffixType][suffixTypeIndex],
                      perlink = forgery_py.lorem_ipsum.word(),
                      cfile= _cfile,
                      linkpass = str(randint(1000,9999)),
-                     private = randint(0,1),
+                     private = prePrivate,
                      created=forgery_py.date.date(True),
                      owner = u,
-                     description ='')
+                     description =forgery_py.lorem_ipsum.sentences(randint(4,8)))
             db.session.add(f)
             u.used += _cfile.size
             db.session.add(u)
@@ -503,3 +509,33 @@ login_manager.login_message = u"您需要先登录才能访问此界面！"
 @login_manager.user_loader
 def load_user(user_id):
 	return User.query.get(int(user_id))
+
+from math import ceil
+
+
+class Pagination(object):
+    def __init__(self, page, per_page, total_count):
+        self.page = page
+        self.per_page = per_page
+        self.total_count = total_count
+    @property
+    def pages(self):
+        return int(ceil(self.total_count / float(self.per_page)))
+    @property
+    def has_prev(self):
+        return self.page > 1
+    @property
+    def has_next(self):
+        return self.page < self.pages
+    def iter_pages(self, left_edge=2, left_current=2,
+                   right_current=5, right_edge=2):
+        last = 0
+        for num in range(1, self.pages + 1):
+            if num <= left_edge or \
+               (num > self.page - left_current - 1 and \
+                num < self.page + right_current) or \
+               num > self.pages - right_edge:
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num

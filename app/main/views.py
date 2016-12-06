@@ -8,8 +8,54 @@ from .forms import EditProfileForm, EditProfileAdminForm, \
     ChatForm
 from sqlalchemy import or_, and_
 from .. import db
-from ..models import User, Role, Permission, File, Comment, Message
+from ..models import User, Role, Permission, File, \
+    Comment, Message,Pagination
 from ..decorators import admin_required, permission_required
+
+videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
+photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']
+docList = ['.doc', '.ppt', '.pptx', '.docx', '.xls', '.xlsx', '.txt', '.md',
+               '.rst', '.note']
+compressList = ['.rar', '.zip', '.gz', '.gzip', '.tar', '.7z']
+musicList = ['.mp3', '.wav', '.wma', '.ogg']
+
+def generateFileTypes(files):
+    file_types = []
+    for file in files:
+        filetype = 'file'
+        suffix = '.'+file.filename.split('.')[-1]
+        if suffix in videoList:
+            filetype = 'video'
+        elif suffix in musicList:
+            filetype = 'music'
+        elif suffix == '.txt':
+            filetype = 'txt'
+        elif suffix == '.md' or suffix == '.rst':
+            filetype = 'md'
+        elif suffix == '.ppt' or suffix == '.pptx':
+            filetype = 'ppt'
+        elif suffix == '.xls' or suffix == '.xlsx':
+            filetype = 'excel'
+        elif suffix in docList:
+            filetype = 'doc'
+        elif suffix in photoList:
+            filetype = 'photo'
+        elif suffix in compressList:
+            filetype = 'compress'
+        file_types.append((file, filetype))
+    if file_types == []:
+        file_types = None
+    return file_types
+
+def generatePathList(p):
+    ans = []
+    parts = p.split('/')[:-1]
+    sum = ''
+    for i in range(0, len(parts)):
+        parts[i] = parts[i] + '/'
+        sum += parts[i]
+        ans.append((sum, parts[i]))
+    return ans
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -17,19 +63,43 @@ def index():
     if current_user.is_authenticated:
         show_followed = bool(request.cookies.get('show_followed', ''))
     if show_followed:
-        query = current_user.followed_files
+        query = current_user.followed_files.\
+            order_by(File.path.desc()).\
+            order_by(File.created.desc()).all()
     else:
         if current_user.is_authenticated:
             query = File.query.filter("private=0 or ownerid=:id").\
-                filter("isdir=0").params(id=current_user.uid)
+                params(id=current_user.uid).\
+                order_by(File.path.desc()).\
+                order_by(File.created.desc()).all()
         else:
-            query = File.query.filter("private=0")
+            query = File.query.filter("private=0").\
+                order_by(File.path.desc()).\
+                order_by(File.created.desc()).all()
     page = request.args.get('page', 1, type=int)
-    pagination = query.order_by(File.created.desc()).paginate(
-        page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
-        error_out=False
-    )
-    files = pagination.items
+    filelist = []
+    paths_users = []
+    for file in query:
+        if file.private == True:
+            continue
+        if file.path == '/':
+            filelist.append(file)
+        else:
+            sappend = True
+            for (path, userid) in paths_users:
+                if path == file.path[:len(path)] and userid == file.ownerid:
+                    sappend = False
+                    break
+            if sappend and file.isdir:
+                paths_users.append((file.path+file.filename+'/', file.ownerid))
+    #pagination = query.order_by(File.created.desc()).paginate(
+    #    page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+    #    error_out=False
+    #)
+    pagination = Pagination(page=page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+                            total_count=len(filelist))
+    files = filelist[(page-1)*current_app.config['ZENITH_FILES_PER_PAGE']:
+                      page*current_app.config['ZENITH_FILES_PER_PAGE']]
     return render_template('index.html', files = files,
                            pagination = pagination,
                            show_followed=show_followed)
@@ -122,8 +192,10 @@ def file(id):
         page, per_page=current_app.config['ZENITH_COMMENTS_PER_PAGE'],
         error_out=False
     )
+    pathLists = generatePathList(file.path)
+    file_type = generateFileTypes([file])[0][1]
     comments = pagination.items
-    return render_template('main/file.html', files=[file], comments = comments,
+    return render_template('main/file.html', comments = comments, type=file_type, pathlists = pathLists,
                            pagination = pagination, file = file, form = form,
                            moderate=current_user.can(Permission.MODERATE_COMMENTS))
 
@@ -363,51 +435,6 @@ def messages():
             _message = None
     return render_template('main/messages.html', messages = _message, key=key,
                            form=form, page=page, pagination=pagination)
-
-videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
-photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']
-docList = ['.doc', '.ppt', '.pptx', '.docx', '.xls', '.xlsx', '.txt', '.md',
-               '.rst', '.note']
-compressList = ['.rar', '.zip', '.gz', '.gzip', '.tar', '.7z']
-musicList = ['.mp3', '.wav', '.wma', '.ogg']
-
-def generateFileTypes(files):
-    file_types = []
-    for file in files:
-        filetype = 'file'
-        suffix = '.'+file.filename.split('.')[-1]
-        if suffix in videoList:
-            filetype = 'video'
-        elif suffix in musicList:
-            filetype = 'music'
-        elif suffix == '.txt':
-            filetype = 'txt'
-        elif suffix == '.md' or suffix == '.rst':
-            filetype = 'md'
-        elif suffix == '.ppt' or suffix == '.pptx':
-            filetype = 'ppt'
-        elif suffix == '.xls' or suffix == '.xlsx':
-            filetype = 'excel'
-        elif suffix in docList:
-            filetype = 'doc'
-        elif suffix in photoList:
-            filetype = 'photo'
-        elif suffix in compressList:
-            filetype = 'compress'
-        file_types.append((file, filetype))
-    if file_types == []:
-        file_types = None
-    return file_types
-
-def generatePathList(p):
-    ans = []
-    parts = p.split('/')[:-1]
-    sum = ''
-    for i in range(0, len(parts)):
-        parts[i] = parts[i] + '/'
-        sum += parts[i]
-        ans.append((sum, parts[i]))
-    return ans
 
 @main.route('/cloud/')
 @login_required

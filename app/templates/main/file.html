@@ -5,7 +5,119 @@
 {% block title %}顶点云 - 文件{% endblock %}
 
 {% block page_content %}
+<div class="post-thumbnail">
+    {% if file.isdir == True %}
+    <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='director.png') }}">
+    {% else %}
+        {% if file_type == "video" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='video.png') }}">
+        {% elif file_type == "photo" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='photo.png') }}">
+        {% elif file_type == "compress" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='compress.png') }}">
+        {% elif file_type == "doc" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='doc.png') }}">
+        {% elif file_type == "ppt" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='ppt.png') }}">
+        {% elif file_type == "excel" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='excel.png') }}">
+        {% elif file_type == "txt" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='txt.png') }}">
+        {% elif file_type == "md" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='md.png') }}">
+        {% elif file_type == "music" %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='music.png') }}">
+        {% else %}
+        <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='file.png') }}">
+        {% endif %}
+    {% endif %}
+</div>
+
+<div class="post-content">
+    {% if current_user == file.owner %}
+    <div class="post-date">创建时间：{{ moment(file.created).fromNow() }}</div>
+    {% else %}
+    <div class="post-date">发布时间：{{ moment(file.created).fromNow() }}</div>
+    {% endif %}
+    <div class="post-author">
+        {% if file.isdir %}
+        目录名：
+        {% else %}
+        文件名：
+        {% endif %}
+        <a href="{{ url_for('.file', id=file.uid) }}">
+            {{ file.filename }}
+        </a>
+        &nbsp;&nbsp;&nbsp;
+
+        {% if current_user != file.owner %}
+            资源发布者：
+            <a href="{{ url_for('.user', id=file.owner.uid) }}">
+                {{ file.owner.nickname }}
+            </a>
+        {% else %}
+            路径：
+            {% for __path, _pathView in pathlists %}
+                <a class="link-item" style="font-size:15px" href="{{ url_for('main.cloud', path=__path) }}">
+                    {{ _pathView }}
+                </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="post-body">
+        {% if file.isdir %}
+        <b>目录描述：</b>
+        {% else %}
+        <b>文件描述：</b>
+        {% endif %}
+        {% if file.description %}
+            {% if file.description == "" %}
+                无
+            {% else %}
+                {{ file.description }}
+            {% endif %}
+        {% else %}
+            无
+        {% endif %}
+    </div>
+
+    <div class="post-footer">
+        {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
+        <a href="{{ url_for('main.download', id=file.uid) }}">
+            <span class="label label-primary">下载</span>
+        </a>
+        {% endif %}
+        {% if file.private == False and current_user != file.owner and current_user.is_authenticated%}
+        <a href="{{ url_for('main.fork', id=file.uid) }}">
+            <span class="label label-primary">Fork</span>
+        </a>
+        {% endif %}
+        {% if current_user == file.owner %}
+        <a href="{{ url_for('main.delete_file',id=file.uid) }}">
+            <span class="label label-danger">删除</span>
+        </a>
+        {% elif current_user.is_administrator() %}
+        <a href="{{ url_for('main.delete_file',id=file.uid) }}">
+            <span class="label label-danger">删除 [管理员]</span>
+        </a>
+        {% endif %}
+        <a href="{{ url_for('.file', id=file.uid) }}">
+            <span class="label label-default">资源外链</span>
+        </a>
+        <a href="{{ url_for('.file', id=file.uid) }}#comments">
+            {% if file.comments.count() == 0 %}
+            <span class="label label-default">暂无评论</span>
+            {% else %}
+            <span class="label label-info">{{ file.comments.count() }} 条评论</span>
+            {% endif %}
+        </a>
+    </div>
+</div>
+
 {% include 'main/_files.html' %}
+
+
 <h4 id="comments">评论 共 {{ file.comments.count() }} 条</h4>
 {% if current_user.can(Permission.COMMENT) %}
 <div class="comment-form">
@@ -15,7 +127,7 @@
 {% include 'main/_comments.html' %}
 {% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, '.file', fragment='#comments', id=files[0].uid) }}
+    {{ macros.pagination_widget(pagination, '.file', fragment='#comments', id=file.uid) }}
 </div>
 {% endif %}
 {% endblock %}

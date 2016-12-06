@@ -47,7 +47,7 @@ def init():
 	CFILE.generate_fake(5)
 	User.generate_fake(5)
 	File.generate_fake(100)
-	Comment.generate_fake(50)
+	Comment.generate_fake(70)
 	Message.generate_fake(100)
 
 if __name__ == "__main__":

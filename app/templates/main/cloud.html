@@ -89,16 +89,16 @@
     {% if _order == "name" %}
         {% if _direction == "front" %}
         <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='reverse') }}">
-            <button type="button" class="btn btn-primary">按文件名排序</button>
+            <button type="button" class="btn btn-primary">按名称排序</button>
         </a>
         {% else %}
         <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='front') }}">
-            <button type="button" class="btn btn-warning">按文件名排序</button>
+            <button type="button" class="btn btn-warning">按名称排序</button>
         </a>
         {% endif %}
     {% else %}
         <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='front') }}">
-            <button type="button" class="btn btn-default">按文件名排序</button>
+            <button type="button" class="btn btn-default">按名称排序</button>
         </a>
     {% endif %}
     </div>
