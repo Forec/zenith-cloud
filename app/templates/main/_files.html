@@ -15,6 +15,11 @@
                     <span class="label label-primary">下载</span>
                 </a>
                 {% endif %}
+                {% if file.private == False and current_user != file.owner and current_user.is_authenticated%}
+                <a href="{{ url_for('main.fork', id=file.uid) }}">
+                    <span class="label label-primary">Fork</span>
+                </a>
+                {% endif %}
                 {% if current_user == file.owner %}
 	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
 		            <span class="label label-danger">删除</span>

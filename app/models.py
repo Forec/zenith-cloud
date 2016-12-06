@@ -80,6 +80,8 @@ class User(UserMixin, db.Model):
 
     recvMessages = db.relationship('Message', backref='receiver', lazy='dynamic',
                                foreign_keys = [Message.targetid])
+    used = db.Column(db.Integer, default=0)
+    maxm = db.Column(db.Integer, default=512*1024*1024) # 512M
 
     def __repr__(self):
         return '<User %r>' % self.nickname
@@ -346,7 +348,6 @@ class CFILE(db.Model):
             if not chunk:
                 break
             midterm += hashlib.md5(chunk).hexdigest()
-            print(midterm)
         f.close()
         return hashlib.md5(midterm.encode('utf-8')).hexdigest().upper()
     @staticmethod
@@ -445,6 +446,8 @@ class File(db.Model):
                      owner = u,
                      description ='')
             db.session.add(f)
+            u.used += _cfile.size
+            db.session.add(u)
         db.session.commit()
 
 

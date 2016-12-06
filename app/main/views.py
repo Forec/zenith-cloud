@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, \
     FileForm, CommentForm, SearchForm, FileDeleteConfirmForm
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from .. import db
 from ..models import User, Role, Permission, File, Comment, Message
 from ..decorators import admin_required, permission_required
@@ -327,35 +327,79 @@ def message():
     return render_template('main/message.html', messages = cur_messages,
                            pagination = pagination)
 
+videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
+photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']
+docList = ['.doc', '.ppt', '.pptx', '.docx', '.xls', '.xlsx', '.txt', '.md',
+               '.rst', '.note']
+compressList = ['.rar', '.zip', '.gz', '.gzip', '.tar', '.7z']
+musicList = ['.mp3', '.wav', '.wma', '.ogg']
+
+def generateFileTypes(files):
+    file_types = []
+    for file in files:
+        filetype = 'file'
+        suffix = '.'+file.filename.split('.')[-1]
+        if suffix in videoList:
+            filetype = 'video'
+        elif suffix in musicList:
+            filetype = 'music'
+        elif suffix == '.txt':
+            filetype = 'txt'
+        elif suffix == '.md' or suffix == '.rst':
+            filetype = 'md'
+        elif suffix == '.ppt' or suffix == '.pptx':
+            filetype = 'ppt'
+        elif suffix == '.xls' or suffix == '.xlsx':
+            filetype = 'excel'
+        elif suffix in docList:
+            filetype = 'doc'
+        elif suffix in photoList:
+            filetype = 'photo'
+        elif suffix in compressList:
+            filetype = 'compress'
+        file_types.append((file, filetype))
+    if file_types == []:
+        file_types = None
+    return file_types
+
+
+def generatePathList(p):
+    ans = []
+    parts = p.split('/')[:-1]
+    sum = ''
+    for i in range(0, len(parts)):
+        parts[i] = parts[i] + '/'
+        sum += parts[i]
+        ans.append((sum, parts[i]))
+    return ans
+
 @main.route('/cloud/')
 @login_required
 def cloud():
-    videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
-    photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']
-    docList = ['.doc', '.ppt', '.pptx', '.docx', '.xls', '.xlsx', '.txt', '.md',
-               '.rst', '.note']
-    compressList = ['.rar', '.zip', '.gz', '.gzip', '.tar', '.7z']
-    musicList = ['.mp3', '.wav', '.wma', '.ogg']
     def generateFilelike(list):
         string = ""
         for suffix in list:
             string += "or filename like '%" + suffix + "' "
         return string[3:]
-    def generatePathList(p):
-        ans = []
-        parts = p.split('/')[:-1]
-        sum = ''
-        for i in range(0, len(parts)):
-            parts[i] = parts[i] + '/'
-            sum += parts[i]
-            ans.append((sum, parts[i]))
-        return ans
     type = request.args.get('type', 'all', type=str)
     path = request.args.get('path', '/', type=str)
     order = request.args.get('order', 'time', type=str)
     direction = request.args.get('direction', 'front', type=str)
     if path == '':
         path = '/'
+
+    # check whether the path is valid
+    if path != '/':
+        if len(path.split('/')) < 3:
+            abort(403)
+        ___filename = path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
+            params(p=___path, f=___filename).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+
     if type == 'video':
         query = current_user.files.filter(generateFilelike(videoList))
     elif type == 'document':
@@ -384,31 +428,7 @@ def cloud():
         error_out=False
     )
     files = pagination.items
-    file_types = []
-    for file in files:
-        filetype = 'file'
-        suffix = '.'+file.filename.split('.')[-1]
-        if suffix in videoList:
-            filetype = 'video'
-        elif suffix in musicList:
-            filetype = 'music'
-        elif suffix == '.txt':
-            filetype = 'txt'
-        elif suffix == '.md' or suffix == '.rst':
-            filetype = 'md'
-        elif suffix == '.ppt' or suffix == '.pptx':
-            filetype = 'ppt'
-        elif suffix == '.xls' or suffix == '.xlsx':
-            filetype = 'excel'
-        elif suffix in docList:
-            filetype = 'doc'
-        elif suffix in photoList:
-            filetype = 'photo'
-        elif suffix in compressList:
-            filetype = 'compress'
-        file_types.append((file, filetype))
-    if file_types == []:
-        files = None
+    file_types = generateFileTypes(files)
     return render_template('main/cloud.html', files = file_types, _type=type, _order=order, curpath=path,
                           _direction=direction ,pagination = pagination, pathlists=generatePathList(path))
 
@@ -421,3 +441,68 @@ def download(id):
 @login_required
 def upload():
     return 'TODO'
+
+@main.route('/copy/')
+@login_required
+def copy():
+    path = request.args.get('path', '/', type=str)
+    if path == '':
+        path='/'
+    id = request.args.get('id', 0, type=int)
+    if id <= 0:
+        abort(403)
+    file = File.query.get(id)
+    if file is None or file.owner != current_user:
+        abort(403)
+
+    order = request.args.get('order', 'time', type=str)
+    direction = request.args.get('direction', 'front', type=str)
+    # check whether the path is valid
+    if path != '/':
+        if len(path.split('/')) < 3:
+            abort(403)
+        ___filename = path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
+            params(p=___path, f=___filename).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+
+    # fuck this duplicate code, I don't want to name it
+    query = current_user.files.filter("path=:p and uid<>:id and isdir=1").\
+        params(p=path, id=file.uid)
+    page = request.args.get('page', 1, type=int)
+    if order == 'name':
+        if direction == 'reverse':
+            query = query.order_by(File.filename.desc())
+        else:
+            query = query.order_by(File.filename.asc())
+    else:
+        if direction == 'reverse':
+            query = query.order_by(File.created.asc())
+        else:
+            query = query.order_by(File.created.desc())
+    pagination = query.paginate(
+        page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+        error_out=False
+    )
+    files = pagination.items
+    file_types = generateFileTypes(files)
+    return render_template('main/copy.html', _file=file, _path=path, files=file_types,_order=order,curpath=path,
+                           _direction=direction, pagination = pagination, pathlists=generatePathList(path))
+
+@main.route('/copy_check')
+@login_required
+def copy_check():
+    pass
+
+@main.route('/fork/')
+@login_required
+def fork():
+    pass
+
+@main.route('/newfolder/')
+@login_required
+def newfolder():
+    pass

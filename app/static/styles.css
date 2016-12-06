@@ -2,8 +2,8 @@
     position: absolute;
 }
 .profile-header {
-    min-height: 192px;
-    margin-left: 230px;
+    min-height: 224px;
+    margin-left: 255px;
 }
 div.link-block{
     margin-left: 10px;
@@ -15,6 +15,10 @@ div.link-block{
 a.link-item{
     font-size: 20px;
     background-color: #85fe91;
+}
+div.right-button-margin{
+    margin-top:20px;
+    text-align: right;
 }
 .navbar-inverse{
  #   background-color: #0e84e7;

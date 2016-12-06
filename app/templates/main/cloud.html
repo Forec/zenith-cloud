@@ -2,32 +2,73 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% import "main/_macros.html" as macros %}
 
-{% block title %}顶点云{% endblock %}
+{% block title %}顶点云 - 我的云盘{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
     <h1>{% if current_user.is_authenticated %}{{ current_user.nickname }} 的云盘{% endif %}</h1>
 </div>
-<div>
-    <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
+<div class="row">
+    <div class="col-md-8">
+    {% if _type== "all" %}
+    <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-success">全部</button>
+    </a>
+    {% else %}
     <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order) }}">
         <button type="button" class="btn btn-default">全部</button>
     </a>
+    {% endif %}
+
+    {% if _type== "music" %}
+    <a href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-success">音乐</button>
+    </a>
+    {% else %}
     <a href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order) }}">
         <button type="button" class="btn btn-default">音乐</button>
     </a>
+    {% endif %}
+
+    {% if _type== "video" %}
+    <a href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-success">视频</button>
+    </a>
+    {% else %}
     <a href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order) }}">
         <button type="button" class="btn btn-default">视频</button>
     </a>
+    {% endif %}
+
+    {% if _type== "document" %}
+    <a href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-success">文档</button>
+    </a>
+    {% else %}
     <a href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order) }}">
         <button type="button" class="btn btn-default">文档</button>
     </a>
+    {% endif %}
+
+    {% if _type== "photo" %}
+    <a href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-success">图片</button>
+    </a>
+    {% else %}
     <a href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order) }}">
         <button type="button" class="btn btn-default">图片</button>
     </a>
+    {% endif %}
+
+    {% if _type== "compress" %}
+    <a href="{{ url_for('main.cloud', type='compress', direction=_direction, order=_order) }}">
+        <button type="button" class="btn btn-success">压缩文件</button>
+    </a>
+    {% else %}
     <a href="{{ url_for('main.cloud', type='compress', direction=_direction, order=_order) }}">
         <button type="button" class="btn btn-default">压缩文件</button>
     </a>
+    {% endif %}
 
     {% if _order == "time" %}
         {% if _direction == "front" %}
@@ -36,7 +77,7 @@
         </a>
         {% else %}
         <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, direction='front') }}">
-            <button type="button" class="btn btn-success">按时间排序</button>
+            <button type="button" class="btn btn-warning">按时间排序</button>
         </a>
         {% endif %}
     {% else %}
@@ -52,7 +93,7 @@
         </a>
         {% else %}
         <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='front') }}">
-            <button type="button" class="btn btn-success">按文件名排序</button>
+            <button type="button" class="btn btn-warning">按文件名排序</button>
         </a>
         {% endif %}
     {% else %}
@@ -60,7 +101,15 @@
             <button type="button" class="btn btn-default">按文件名排序</button>
         </a>
     {% endif %}
+    </div>
+    <div class="col-md-4" style="text-align:right">
+        <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
+    <a href="{{ url_for('main.newfolder', path=_path) }}">
+        <button type="button" class="btn btn-info">新文件夹</button>
+    </a>
+    </div>
 </div>
+
 {% if _type == "all" %}
 <div class="link-block">
     路径：
