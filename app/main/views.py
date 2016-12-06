@@ -313,21 +313,39 @@ def moderate_files_delete(id):
                             page=request.args.get('page', 1, type=int),
                             key = request.args.get('key', '', type=str)))
 
-@main.route('/messages/')
+@main.route('/messages/', methods=['GET', 'POST'])
 @login_required
 def messages():
-    uncheck_messages = current_user.recvMessages.order_by(Message.viewed.asc()).\
-        order_by(Message.created.desc()).all()
-    chatUserIdList = []
-    messageList = []
-    for message in uncheck_messages:
-        if message.sender.uid in chatUserIdList:
-            continue
-        else:
-            chatUserIdList.append(message.sender.uid)
-            messageList.append(message)
+    form = SearchForm()
+    if form.validate_on_submit():
+        return redirect(url_for('main.messages', key=form.key.data))
+    key = request.args.get('key', '', type=str)
     page = request.args.get('page', 1, type=int)
-    return render_template('main/messages.html', messages = messageList)
+    pagination = None
+    form.key.data = key
+    if key == '':
+        uncheck_messages = current_user.recvMessages.order_by(Message.viewed.asc()).\
+            order_by(Message.created.desc()).all()
+        chatUserIdList = []
+        messageList = []
+        for message in uncheck_messages:
+            if message.sender.uid in chatUserIdList:
+                continue
+            else:
+                chatUserIdList.append(message.sender.uid)
+                messageList.append(message)
+        _message = messageList
+    else:
+        _messages = Message.query.filter(and_(Message.message.like('%' + key + '%'),
+                                              Message.receiver==current_user))
+        pagination = _messages.order_by(Message.created.desc()).paginate(
+        page, per_page=current_app.config['ZENITH_MESSAGES_PER_PAGE'],
+        error_out=False)
+        _message = pagination.items
+        if _message == []:
+            _message = None
+    return render_template('main/messages.html', messages = _message, key=key,
+                           form=form, page=page, pagination=pagination)
 
 videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
 photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']

@@ -8,13 +8,23 @@
 <div>
     <h2 style="display:inline">消息列表</h2>
     <div style="float:right">
-        <a href="{{ url_for('main.messages') }}"><button type="button" class="btn btn-success">刷新</button></a>
+        <a href="{{ url_for('main.messages', key=key) }}"><button type="button" class="btn btn-success">刷新</button></a>
     </div>
 </div>
 
+<div class="page-header">
+    {{ wtf.quick_form(form) }}
+</div>
+
+{% if messages %}
 <div class="post-tabs">
     {% include 'main/_messages.html' %}
 </div>
+{% else %}
+<div class="post-tabs">
+    <p>找不到您要搜索的消息</p>
+</div>
+{% endif %}
 {% if pagination %}
 <div class="pagination">
     {{ macros.pagination_widget(pagination, 'main.messages') }}
