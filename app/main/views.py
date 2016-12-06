@@ -194,8 +194,9 @@ def file(id):
     )
     pathLists = generatePathList(file.path)
     file_type = generateFileTypes([file])[0][1]
+    print(file_type)
     comments = pagination.items
-    return render_template('main/file.html', comments = comments, type=file_type, pathlists = pathLists,
+    return render_template('main/file.html', comments = comments, file_type=file_type, pathlists = pathLists,
                            pagination = pagination, file = file, form = form,
                            moderate=current_user.can(Permission.MODERATE_COMMENTS))
 
