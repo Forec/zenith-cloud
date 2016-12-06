@@ -324,22 +324,34 @@ def messages():
     pagination = None
     form.key.data = key
     if key == '':
-        uncheck_messages = current_user.recvMessages.order_by(Message.viewed.asc()).\
+        uncheck_messages = Message.query.filter("sendid=:sid or targetid=:sid").\
+            params(sid=current_user.uid).\
             order_by(Message.created.desc()).all()
         chatUserIdList = []
         messageList = []
         for message in uncheck_messages:
-            for i in range(0, len(chatUserIdList)):
-                if message.sender.uid == chatUserIdList[i]:
-                    messageList[i][1] += 1
-                    break
+            if message.sender.uid == current_user.uid:
+                targetid = message.receiver.uid
             else:
-                chatUserIdList.append(message.sender.uid)
-                messageList.append([message, 0])
+                targetid = message.sender.uid
+            find = False
+            for i in range(0, len(chatUserIdList)):
+                if targetid == chatUserIdList[i]:
+                    find = True
+                    if current_user == message.receiver:
+                        messageList[i][1] += 1
+                    break
+            if not find:
+                chatUserIdList.append(targetid)
+                if not message.viewed and current_user == message.receiver:
+                    messageList.append([message, 1])
+                else:
+                    messageList.append([message, 0])
         _message = messageList
     else:
         _messages = Message.query.filter(and_(Message.message.like('%' + key + '%'),
-                                              Message.receiver==current_user))
+                                              or_(Message.receiver==current_user,
+                                                  Message.sender==current_user)))
         pagination = _messages.order_by(Message.created.desc()).paginate(
         page, per_page=current_app.config['ZENITH_MESSAGES_PER_PAGE'],
         error_out=False)
@@ -553,7 +565,16 @@ def delete_message(id):
 @main.route('/chat/<int:id>')
 @login_required
 def chat(id):
-    pass
+    sender = User.query.get_or_404(id)
+    page = request.args.get('page', 1, type=int)
+    _messages = Message.query.filter("(sendid=:sid and targetid=:tid) or (sendid=:tid and targetid=:sid)").\
+        params(sid=sender.uid, tid=current_user.uid)
+    pagination = _messages.order_by(Message.created.desc()).\
+        paginate(page, per_page=current_app.config['ZENITH_MESSAGES_PER_PAGE'],
+        error_out=False)
+    _message = pagination.items
+    return render_template('main/chat.html', sender=sender, messages = _message,
+                           page=page, pagination=pagination)
 
 @main.route('/close-message/<int:id>')
 @login_required

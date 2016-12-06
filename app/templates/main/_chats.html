@@ -1,36 +1,19 @@
 <ul class="posts">
-    {% for message, count in messages %}
+    {% for message in messages %}
     <li class="post">
         <div class="post-thumbnail">
             <a href="{{ url_for('main.user', id=message.sender.uid) }}">
-                <img class="img-rounded profile-thumbnail" src=
-                        "
-                        {% if message.sender == current_user %}
-                        {{ message.receiver.gravatar(size=40) }}
-                        {% else %}
-                        {{ message.sender.gravatar(size=40) }}
-                        {% endif %}"
-                >
+                <img class="img-rounded profile-thumbnail" src="{{ message.sender.gravatar(size=40) }}">
             </a>
         </div>
         <div class="post-content">
             <div class="post-date">时间：{{ moment(message.created).fromNow() }}</div>
             <div class="post-author">
-                与
-                {% if message.sender == current_user %}
-                <a href="{{ url_for('main.chat', id=message.receiver.uid) }}">
-                    {{ message.receiver.nickname }}
-                </a>
-                {% else %}
-                <a href="{{ url_for('main.chat', id=message.sender.uid) }}">
+                <a href="{{ url_for('main.user', id=message.sender.uid) }}">
                     {{ message.sender.nickname }}
                 </a>
-                {% endif %}
-                的聊天
-                {% if count > 1 or (count == 1 and message.viewed and message.receiver==current_user) %}
-                 （{{ count }}条未读消息）
-                {% endif %}
             </div>
+
             <div>
             {% if not message.viewed and message.receiver == current_user %}
                 <b>
@@ -44,24 +27,19 @@
                 </p>
             {% endif %}
             </div>
+
             <div class="post-footer">
                 {% if current_user == message.sender %}
 	            <a href="{{ url_for('main.delete_message',id=message.mesid) }}">
 		            <span class="label label-warning">撤回</span>
 		        </a>
-                {% elif current_user == message.receiver %}
-	            <a href="{{ url_for('main.chat',id=message.sender.uid) }}">
-		            <span class="label label-success">回复</span>
-		        </a>
-	            {% elif current_user.is_administrator() %}
-	            <a href="{{ url_for('main.delete_message',id=message.mesid) }}">
-		            <span class="label label-danger">删除 [管理员]</span>
-		        </a>
 	            {% endif %}
                 {% if message.receiver == current_user %}
+                    {% if not message.viewed %}
                     <a href="{{ url_for('main.close_message', id = message.mesid) }}">
                         <span class="label label-warning">忽略</span>
                     </a>
+                    {% endif %}
                 {% endif %}
                 {% if message.receiver == current_user or message.sender == current_user %}
                 <a href="{{ url_for('main.delete_message', id = message.mesid) }}">

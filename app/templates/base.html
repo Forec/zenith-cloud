@@ -29,9 +29,7 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
-                <li><a href="{{ url_for('main.messages') }}">
-                    新的消息
-                    <span class="badge">
+                <li>
                         {% set UserIdList = [] %}
                         {% set uncheck_messages = current_user.recvMessages.all() %}
                         <span style="display:none">
@@ -41,8 +39,18 @@
                             {% endif %}
                         {% endfor %}
                         </span>
-                        {{ UserIdList|length }}
-                    </span></a>
+                        {% set len = UserIdList|length %}
+                        {% if len > 0 %}
+                            <a href="{{ url_for('main.messages') }}">
+                                <span class="badge">
+                                    {{ len }} 个用户有新消息
+                                </span>
+                            </a>
+                        {% else %}
+                        <a href="{{ url_for('main.messages', key='') }}">
+                            我的消息
+                        </a>
+                        {% endif %}
                 </li>
                 {% endif %}
                 {% if current_user.can(Permission.MODERATE_COMMENTS) or current_user.can(Permission.MODERATE_FILES) %}
