@@ -166,19 +166,20 @@ class User(UserMixin, db.Model):
         try:
             data = s.loads(token)
         except:
-            return False
+            return None
         if data.get('delete') is None:
-            return False
+            return None
         if data.get('user') is None:
-            return False
+            return None
         user = User.query.filter_by(uid=data.get('user')).first()
         if user.uid != self.uid  and \
             not user.can(Permission.ADMINISTER):
-            return False
+            return None
         fileid = data.get('delete')
         file = File.query.filter_by(uid=fileid).first()
         if file is None or (file.ownerid != self.uid and not user.can(Permission.ADMINISTER)):
-            return False
+            return None
+        returnURL = file.path
         if file.isdir == False:
             if file.cfileid > 0:
                 cfile = file.cfile
@@ -200,7 +201,7 @@ class User(UserMixin, db.Model):
                 db.session.delete(_file)
             db.session.delete(file)
         db.session.commit()
-        return True
+        return returnURL
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
             url = 'https://secure.gravatar.com/avatar'

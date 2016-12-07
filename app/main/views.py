@@ -292,9 +292,10 @@ def delete_file(id):
 @main.route('/delete-file-confirm/<token>')
 @login_required
 def delete_file_confirm(token):
-    if current_user.delete_file(token):
+    returnURL = current_user.delete_file(token)
+    if returnURL is not None:
         flash('文件已被删除')
-        return redirect(url_for('main.cloud', path='/', direction='front', type='all'))
+        return redirect(url_for('main.cloud', path=returnURL, direction='front', type='all'))
     else:
         abort(403)
 
@@ -529,25 +530,25 @@ def copy():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
+        isPath = File.query.filter("path=:p and filename=:f").\
             params(p=___path, f=___filename).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
     # fuck this duplicate code, I don't want to name it
-    query = current_user.files.filter("path=:p and uid<>:id and isdir=1").\
+    query = current_user.files.filter("path=:p and uid<>:id").\
         params(p=path, id=file.uid)
     page = request.args.get('page', 1, type=int)
     if order == 'name':
         if direction == 'reverse':
-            query = query.order_by(File.filename.desc())
+            query = query.order_by(File.isdir.desc()).order_by(File.filename.desc())
         else:
-            query = query.order_by(File.filename.asc())
+            query = query.order_by(File.isdir.desc()).order_by(File.filename.asc())
     else:
         if direction == 'reverse':
-            query = query.order_by(File.created.asc())
+            query = query.order_by(File.isdir.desc()).order_by(File.created.asc())
         else:
-            query = query.order_by(File.created.desc())
+            query = query.order_by(File.isdir.desc()).order_by(File.created.desc())
     pagination = query.paginate(
         page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
         error_out=False
@@ -575,20 +576,54 @@ def copy_check():
             params(p=___path, f=___filename).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
+
     file = File.query.get_or_404(_fileid)
     if file.owner != current_user:
         abort(403)
+
+    tempname = file.filename
+    i = 0
+    while 1:
+        isSameExist = File.query.filter("path=:p and filename=:f").\
+            params(p=_path, f = tempname).first()
+        if isSameExist:
+            if file.isdir:
+                type = "文件夹"
+                if i == 0:
+                    tempname = file.filename + '-副本'
+                else:
+                    tempname = file.filename + '-副本' + str(i)
+            else:
+                type = "文件"
+                suffix = file.filename.split('.')[-1]
+                if suffix == file.filename:
+                    if i == 0:
+                        tempname = file.filename + '-副本'
+                    else:
+                        tempname = file.filename + '-副本' + str(i)
+                else:
+                    if i == 0:
+                        tempname = file.filename[:len(file.filename)-len(suffix)-1] + \
+                                   '-副本.' + suffix
+                    else:
+                        tempname = file.filename[:len(file.filename)-len(suffix)-1] + \
+                                   '-副本' + str(i) + '.' + suffix
+        else:
+            if tempname != file.filename:
+                flash("目标目录已存在同名文件，已将您要复制的" + type + "重命名为 " + tempname)
+            break
+        i += 1
     # if the file is a folder
     if file.isdir:
         movePath = file.path + file.filename + '/'
         print(movePath)
         filelist = File.query.filter("path like :p and ownerid=:id").\
             params(id=current_user.uid, p=movePath+'%')
-        baseLen = len(file.path)
+        baseLen = len(file.path + file.filename)
         for _file in filelist:
             if not _file.isdir and _file.cfileid > 0:
                 current_user.used += _file.cfile.size
-            newPath = _path + _file.path[baseLen:]
+            newPath = _path + tempname +  _file.path[baseLen:]
             newFile = File(ownerid=_file.ownerid,
                            cfileid=_file.cfileid,
                            path=newPath,
@@ -617,7 +652,7 @@ def copy_check():
                     cfileid=file.cfileid,
                     path=_path,
                     perlink='',
-                    filename=file.filename,
+                    filename=tempname,
                     linkpass='',
                     isdir=file.isdir,
                     description=file.description)
@@ -629,7 +664,7 @@ def copy_check():
         flash('文件夹 ' + movePath + ' 已拷贝到 ' + _path + '下')
     else:
         current_user.used += file.cfile.size
-        flash('文件 ' + file.path + file.filename + ' 已拷贝到 ' + _path + '下')
+        flash('文件 ' + file.path + tempname + ' 已拷贝到 ' + _path + '下')
     db.session.add(current_user)
     return redirect(url_for('main.file', id=newRootFile.uid))
 
