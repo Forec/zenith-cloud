@@ -277,7 +277,7 @@ def delete_file(id):
         if form.filename.data == '' or form.filename.data is None:
             flash("文件名不合法！")
             return redirect(url_for('.file', id=file.uid))
-        file.filename = form.filename.name
+        file.filename = form.filename.data
         file.description = form.body.data
         file.path = form.path.data
         db.session.add(file)
@@ -558,11 +558,14 @@ def copy():
     return render_template('main/copy.html', _file=file, _path=path, files=file_types,_order=order,curpath=path,
                            _direction=direction, pagination = pagination, pathlists=generatePathList(path))
 
-@main.route('/copy_check', methods=['GET', 'POST'])
+@main.route('/copy_check/<token>', methods=['GET'])
 @login_required
-def copy_check():
-    _path = request.args.get('path', None, type=str)
-    _fileid = request.args.get('id', None, type=int)
+def copy_check(token):
+    fileid_path = current_user.copy_token_verify(token)
+    if fileid_path is None:
+        abort(403)
+    _path = fileid_path[1]
+    _fileid = fileid_path[0]
     if _path is None or _fileid is None or _fileid <= 0:
         abort(403)
     # check whether the path is valid
@@ -719,11 +722,14 @@ def move():
     return render_template('main/move.html', _file=file, _path=path, files=file_types,_order=order,curpath=path,
                            _direction=direction, pagination = pagination, pathlists=generatePathList(path))
 
-@main.route('/move_check', methods=['GET', 'POST'])
+@main.route('/move_check/<token>', methods=['GET'])
 @login_required
-def move_check():
-    _path = request.args.get('path', None, type=str)
-    _fileid = request.args.get('id', None, type=int)
+def move_check(token):
+    fileid_path = current_user.move_token_verify(token)
+    if fileid_path is None:
+        abort(403)
+    _path = fileid_path[1]
+    _fileid = fileid_path[0]
     if _path is None or _fileid is None or _fileid <= 0:
         abort(403)
     # check whether the path is valid

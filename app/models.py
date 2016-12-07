@@ -202,6 +202,71 @@ class User(UserMixin, db.Model):
             db.session.delete(file)
         db.session.commit()
         return returnURL
+
+    def generate_copy_token(self, fileid, _path, expiration):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'copy': fileid, 'path': _path, 'user':self.uid})
+    def copy_token_verify(self, token):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        if data.get('copy') is None or data.get('user') is None or data.get('path') is None:
+            return None
+        user = User.query.filter_by(uid=data.get('user')).first()
+        if user.uid != self.uid  and \
+            not user.can(Permission.ADMINISTER):
+            return None
+        fileid = data.get('copy')
+        file = File.query.filter_by(uid=fileid).first()
+        if file is None or (file.ownerid != self.uid and not user.can(Permission.ADMINISTER)):
+            return None
+        return [fileid, data.get('path')]
+
+    def generate_move_token(self, fileid, _path, expiration):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'move': fileid, 'path': _path, 'user':self.uid})
+    def move_token_verify(self, token):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        if data.get('move') is None or data.get('user') is None or data.get('path') is None:
+            return None
+        user = User.query.filter_by(uid=data.get('user')).first()
+        if user.uid != self.uid  and \
+            not user.can(Permission.ADMINISTER):
+            return None
+        fileid = data.get('move')
+        file = File.query.filter_by(uid=fileid).first()
+        if file is None or (file.ownerid != self.uid and not user.can(Permission.ADMINISTER)):
+            return None
+        return [fileid, data.get('path')]
+
+
+    def generate_fork_token(self, fileid, _path, expiration):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'fork': fileid, 'path': _path, 'user':self.uid})
+    def fork_token_verify(self, token):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        if data.get('fork') is None or data.get('user') is None or data.get('path') is None:
+            return None
+        user = User.query.filter_by(uid=data.get('user')).first()
+        if user.uid != self.uid  and \
+            not user.can(Permission.ADMINISTER):
+            return None
+        fileid = data.get('fork')
+        file = File.query.filter_by(uid=fileid).first()
+        if file is None or (file.ownerid != self.uid and not user.can(Permission.ADMINISTER)):
+            return None
+        return [fileid, data.get('path')]
+
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
             url = 'https://secure.gravatar.com/avatar'
@@ -374,7 +439,7 @@ class CFILE(db.Model):
         import forgery_py
         seed()
         for i in range(count):
-            _size= randint(128,512*1024)
+            _size= randint(512 * 1024,20*1024*1024)
             c = CFILE(size=_size,
                       ref=0,
                       md5=""

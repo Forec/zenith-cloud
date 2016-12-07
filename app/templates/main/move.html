@@ -14,7 +14,7 @@
 
     <div class="col-md-4 right-button-margin" style="text-align:right">
             {% if current_user.can(Permission.WRITE_ARTICLES) %}
-            <a href="{{ url_for('main.move_check', path=_path, id=_file.uid) }}">
+            <a href="{{ url_for('main.move_check', token = current_user.generate_move_token(_file.uid, _path,expiration=3600)) }}">
                 <button type="button" class="btn btn-success">确认移动</button>
             </a>
             {% endif %}
