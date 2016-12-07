@@ -184,6 +184,8 @@ class User(UserMixin, db.Model):
                 cfile = file.cfile
                 cfile.ref -= 1
                 db.session.add(cfile)
+                self.used -= cfile.size
+                db.session.add(self)
             db.session.delete(file)
         else:
             files_related = File.query.filter(File.path.like(file.path+file.filename+'/%')).all()
@@ -193,6 +195,8 @@ class User(UserMixin, db.Model):
                     cfile = _file.cfile
                     cfile.ref -= 1
                     db.session.add(cfile)
+                    self.used -= cfile.size
+                    db.session.add(self)
                 db.session.delete(_file)
             db.session.delete(file)
         db.session.commit()

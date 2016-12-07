@@ -41,7 +41,7 @@ def init():
     db.create_all()
     Role.insert_roles()
     u = User(email='forec@bupt.edu.cn', \
-             nickname='forec', \
+             nickname='Admin', \
              password='TESTTHISPASSWORD', \
              confirmed=True, \
              role=Role.query.filter_by(name='Administrator').first(), \

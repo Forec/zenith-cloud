@@ -578,19 +578,6 @@ def copy_check():
     file = File.query.get_or_404(_fileid)
     if file.owner != current_user:
         abort(403)
-
-    newRootFile = File(ownerid=file.ownerid,
-                    cfileid=file.cfileid,
-                    path=_path,
-                    perlink='',
-                    filename=file.filename,
-                    linkpass='',
-                    isdir=file.isdir,
-                    description=file.description)
-    db.session.add(newRootFile)
-    db.session.commit()
-    newRootFile.perlink = url_for('main.file', id=newRootFile.uid)
-    db.session.add(newRootFile)
     # if the file is a folder
     if file.isdir:
         movePath = file.path + file.filename + '/'
@@ -599,6 +586,8 @@ def copy_check():
             params(id=current_user.uid, p=movePath+'%')
         baseLen = len(file.path)
         for _file in filelist:
+            if not _file.isdir and _file.cfileid > 0:
+                current_user.used += _file.cfile.size
             newPath = _path + _file.path[baseLen:]
             newFile = File(ownerid=_file.ownerid,
                            cfileid=_file.cfileid,
@@ -613,9 +602,35 @@ def copy_check():
             db.session.commit()
             newFile.perlink = url_for('main.file', id=newFile.uid)
             db.session.add(newFile)
+            if current_user.used > current_user.maxm:
+                message = Message(sender=User.query.offset(1).first(),
+                                  receiver=current_user,
+                                  message='您的云盘空间已满，请及时清理！')
+                db.session.add(message)
+                flash('您的云盘空间已满！')
+    else:
+        if file.cfileid > 0:
+            if current_user.used + file.cfile.size > current_user.maxm:
+                flash('您的云盘空间不足，无法拷贝！')
+                return redirect(url_for('main.file', id=file.uid))
+    newRootFile = File(ownerid=file.ownerid,
+                    cfileid=file.cfileid,
+                    path=_path,
+                    perlink='',
+                    filename=file.filename,
+                    linkpass='',
+                    isdir=file.isdir,
+                    description=file.description)
+    db.session.add(newRootFile)
+    db.session.commit()
+    newRootFile.perlink = url_for('main.file', id=newRootFile.uid)
+    db.session.add(newRootFile)
+    if file.isdir:
         flash('文件夹 ' + movePath + ' 已拷贝到 ' + _path + '下')
     else:
+        current_user.used += file.cfile.size
         flash('文件 ' + file.path + file.filename + ' 已拷贝到 ' + _path + '下')
+    db.session.add(current_user)
     return redirect(url_for('main.file', id=newRootFile.uid))
 
 @main.route('/move/')
