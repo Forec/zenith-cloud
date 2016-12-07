@@ -29,7 +29,24 @@
             {% endif %}
         </div>
         <div class="post-content">
-            <div class="post-date">创建时间：{{ moment(file.created).fromNow() }}</div>
+            <div class="post-date">
+                {% if not file.isdir %}
+                    {% if file.cfileid > 0 %}
+                        文件大小：
+                        {% if file.cfile.size < 1024 %}
+                            {{ file.cfile.size }} B
+                        {% elif file.cfile.size < 1048576 %}
+                            {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                        {% elif file.cfile.size < 1073741824 %}
+                            {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                        {% else %}
+                            {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                &nbsp;&nbsp;
+                创建时间：{{ moment(file.created).fromNow() }}
+            </div>
             <div class="post-author">
                 {% if file.isdir == True %}
                 <a href="{{ url_for('.cloud', path= curpath ~ file.filename ~ '/', direction=_direction, order=_order) }}">

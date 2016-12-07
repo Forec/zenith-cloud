@@ -7,7 +7,25 @@
             </a>
         </div>
         <div class="post-content">
-            <div class="post-date">发布时间：{{ moment(file.created).fromNow() }}</div>
+            <div class="post-date">
+                {% if not file.isdir %}
+                    {% if file.cfileid > 0 %}
+                        文件大小：
+                        {% if file.cfile.size < 1024 %}
+                            {{ file.cfile.size }} B
+                        {% elif file.cfile.size < 1048576 %}
+                            {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                        {% elif file.cfile.size < 1073741824 %}
+                            {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                        {% else %}
+                            {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                &nbsp;&nbsp;
+
+                发布时间：{{ moment(file.created).fromNow() }}
+            </div>
             <div class="post-author">资源发布者：
                 <a href="{{ url_for('.user', id=file.owner.uid) }}">
                     {{ file.owner.nickname }}
