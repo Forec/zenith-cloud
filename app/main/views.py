@@ -610,7 +610,8 @@ def copy_check():
                                    '-副本' + str(i) + '.' + suffix
         else:
             if tempname != file.filename:
-                flash("目标目录已存在同名文件，已将您要复制的" + type + "重命名为 " + tempname)
+                flash("目标目录存在同名" + type + file.filename +
+                      "，已将您要复制的" + type + "重命名为 " + tempname)
             break
         i += 1
     # if the file is a folder
@@ -690,25 +691,25 @@ def move():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
+        isPath = File.query.filter("path=:p and filename=:f").\
             params(p=___path, f=___filename).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
     # fuck this duplicate code, I don't want to name it
-    query = current_user.files.filter("path=:p and uid<>:id and isdir=1").\
+    query = current_user.files.filter("path=:p and uid<>:id").\
         params(p=path, id=file.uid)
     page = request.args.get('page', 1, type=int)
     if order == 'name':
         if direction == 'reverse':
-            query = query.order_by(File.filename.desc())
+            query = query.order_by(File.isdir.desc()).order_by(File.filename.desc())
         else:
-            query = query.order_by(File.filename.asc())
+            query = query.order_by(File.isdir.desc()).order_by(File.filename.asc())
     else:
         if direction == 'reverse':
-            query = query.order_by(File.created.asc())
+            query = query.order_by(File.isdir.desc()).order_by(File.created.asc())
         else:
-            query = query.order_by(File.created.desc())
+            query = query.order_by(File.isdir.desc()).order_by(File.created.desc())
     pagination = query.paginate(
         page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
         error_out=False
@@ -740,18 +741,59 @@ def move_check():
     if file.owner != current_user:
         abort(403)
 
+    tempname = file.filename
+    i = 0
+    while 1:
+        isSameExist = File.query.filter("path=:p and filename=:f").\
+            params(p=_path, f = tempname).first()
+        if isSameExist:
+            if isSameExist.uid == file.uid:
+                if file.isdir:
+                    flash("您要移动的文件夹" + file.filename + "已在目标目录，无需移动！")
+                else:
+                    flash("您要移动的文件" + file.filename + "已在目标目录，无需移动！")
+                return redirect(url_for('main.file', id=file.uid))
+            if file.isdir:
+                type = "文件夹"
+                if i == 0:
+                    tempname = file.filename + '-副本'
+                else:
+                    tempname = file.filename + '-副本' + str(i)
+            else:
+                type = "文件"
+                suffix = file.filename.split('.')[-1]
+                if suffix == file.filename:
+                    if i == 0:
+                        tempname = file.filename + '-副本'
+                    else:
+                        tempname = file.filename + '-副本' + str(i)
+                else:
+                    if i == 0:
+                        tempname = file.filename[:len(file.filename)-len(suffix)-1] + \
+                                   '-副本.' + suffix
+                    else:
+                        tempname = file.filename[:len(file.filename)-len(suffix)-1] + \
+                                   '-副本' + str(i) + '.' + suffix
+        else:
+            if tempname != file.filename:
+                flash("目标目录存在同名" + type + file.filename +
+                      "，已将您要移动的" + type + "重命名为 " + tempname)
+            break
+        i += 1
+
     # if the file is a folder
     if file.isdir:
         movePath = file.path + file.filename + '/'
         filelist = File.query.filter("path like :p and ownerid=:id").\
             params(id=current_user.uid, p=movePath+'%')
-        baseLen = len(file.path)
+        baseLen = len(file.path + file.filename)
         for _file in filelist:
-            newPath = _path + _file.path[baseLen:]
+            newPath = _path + tempname +  _file.path[baseLen:]
             _file.path = newPath
             db.session.add(_file)
         flash('文件夹 ' + movePath + ' 已移动到 ' + _path + '下')
     file.path = _path
+    file.filename = tempname
     db.session.add(file)
     if not file.isdir:
         flash('文件 ' + file.path + file.filename + ' 已移动到 ' + _path + '下')
