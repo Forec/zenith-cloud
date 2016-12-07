@@ -5,6 +5,10 @@
     min-height: 224px;
     margin-left: 255px;
 }
+.dropdown-menu{
+  min-width: 40px;
+}
+
 div.link-block{
     margin-left: 10px;
     margin-top: 10px;

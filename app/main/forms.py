@@ -43,8 +43,7 @@ class FileForm(FlaskForm):
             raise ValidationError('描述过长，请限制在200字内')
 
 class FileDeleteConfirmForm(FlaskForm):
-    filename = StringField("文件名", validators=[Required(), Length(0, 128)])
-    path = StringField("路径",  validators=[Required(), Length(0, 256)])
+    filename = StringField("文件名", validators=[Required(), Length(1, 128)])
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）", validators=[Required()])
     submit = SubmitField('修改')
     def validate_body(self, field):

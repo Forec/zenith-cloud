@@ -58,38 +58,36 @@
                 {% endif %}
             </div>
             <div class="post-footer">
-                {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
-                <a href="{{ url_for('main.download', id=file.uid) }}">
-                    <span class="label label-primary">下载</span>
-                </a>
-                {% endif %}
-                {% if current_user == file.owner %}
-	            <a href="{{ url_for('main.copy', id=file.uid, path='/') }}">
-		            <span class="label label-primary">复制</span>
-		        </a>
-	            <a href="{{ url_for('main.move', id=file.uid, path='/') }}">
-		            <span class="label label-primary">移动</span>
-		        </a>
-	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
-		            <span class="label label-danger">删除</span>
-		        </a>
-                    {% if file.private %}
-                        <a href="{{ url_for('main.set_share', id=file.uid) }}">
-                            <span class="label label-success">共享</span>
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('main.set_private', id=file.uid) }}">
-                            <span class="label label-default">取消共享</span>
-                        </a>
-                    {% endif %}
-	            {% elif current_user.is_administrator() %}
-	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
-		            <span class="label label-danger">删除 [管理员]</span>
-		        </a>
-	            {% endif %}
-                <a href="{{ url_for('.file', id=file.uid) }}">
-                    <span class="label label-default">资源外链</span>
-                </a>
+                <span class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown">
+                        <span class = "label label-primary">操作<span class="caret"></span></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
+                        <li><a href="{{ url_for('main.download', id=file.uid) }}">下载</a></li>
+                        {% endif %}
+
+                        {% if current_user == file.owner %}
+	                    <li><a href="{{ url_for('main.copy', id=file.uid, path='/') }}">复制</a></li>
+	                    <li><a href="{{ url_for('main.move', id=file.uid, path='/') }}">移动</a></li>
+	                    <li><a href="{{ url_for('main.edit_file', id=file.uid) }}">编辑</a></li>
+                        <li><a href="{{ url_for('main.delete_file',id=file.uid) }}">删除</a></li>
+                            {% if file.private %}
+                                <li><a href="{{ url_for('main.set_share', id=file.uid) }}">共享</a></li>
+                            {% else %}
+                                <li><a href="{{ url_for('main.set_private', id=file.uid) }}">取消共享</a></li>
+                            {% endif %}
+	                    {% elif current_user.is_administrator() %}
+                        <li><a href="{{ url_for('main.delete_file',id=file.uid) }}">删除 [管理员]</a></li>
+                            {% if file.private %}
+                                <li><a href="{{ url_for('main.set_share', id=file.uid) }}">共享 [管理员]</a></li>
+                            {% else %}
+                                <li><a href="{{ url_for('main.set_private', id=file.uid) }}">取消共享 [管理员]</a></li>
+                            {% endif %}
+                        {% endif %}
+                        <li><a href="{{ url_for('.file', id=file.uid) }}">资源外链</a></li>
+                    </ul>
+                </span>
                <a href="{{ url_for('.file', id=file.uid) }}#comments">
                     {% if file.comments.count() == 0 %}
                         <span class="label label-default">暂无评论</span>

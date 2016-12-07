@@ -279,13 +279,11 @@ def delete_file(id):
             return redirect(url_for('.file', id=file.uid))
         file.filename = form.filename.data
         file.description = form.body.data
-        file.path = form.path.data
         db.session.add(file)
         flash('文件信息已被更新')
         return redirect(url_for('.file',id = file.uid))
     form.body.data=file.description
     form.filename.data = file.filename
-    form.path.data = file.path
     return render_template('main/confirm_delete_file.html',file = file,form=form,
                            token=current_user.generate_delete_token(fileid=id, expiration=3600))
 
@@ -302,6 +300,26 @@ def delete_file_confirm(token):
 @main.route('/rules')
 def rules():
     return render_template('main/rules.html')
+
+@main.route('/edit-file/<int:id>', methods=['GET','POST'])
+@login_required
+def edit_file(id):
+    file= File.query.get_or_404(id)
+    if current_user != file.owner and not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = FileDeleteConfirmForm()
+    if form.validate_on_submit():
+        if form.filename.data == '' or form.filename.data is None:
+            flash("文件名不合法！")
+            return redirect(url_for('.file', id=file.uid))
+        file.filename = form.filename.data
+        file.description = form.body.data
+        db.session.add(file)
+        flash('文件信息已被更新')
+        return redirect(url_for('.file',id = file.uid))
+    form.body.data=file.description
+    form.filename.data = file.filename
+    return render_template('main/edit_file.html',file = file,form=form)
 
 @main.route('/moderate_comments', methods=['GET', 'POST'])
 @login_required
