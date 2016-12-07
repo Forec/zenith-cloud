@@ -63,20 +63,12 @@ def index():
     if current_user.is_authenticated:
         show_followed = bool(request.cookies.get('show_followed', ''))
     if show_followed:
-        query = current_user.followed_files.\
-            order_by(File.path.desc()).\
-            order_by(File.created.desc()).all()
+        query = current_user.followed_files
     else:
-        if current_user.is_authenticated:
-            query = File.query.filter("private=0 or ownerid=:id").\
-                params(id=current_user.uid).\
-                order_by(File.path.desc()).\
-                order_by(File.created.desc()).all()
-        else:
-            query = File.query.filter("private=0").\
-                order_by(File.path.desc()).\
-                order_by(File.created.desc()).all()
+        query = File.query.filter("private=0").all()
     page = request.args.get('page', 1, type=int)
+    query = sorted(query, key = lambda x: len(x.path), reverse = False)
+
     filelist = []
     paths_users = []
     for file in query:
@@ -84,18 +76,19 @@ def index():
             continue
         if file.path == '/':
             filelist.append(file)
+            if file.isdir:
+                paths_users.append((file.path+file.filename+'/', file.ownerid))
         else:
             sappend = True
             for (path, userid) in paths_users:
                 if path == file.path[:len(path)] and userid == file.ownerid:
                     sappend = False
                     break
-            if sappend and file.isdir:
-                paths_users.append((file.path+file.filename+'/', file.ownerid))
-    #pagination = query.order_by(File.created.desc()).paginate(
-    #    page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
-    #    error_out=False
-    #)
+            if sappend:
+                filelist.append(file)
+                if file.isdir:
+                    paths_users.append((file.path+file.filename+'/', file.ownerid))
+    filelist = sorted(filelist, key=lambda x:x.created, reverse=True)
     pagination = Pagination(page=page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
                             total_count=len(filelist))
     files = filelist[(page-1)*current_app.config['ZENITH_FILES_PER_PAGE']:
@@ -123,17 +116,35 @@ def user(id):
     user = User.query.filter_by(uid=id).first()
     if user is None:
         abort(404)
-    files = user.files.filter_by(private=False)
-
-    page_file = request.args.get('page_file', 1, type=int)
-
-    pagination_file = files.order_by(File.created.desc()).paginate(
-        page=page_file, per_page=current_app.config['PROFILE_ZENITH_FILES_PER_PAGE'],
-        error_out=False
-    )
-    files = pagination_file.items
-    return render_template('main/user.html', user = user, files= files,
-                           pagination_post=pagination_file)
+    query = user.files.filter_by(private=False).all()
+    query = sorted(query, key = lambda x: len(x.path), reverse = False)
+    page = request.args.get('page', 1, type=int)
+    filelist = []
+    paths = []
+    for file in query:
+        if file.private == True:
+            continue
+        if file.path == '/':
+            filelist.append(file)
+            if file.isdir:
+                paths.append(file.path+file.filename+'/')
+        else:
+            sappend = True
+            for path in paths:
+                if path == file.path[:len(path)]:
+                    sappend = False
+                    break
+            if sappend:
+                filelist.append(file)
+                if file.isdir:
+                    paths.append(file.path+file.filename+'/')
+    filelist = sorted(filelist, key=lambda x:x.created, reverse=True)
+    pagination = Pagination(page=page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+                            total_count=len(filelist))
+    files = filelist[(page-1)*current_app.config['ZENITH_FILES_PER_PAGE']:
+                      page*current_app.config['ZENITH_FILES_PER_PAGE']]
+    return render_template('main/user.html', user = user, files= files, share_count=len(filelist),
+                           pagination=pagination)
 
 
 @main.route('/edit-profile', methods=['GET','POST'])
@@ -474,13 +485,15 @@ def cloud():
     # check whether the path is valid
     if path != '/':
         if len(path.split('/')) < 3 or path[-1] != '/':
+            print("short")
             abort(403)
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
-            params(p=___path, f=___filename).first()
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d=current_user.uid).first()
         if isPath is None or isPath.owner != current_user:
+            print(isPath)
             abort(403)
 
     if type == 'video':
@@ -548,8 +561,8 @@ def copy():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and filename=:f").\
-            params(p=___path, f=___filename).first()
+        isPath = File.query.filter("path=:p and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d=current_user.uid).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
@@ -712,8 +725,8 @@ def move():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and filename=:f").\
-            params(p=___path, f=___filename).first()
+        isPath = File.query.filter("path=:p and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d=current_user.uid).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
 

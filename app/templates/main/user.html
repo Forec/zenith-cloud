@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "main/_macros_for_files.html" as macros_file %}
+{% import "main/_macros.html" as macros %}
 {% block title %}顶点云 - {{ user.nickname }}{% endblock %}
 
 {% block page_content %}
@@ -40,11 +40,11 @@
         {% endif %}
     </div>
 </div>
-<h3>用户 {{ user.nickname }} 发布了 {{ user.files.count() }} 个共享文件</h3>
+<h3>用户 {{ user.nickname }} 发布了 {{ share_count }} 项共享资源</h3>
 {% include 'main/_files.html' %}
-{% if pagination_file %}
+{% if pagination %}
 <div class="pagination">
-    {{ macros_file.pagination_widget(pagination_file, 'main.user',id = user.uid) }}
+    {{ macros.pagination_widget(pagination, 'main.user', id=user.uid) }}
 </div>
 {% endif %}
 {% endblock %}

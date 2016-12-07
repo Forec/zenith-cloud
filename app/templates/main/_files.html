@@ -37,9 +37,15 @@
                 文件：
                 {% endif %}
                 {% if file.owner == current_user %}
-                <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/') }}">
+                {% if file.isdir %}
+                <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', ) }}">
                     {{ file.filename }}
                 </a>
+                {% else %}
+                <a href="{{ url_for('.file', id=file.uid ) }}">
+                    {{ file.filename }}
+                </a>
+                {% endif %}
                 {% else %}
                 <a href="{{ url_for('.file', id=file.uid) }}">
                     {{ file.filename }}

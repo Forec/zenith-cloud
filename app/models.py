@@ -310,8 +310,14 @@ class User(UserMixin, db.Model):
 
     @property
     def followed_files(self):
-        return File.query.join(Follow, Follow.followed_id==File.ownerid).\
-            filter(Follow.follower_id==self.uid).filter("private=0 or ownerid=:id").params(id=self.uid)
+        fileList = []
+        for fl in self.followed.all():
+            _user = User.query.get(fl.followed_id)
+            if _user is None:
+                continue
+            files = File.query.filter("private=0 and ownerid=:d").params(d=_user.uid).all()
+            fileList.extend(files)
+        return fileList
 
     @staticmethod
     def generate_fake(count=5):
@@ -495,7 +501,7 @@ class File(db.Model):
                 isFile = File.query.filter_by(path=pathPart).\
                     filter_by(filename=folder).\
                     filter_by(isdir=True).first()
-                if isFile is not None:
+                if isFile is not None and isFile.ownerid == u.uid:
                     pathPart += folder
                     pathPart += '/'
                     continue
@@ -508,11 +514,12 @@ class File(db.Model):
                          isdir=True,
                          linkpass = str(randint(1000,9999)),
                          created=forgery_py.date.date(True),
-                         owner=u,
+                         ownerid=u.uid,
                          private = prePrivate,
                          description=forgery_py.lorem_ipsum.sentences(randint(3,5)))
                 pathPart += folder
                 pathPart += '/'
+                db.session.add(f)
             # parhPart is now the dest path
             suffixType = randint(0, 5)
             suffixTypeIndex = randint(0, len(suffixList[suffixType])-1)
@@ -526,7 +533,7 @@ class File(db.Model):
                      linkpass = str(randint(1000,9999)),
                      private = prePrivate,
                      created=forgery_py.date.date(True),
-                     owner = u,
+                     ownerid = u.uid,
                      description =forgery_py.lorem_ipsum.sentences(randint(4,8)))
             db.session.add(f)
             u.used += _cfile.size
