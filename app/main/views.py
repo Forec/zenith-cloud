@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import render_template, session, redirect, url_for, \
     abort, flash, request, current_app, make_response
 from flask_login import login_required, current_user
@@ -398,7 +398,7 @@ def messages():
     pagination = None
     form.key.data = key
     if key == '':
-        uncheck_messages = Message.query.filter("sendid=:sid or targetid=:sid").\
+        uncheck_messages = Message.query.filter("(sendid=:sid and send_delete=0) or (targetid=:sid and recv_delete=0)").\
             params(sid=current_user.uid).\
             order_by(Message.created.desc()).all()
         chatUserIdList = []
@@ -431,7 +431,7 @@ def messages():
         error_out=False)
         _message = []
         for message in  pagination.items:
-            _message.append((message, 1))
+            _message.append((message, 0))
         if _message == []:
             _message = None
     return render_template('main/messages.html', messages = _message, key=key,
@@ -444,7 +444,7 @@ def cloud():
         string = ""
         for suffix in list:
             string += "or filename like '%" + suffix + "' "
-        return string[3:]
+        return '('+string[3:]+')'
     type = request.args.get('type', 'all', type=str)
     path = request.args.get('path', '/', type=str)
     order = request.args.get('order', 'time', type=str)
@@ -476,6 +476,7 @@ def cloud():
         query = current_user.files.filter(generateFilelike(compressList))
     else:
         query = current_user.files.filter("path=:p").params(p=path)
+    query.filter("ownerid=:oid").params(oid=current_user.uid)
     page = request.args.get('page', 1, type=int)
     if order == 'name':
         if direction == 'reverse':
@@ -615,6 +616,95 @@ def copy_check():
         flash('文件 ' + file.path + file.filename + ' 已拷贝到 ' + _path + '下')
     return redirect(url_for('main.file', id=newRootFile.uid))
 
+@main.route('/move/')
+@login_required
+def move():
+    path = request.args.get('path', '/', type=str)
+    if path == '':
+        path='/'
+    id = request.args.get('id', 0, type=int)
+    if id <= 0:
+        abort(403)
+    file = File.query.get(id)
+    if file is None or file.owner != current_user:
+        abort(403)
+
+    order = request.args.get('order', 'time', type=str)
+    direction = request.args.get('direction', 'front', type=str)
+    # check whether the path is valid
+    if path != '/':
+        if len(path.split('/')) < 3 or path[-1] != '/':
+            abort(403)
+        ___filename = path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
+            params(p=___path, f=___filename).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+
+    # fuck this duplicate code, I don't want to name it
+    query = current_user.files.filter("path=:p and uid<>:id and isdir=1").\
+        params(p=path, id=file.uid)
+    page = request.args.get('page', 1, type=int)
+    if order == 'name':
+        if direction == 'reverse':
+            query = query.order_by(File.filename.desc())
+        else:
+            query = query.order_by(File.filename.asc())
+    else:
+        if direction == 'reverse':
+            query = query.order_by(File.created.asc())
+        else:
+            query = query.order_by(File.created.desc())
+    pagination = query.paginate(
+        page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+        error_out=False
+    )
+    files = pagination.items
+    file_types = generateFileTypes(files)
+    return render_template('main/move.html', _file=file, _path=path, files=file_types,_order=order,curpath=path,
+                           _direction=direction, pagination = pagination, pathlists=generatePathList(path))
+
+@main.route('/move_check', methods=['GET', 'POST'])
+@login_required
+def move_check():
+    _path = request.args.get('path', None, type=str)
+    _fileid = request.args.get('id', None, type=int)
+    if _path is None or _fileid is None or _fileid <= 0:
+        abort(403)
+    # check whether the path is valid
+    if _path != '/':
+        if len(_path.split('/')) < 3 or _path[-1] != '/':
+            abort(403)
+        ___filename = _path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = _path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
+            params(p=___path, f=___filename).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+    file = File.query.get_or_404(_fileid)
+    if file.owner != current_user:
+        abort(403)
+
+    # if the file is a folder
+    if file.isdir:
+        movePath = file.path + file.filename + '/'
+        filelist = File.query.filter("path like :p and ownerid=:id").\
+            params(id=current_user.uid, p=movePath+'/%')
+        baseLen = len(file.path)
+        for _file in filelist:
+            newPath = _path + _file.path[baseLen:]
+            _file.path = newPath
+            db.session.add(_file)
+        flash('文件夹 ' + movePath + ' 已移动到 ' + _path + '下')
+    file.path = _path
+    db.session.add(file)
+    if not file.isdir:
+        flash('文件 ' + file.path + file.filename + ' 已移动到 ' + _path + '下')
+    return redirect(url_for('main.file', id=file.uid))
+
 @main.route('/fork/')
 @login_required
 def fork():
@@ -631,18 +721,36 @@ def newfolder():
 def delete_message(id):
     message = Message.query.get_or_404(id)
     if message.receiver == current_user:
-        db.session.delete(message)
-        flash('消息已被删除')
+        message.recv_delete = True
+        message.viewed = True
+        message.sended = True
+        if message.send_delete:
+            db.session.delete(message)
+        else:
+            db.session.add(message)
         return redirect(url_for('main.chat', id=message.sender.uid))
     elif message.sender == current_user:
-        if message.created - datetime.utcnow() > 2 * datetime.minute:
-            flash('消息发送超过两分钟，无法撤回')
-        else:
+        message.send_delete = True
+        if message.recv_delete:
             db.session.delete(message)
-            flash('消息已被撤回')
+        else:
+            db.session.add(message)
         return redirect(url_for('main.chat', id=message.receiver.uid))
     else:
         abort(403)
+
+@main.route('/recall-message/<int:id>')
+@login_required
+def recall_message(id):
+    message = Message.query.get_or_404(id)
+    if message.sender != current_user:
+        abort(403)
+    if datetime.utcnow() - message.created > timedelta(minutes=2):
+        flash('消息发送超过两分钟，无法撤回')
+    else:
+        db.session.delete(message)
+        flash('消息已被撤回')
+    return redirect(url_for('main.chat', id=message.receiver.uid))
 
 @main.route('/chat/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -661,22 +769,63 @@ def chat(id):
         form.body.data= ''
         return redirect(url_for('main.chat', id=id))
     page = request.args.get('page', 1, type=int)
-    _messages = Message.query.filter("(sendid=:sid and targetid=:tid) or (sendid=:tid and targetid=:sid)").\
+    _messages = Message.query.filter("(sendid=:sid and targetid=:tid and recv_delete=0) or (sendid=:tid and targetid=:sid and send_delete=0)").\
         params(sid=remote.uid, tid=current_user.uid)
     pagination = _messages.order_by(Message.created.desc()).\
         paginate(page, per_page=current_app.config['ZENITH_MESSAGES_PER_PAGE'],
         error_out=False)
-    _message = pagination.items
+    _message = []
+    for __message in pagination.items:
+        if __message.viewed:
+            _message.append((__message, True))
+        else:
+            _message.append((__message, False))
+            __message.viewed = True
+            __message.sended = True
+            db.session.add(__message)
     return render_template('main/chat.html', sender=remote, messages = _message, form=form,
                            page=page, pagination=pagination)
 
-@main.route('/close-message/<int:id>')
+@main.route('/close-chat/<int:id>')
 @login_required
-def close_message(id):
-    message = Message.query.get_or_404(id)
-    if message.receiver == current_user or current_user.can(Permission.ADMINISTER):
+def close_chat(id):
+    remote = User.query.get_or_404(id)
+    messageList = Message.query.filter("sendid=:sid and targetid=:tid").\
+        params(sid=remote.uid, tid=current_user.uid)
+    for message in messageList:
         message.viewed = True
+        message.sended = True
         db.session.add(message)
-        return redirect(url_for('main.chat', id=message.sender.uid))
-    else:
-        abort(403)
+    return redirect(url_for('main.messages', key=''))
+
+@main.route('/delete-chat/<int:id>')
+@login_required
+def delete_chat(id):
+    remote = User.query.get_or_404(id)
+    messageList = Message.query.filter("(sendid=:sid and targetid=:tid) or (sendid=:tid and targetid=:sid)").\
+        params(sid=remote.uid, tid=current_user.uid)
+    for message in messageList:
+        if current_user == message.receiver:
+            message.recv_delete = True
+            if message.send_delete:
+                db.session.delete(message)
+            else:
+                db.session.add(message)
+        else:
+            message.send_delete = True
+            if message.recv_delete:
+                db.session.delete(message)
+            else:
+                db.session.add(message)
+    flash("您与 " + remote.nickname + ' 的对话已删除！')
+    return redirect(url_for('main.messages', key=''))
+
+@main.route('/set-share/<int:id>', methods=['GET','POST'])
+@login_required
+def set_share(id):
+    pass
+
+@main.route('/set-private/<int:id>')
+@login_required
+def set_private(id):
+    pass

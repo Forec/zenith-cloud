@@ -22,6 +22,8 @@ class Message(db.Model):
     created = db.Column(db.DateTime, default= datetime.utcnow)
     sended = db.Column(db.Boolean, default=False)
     viewed = db.Column(db.Boolean, default=False)
+    send_delete = db.Column(db.Boolean, default=False)
+    recv_delete = db.Column(db.Boolean, default=False)
     @staticmethod
     def generate_fake(count=100):
         from random import seed, randint

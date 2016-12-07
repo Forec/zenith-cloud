@@ -1,5 +1,5 @@
 <ul class="posts">
-    {% for message in messages %}
+    {% for message, viewed in messages %}
     <li class="post">
         <div class="post-thumbnail">
             <a href="{{ url_for('main.user', id=message.sender.uid) }}">
@@ -15,7 +15,7 @@
             </div>
 
             <div>
-            {% if not message.viewed and message.receiver == current_user %}
+            {% if not viewed and message.receiver == current_user %}
                 <b>
                 <p class="text-mute" style="background-color:#f0ffff">
                     {{ message.message }}
@@ -30,17 +30,11 @@
 
             <div class="post-footer">
                 {% if current_user == message.sender %}
-	            <a href="{{ url_for('main.delete_message',id=message.mesid) }}">
+	            <a href="{{ url_for('main.recall_message',id=message.mesid) }}">
 		            <span class="label label-warning">撤回</span>
 		        </a>
 	            {% endif %}
-                {% if message.receiver == current_user %}
-                    {% if not message.viewed %}
-                    <a href="{{ url_for('main.close_message', id = message.mesid) }}">
-                        <span class="label label-warning">忽略</span>
-                    </a>
-                    {% endif %}
-                {% endif %}
+
                 {% if message.receiver == current_user or message.sender == current_user %}
                 <a href="{{ url_for('main.delete_message', id = message.mesid) }}">
                     <span class="label label-danger">删除</span>

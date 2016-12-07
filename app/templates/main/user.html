@@ -23,7 +23,7 @@
             | <span class="label label-default">该用户已关注你</span>
             {% endif %}
         </p>
-        <p>
+
             {% if current_user.can(Permission.FOLLOW) and user != current_user %}
                 {% if not current_user.is_following(user) %}
                 <a href="{{ url_for('.follow', id=user.uid) }}" class="btn btn-primary">Follow</a>
@@ -31,7 +31,7 @@
                 <a href="{{ url_for('.unfollow', id=user.uid) }}" class="btn btn-default">Unfollow</a>
                 {% endif %}
             {% endif %}
-        </p>
+
         {% if user == current_user %}
             <a class="btn btn-default" href="{{ url_for('.edit_profile') }}">编辑资料</a>
         {% endif %}

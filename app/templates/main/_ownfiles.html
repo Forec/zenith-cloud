@@ -44,13 +44,26 @@
                     <span class="label label-primary">下载</span>
                 </a>
                 {% endif %}
+
                 {% if current_user == file.owner %}
 	            <a href="{{ url_for('main.copy', id=file.uid, path='/') }}">
 		            <span class="label label-primary">复制</span>
 		        </a>
+	            <a href="{{ url_for('main.move', id=file.uid, path='/') }}">
+		            <span class="label label-primary">移动</span>
+		        </a>
 	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
 		            <span class="label label-danger">删除</span>
 		        </a>
+                    {% if file.private %}
+                        <a href="{{ url_for('main.set_share', id=file.uid) }}">
+                            <span class="label label-success">共享</span>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main.set_private', id=file.uid) }}">
+                            <span class="label label-default">取消共享</span>
+                        </a>
+                    {% endif %}
 	            {% elif current_user.is_administrator() %}
 	            <a href="{{ url_for('main.delete_file',id=file.uid) }}">
 		            <span class="label label-danger">删除 [管理员]</span>

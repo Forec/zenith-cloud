@@ -32,7 +32,7 @@
             <div class="post-date">创建时间：{{ file.created }}</div>
             <div class="post-author">
                 {% if file.isdir == True %}
-                <a href="{{ url_for('.copy', path= curpath ~ file.filename ~ '/',
+                <a href="{{ url_for('.move', path= curpath ~ file.filename ~ '/',
                     direction=_direction, order=_order, id=_file.uid) }}">
                     {{ file.filename }}</a>
                 {% else %}
