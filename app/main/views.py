@@ -594,8 +594,9 @@ def copy_check():
     # if the file is a folder
     if file.isdir:
         movePath = file.path + file.filename + '/'
+        print(movePath)
         filelist = File.query.filter("path like :p and ownerid=:id").\
-            params(id=current_user.uid, p=movePath+'/%')
+            params(id=current_user.uid, p=movePath+'%')
         baseLen = len(file.path)
         for _file in filelist:
             newPath = _path + _file.path[baseLen:]
@@ -609,6 +610,7 @@ def copy_check():
                            description=_file.description
                            )
             db.session.add(newFile)
+            db.session.commit()
             newFile.perlink = url_for('main.file', id=newFile.uid)
             db.session.add(newFile)
         flash('文件夹 ' + movePath + ' 已拷贝到 ' + _path + '下')
@@ -692,7 +694,7 @@ def move_check():
     if file.isdir:
         movePath = file.path + file.filename + '/'
         filelist = File.query.filter("path like :p and ownerid=:id").\
-            params(id=current_user.uid, p=movePath+'/%')
+            params(id=current_user.uid, p=movePath+'%')
         baseLen = len(file.path)
         for _file in filelist:
             newPath = _path + _file.path[baseLen:]
