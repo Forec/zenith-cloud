@@ -13,7 +13,7 @@ class EditProfileForm(FlaskForm):
 class EditProfileAdminForm(FlaskForm):
     email = StringField('电子邮箱', validators=[Required(), Length(5,64), Email()])
     nickname = StringField('昵称', validators=[Required(), Length(1, 64)])
-    confirmed = BooleanField('Confirmed')
+    confirmed = BooleanField('已验证邮箱')
     role = SelectField('身份', coerce=int)
     about_me = TextAreaField('关于我')
     submit = SubmitField('提交')
@@ -63,3 +63,8 @@ class ChatForm(FlaskForm):
     def validate_body(self, field):
         if len(field.data) > 300:
             raise ValidationError('消息过长，请限制在300字内')
+
+class SetShareForm(FlaskForm):
+    password = StringField('请设置共享密码（0~4位）',
+                           validators=[Length(0,4, message="共享密码不能超过 4 位")])
+    submit = SubmitField('确定')

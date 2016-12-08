@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, \
     FileForm, CommentForm, SearchForm, FileDeleteConfirmForm, \
-    ChatForm
+    ChatForm, SetShareForm
 from sqlalchemy import or_, and_
 from .. import db
 from ..models import User, Role, Permission, File, \
@@ -651,7 +651,6 @@ def copy_check(token):
     # if the file is a folder
     if file.isdir:
         movePath = file.path + file.filename + '/'
-        print(movePath)
         filelist = File.query.filter("path like :p and ownerid=:id").\
             params(id=current_user.uid, p=movePath+'%')
         baseLen = len(file.path + file.filename)
@@ -699,7 +698,7 @@ def copy_check(token):
         flash('文件夹 ' + movePath + ' 已拷贝到 ' + _path + '下')
     else:
         current_user.used += file.cfile.size
-        flash('文件 ' + file.path + tempname + ' 已拷贝到 ' + _path + '下')
+        flash('文件 ' + file.path + file.filename + ' 已拷贝到 ' + _path + '下')
     db.session.add(current_user)
     return redirect(url_for('main.file', id=newRootFile.uid))
 
@@ -770,8 +769,8 @@ def move_check(token):
         ___filename = _path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = _path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
-            params(p=___path, f=___filename).first()
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d =current_user.uid).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
     file = File.query.get_or_404(_fileid)
@@ -954,9 +953,68 @@ def delete_chat(id):
 @main.route('/set-share/<int:id>', methods=['GET','POST'])
 @login_required
 def set_share(id):
-    pass
+    file = File.query.get_or_404(id)
+    if file is None or file.owner != current_user and not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = SetShareForm()
+    if form.validate_on_submit():
+        file.linkpass = form.password.data
+        file.private = False
+        db.session.add(file)
+        if file.isdir:
+            underFiles = File.query.filter("path like :p and ownerid=:d and private=1").\
+                params(p=file.path+file.filename+'/%', d=file.ownerid).all()
+            for _file in underFiles:
+                _file.private = True
+                _file.linkpass = file.linkpass
+                db.session.add(_file)
+            flash('已将目录 ' + file.path + file.filename + ' 设为共享！共享密码为 ' + file.linkpass + '。')
+            return redirect(url_for('main.cloud', path=file.path + file.filename +'/'))
+        else:
+            flash('已将文件 ' + file.path + file.filename + ' 设为共享！共享密码为 ' + file.linkpass + '。')
+            return redirect(url_for('main.file', id=file.uid))
+    return render_template('main/set_share.html', file=file, form=form)
 
 @main.route('/set-private/<int:id>')
 @login_required
 def set_private(id):
-    pass
+    file = File.query.get_or_404(id)
+    if file is None or file.owner != current_user and not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    if file.path == '/':
+        file.private = True
+    else:
+        if len(file.path.split('/')) < 3 or file.path[-1] != '/':
+            abort(403)
+        ___filename = file.path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = file.path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d = file.ownerid).first()
+        if isPath is None or isPath.owner != current_user and not current_user.can(Permission.ADMINISTER):
+            abort(403)
+        if isPath.private:
+            file.private = True
+        else:
+            if file.isdir:
+                type = '文件夹 '
+            else:
+                type = '文件 '
+            flash('您选中的' + type + file.filename + ' 的父目录 ' +
+                      isPath.path + isPath.filename +' 已被设置为共享，您无法将已共享目录的子目录设为私有！')
+            if file.isdir:
+                return redirect(url_for('main.cloud', path=file.path))
+            else:
+                return redirect(url_for('main.file', id=file.uid))
+    db.session.add(file)
+    if file.isdir:
+        underFiles = File.query.filter("path like :p and ownerid=:d and private=0").\
+            params(p=file.path+file.filename+'/%', d=file.ownerid).all()
+        for _file in underFiles:
+            _file.private = True
+            db.session.add(_file)
+        flash('目录 ' + file.path + file.filename + ' 已被设置为私有。')
+        return redirect(url_for('main.cloud', path=file.path))
+    else:
+        flash('文件 ' + file.path + file.filename + ' 已被设置为私有。')
+        return redirect(url_for('main.file', id= file.uid))
