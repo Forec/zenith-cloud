@@ -36,7 +36,7 @@ class EditProfileAdminForm(FlaskForm):
 
 class FileForm(FlaskForm):
     file = FileField('', validators=[Required()])
-    body = TextAreaField("资源描述（回车和多余空字符将被过滤）", validators=[Required()])
+    body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('确定上传')
     def validate_body(self, field):
         if len(field.data) > 200:
@@ -44,7 +44,7 @@ class FileForm(FlaskForm):
 
 class FileDeleteConfirmForm(FlaskForm):
     filename = StringField("文件名", validators=[Required(), Length(1, 128)])
-    body = TextAreaField("资源描述（回车和多余空字符将被过滤）", validators=[Required()])
+    body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('修改')
     def validate_body(self, field):
         if len(field.data) > 200:

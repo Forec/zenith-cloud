@@ -992,7 +992,7 @@ def fork_check(token):
     # if the file is a folder
     if file.isdir:
         movePath = file.path + file.filename + '/'
-        filelist = File.query.filter("path like :p and ownerid=:id").\
+        filelist = File.query.filter("path like :p and ownerid=:id and private=0").\
             params(id=file.ownerid, p=movePath+'%')
         baseLen = len(file.path + file.filename)
         for _file in filelist:
@@ -1175,7 +1175,7 @@ def set_share(id):
             if file.owner != current_user and current_user.can(Permission.ADMINISTER):
                 return redirect(url_for('main.index'))
             else:
-                return redirect(url_for('main.cloud', path=file.path + file.filename +'/'))
+                return redirect(url_for('main.cloud', path=file.path))
         else:
             flash('已将文件 ' + file.path + file.filename + ' 设为共享！共享密码为 ' + file.linkpass + '。')
             return redirect(url_for('main.file', id=file.uid))
@@ -1187,34 +1187,7 @@ def set_private(id):
     file = File.query.get_or_404(id)
     if file is None or file.owner != current_user and not current_user.can(Permission.ADMINISTER):
         abort(403)
-    if file.path == '/':
-        file.private = True
-    else:
-        if len(file.path.split('/')) < 3 or file.path[-1] != '/':
-            abort(403)
-        ___filename = file.path.split('/')[-2]
-        ___filenameLen = -(len(___filename)+1)
-        ___path = file.path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 and filename=:f and ownerid=:d").\
-            params(p=___path, f=___filename, d = file.ownerid).first()
-        if isPath is None or isPath.owner != current_user and not current_user.can(Permission.ADMINISTER):
-            abort(403)
-        if isPath.private:
-            file.private = True
-        else:
-            if file.isdir:
-                type = '文件夹 '
-            else:
-                type = '文件 '
-            flash('您选中的' + type + file.filename + ' 的父目录 ' +
-                      isPath.path + isPath.filename +' 已被设置为共享，您无法将已共享目录的子目录设为私有！')
-            if file.isdir:
-                if file.owner != current_user and current_user.can(Permission.ADMINISTER):
-                    return redirect(url_for('main.index'))
-                else:
-                    return redirect(url_for('main.cloud', path=file.path))
-            else:
-                return redirect(url_for('main.file', id=file.uid))
+    file.private = True
     db.session.add(file)
     if file.isdir:
         underFiles = File.query.filter("path like :p and ownerid=:d and private=0").\
