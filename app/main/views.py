@@ -139,6 +139,7 @@ def user(id):
                 if file.isdir:
                     paths.append(file.path+file.filename+'/')
     filelist = sorted(filelist, key=lambda x:x.created, reverse=True)
+    filelist = generateFileTypes(filelist)
     pagination = Pagination(page=page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
                             total_count=len(filelist))
     files = filelist[(page-1)*current_app.config['ZENITH_FILES_PER_PAGE']:
@@ -301,10 +302,13 @@ def delete_file(id):
 @main.route('/delete-file-confirm/<token>')
 @login_required
 def delete_file_confirm(token):
-    returnURL = current_user.delete_file(token)
+    returnURL, uid = current_user.delete_file(token)
     if returnURL is not None:
         flash('文件已被删除')
-        return redirect(url_for('main.cloud', path=returnURL, direction='front', type='all'))
+        if current_user.can(Permission.ADMINISTER) and uid != current_user.uid:
+            return redirect(url_for('main.index'))
+        else:
+            return redirect(url_for('main.cloud', path=returnURL, direction='front', type='all'))
     else:
         abort(403)
 
@@ -969,7 +973,10 @@ def set_share(id):
                 _file.linkpass = file.linkpass
                 db.session.add(_file)
             flash('已将目录 ' + file.path + file.filename + ' 设为共享！共享密码为 ' + file.linkpass + '。')
-            return redirect(url_for('main.cloud', path=file.path + file.filename +'/'))
+            if file.owner != current_user and current_user.can(Permission.ADMINISTER):
+                return redirect(url_for('main.index'))
+            else:
+                return redirect(url_for('main.cloud', path=file.path + file.filename +'/'))
         else:
             flash('已将文件 ' + file.path + file.filename + ' 设为共享！共享密码为 ' + file.linkpass + '。')
             return redirect(url_for('main.file', id=file.uid))
@@ -1003,7 +1010,10 @@ def set_private(id):
             flash('您选中的' + type + file.filename + ' 的父目录 ' +
                       isPath.path + isPath.filename +' 已被设置为共享，您无法将已共享目录的子目录设为私有！')
             if file.isdir:
-                return redirect(url_for('main.cloud', path=file.path))
+                if file.owner != current_user and current_user.can(Permission.ADMINISTER):
+                    return redirect(url_for('main.index'))
+                else:
+                    return redirect(url_for('main.cloud', path=file.path))
             else:
                 return redirect(url_for('main.file', id=file.uid))
     db.session.add(file)
@@ -1014,7 +1024,10 @@ def set_private(id):
             _file.private = True
             db.session.add(_file)
         flash('目录 ' + file.path + file.filename + ' 已被设置为私有。')
-        return redirect(url_for('main.cloud', path=file.path))
+        if file.owner != current_user and current_user.can(Permission.ADMINISTER):
+            return redirect(url_for('main.index'))
+        else:
+            return redirect(url_for('main.cloud', path=file.path))
     else:
         flash('文件 ' + file.path + file.filename + ' 已被设置为私有。')
         return redirect(url_for('main.file', id= file.uid))

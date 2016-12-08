@@ -201,7 +201,7 @@ class User(UserMixin, db.Model):
                 db.session.delete(_file)
             db.session.delete(file)
         db.session.commit()
-        return returnURL
+        return returnURL, file.ownerid
 
     def generate_copy_token(self, fileid, _path, expiration):
         s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)

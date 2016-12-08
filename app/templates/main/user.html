@@ -41,7 +41,7 @@
     </div>
 </div>
 <h3>用户 {{ user.nickname }} 发布了 {{ share_count }} 项共享资源</h3>
-{% include 'main/_files.html' %}
+{% include 'main/_userfiles.html' %}
 {% if pagination %}
 <div class="pagination">
     {{ macros.pagination_widget(pagination, 'main.user', id=user.uid) }}
