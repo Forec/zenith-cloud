@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, \
     FileForm, CommentForm, SearchForm, FileDeleteConfirmForm, \
-    ChatForm, SetShareForm
+    ChatForm, SetShareForm, ConfirmShareForm
 from sqlalchemy import or_, and_
 from .. import db
 from ..models import User, Role, Permission, File, \
@@ -610,8 +610,8 @@ def copy_check(token):
         ___filename = _path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = _path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 and filename=:f").\
-            params(p=___path, f=___filename).first()
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d=current_user.uid).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
@@ -622,8 +622,8 @@ def copy_check(token):
     tempname = file.filename
     i = 0
     while 1:
-        isSameExist = File.query.filter("path=:p and filename=:f").\
-            params(p=_path, f = tempname).first()
+        isSameExist = File.query.filter("path=:p and filename=:f and ownerid=:d").\
+            params(p=_path, f = tempname, d=current_user.uid).first()
         if isSameExist:
             if file.isdir:
                 type = "文件夹"
@@ -784,8 +784,8 @@ def move_check(token):
     tempname = file.filename
     i = 0
     while 1:
-        isSameExist = File.query.filter("path=:p and filename=:f").\
-            params(p=_path, f = tempname).first()
+        isSameExist = File.query.filter("path=:p and filename=:f and ownerid=:d").\
+            params(p=_path, f = tempname, d=current_user.uid).first()
         if isSameExist:
             if isSameExist.uid == file.uid:
                 if file.isdir:
@@ -839,10 +839,209 @@ def move_check(token):
         flash('文件 ' + file.path + file.filename + ' 已移动到 ' + _path + '下')
     return redirect(url_for('main.file', id=file.uid))
 
-@main.route('/fork/')
+@main.route('/fork/<int:id>', methods=['GET', 'POST'])
 @login_required
-def fork():
-    pass
+def fork(id):
+    file = File.query.get_or_404(id)
+    if file is not None and file.owner == current_user:
+        flash('您无法 Fork 自己的文件或目录')
+        if file.isdir:
+            return redirect('main.cloud', path=file.path)
+        else:
+            return redirect('main.file', id=file.uid)
+    if file is None or file.private == True:
+        abort(403)
+    if file.linkpass is None or file.linkpass == '':
+        return redirect(url_for('main.fork_do', path = '/', id = file.uid, _pass = ''))
+    form = ConfirmShareForm()
+    if form.validate_on_submit():
+        if form.password.data == file.linkpass:
+            return redirect(url_for('main.fork_do', path = '/', id = file.uid, _pass = file.linkpass))
+        else:
+            flash('提取码错误！')
+            return redirect(url_for('main.fork', id=file.uid))
+    return render_template('main/fork_verify.html', file=file, form=form)
+
+@main.route('/fork_do/')
+@login_required
+def fork_do():
+    path = request.args.get('path', '/', type=str)
+    if path == '':
+        path='/'
+    _fileid = request.args.get('id', 0, type=int)
+    if _fileid <= 0:
+        abort(403)
+    _pass = request.args.get('_pass', '', type=str)
+    file = File.query.get_or_404(_fileid)
+    if file is not None and file.owner == current_user:
+        flash('您无法 Fork 自己的文件或目录')
+        if file.isdir:
+            return redirect('main.cloud', path=file.path)
+        else:
+            return redirect('main.file', id=file.uid)
+    print("infactL:", file.linkpass)
+    if file is None or file.private == True or file.linkpass != _pass:
+        abort(403)
+    order = request.args.get('order', 'time', type=str)
+    direction = request.args.get('direction', 'front', type=str)
+
+    # check whether the path is valid
+    if path != '/':
+        if len(path.split('/')) < 3 or path[-1] != '/':
+            abort(403)
+        ___filename = path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = path[:___filenameLen]
+        isPath = File.query.filter("path=:p and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d=current_user.uid).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+
+    # fuck this duplicate code, I don't want to name it
+    query = current_user.files.filter("path=:p").params(p=path)
+    page = request.args.get('page', 1, type=int)
+    if page is None:
+        page = 1
+    if order == 'name':
+        if direction == 'reverse':
+            query = query.order_by(File.isdir.desc()).order_by(File.filename.desc())
+        else:
+            query = query.order_by(File.isdir.desc()).order_by(File.filename.asc())
+    else:
+        if direction == 'reverse':
+            query = query.order_by(File.isdir.desc()).order_by(File.created.asc())
+        else:
+            query = query.order_by(File.isdir.desc()).order_by(File.created.desc())
+    pagination = query.paginate(
+        page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+        error_out=False
+    )
+    files = pagination.items
+    file_types = generateFileTypes(files)
+    return render_template('main/fork.html', _file=file, _path=path, files=file_types,_order=order,curpath=path,
+                           _direction=direction, pagination = pagination, pathlists=generatePathList(path),
+                           _pass=_pass)
+
+@main.route('/fork_check/<token>', methods=['GET'])
+@login_required
+def fork_check(token):
+    fileid_path_pass = current_user.fork_token_verify(token)
+    if fileid_path_pass is None:
+        abort(403)
+    _path = fileid_path_pass[1]
+    _fileid = fileid_path_pass[0]
+    _pass = fileid_path_pass[2]
+    if _path is None or _fileid is None or _fileid <= 0:
+        abort(403)
+    # check whether the path is valid
+    if _path != '/':
+        if len(_path.split('/')) < 3 or _path[-1] != '/':
+            abort(403)
+        ___filename = _path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = _path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 and filename=:f and ownerid=:d").\
+            params(p=___path, f=___filename, d=current_user.uid).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+
+    file = File.query.get_or_404(_fileid)
+    if file is None or file.private == True or file.linkpass!= _pass:
+        abort(403)
+
+    if file is not None and file.owner == current_user:
+        flash('您无法 Fork 自己的文件或目录')
+        if file.isdir:
+            return redirect('main.cloud', path=file.path)
+        else:
+            return redirect('main.file', id=file.uid)
+
+    tempname = file.filename
+    i = 0
+    while 1:
+        isSameExist = File.query.filter("path=:p and filename=:f and ownerid=:d").\
+            params(p=_path, f = tempname, d = current_user.uid).first()
+        if isSameExist:
+            if file.isdir:
+                type = "文件夹"
+                if i == 0:
+                    tempname = file.filename + '-副本'
+                else:
+                    tempname = file.filename + '-副本' + str(i)
+            else:
+                type = "文件"
+                suffix = file.filename.split('.')[-1]
+                if suffix == file.filename:
+                    if i == 0:
+                        tempname = file.filename + '-副本'
+                    else:
+                        tempname = file.filename + '-副本' + str(i)
+                else:
+                    if i == 0:
+                        tempname = file.filename[:len(file.filename)-len(suffix)-1] + \
+                                   '-副本.' + suffix
+                    else:
+                        tempname = file.filename[:len(file.filename)-len(suffix)-1] + \
+                                   '-副本' + str(i) + '.' + suffix
+        else:
+            if tempname != file.filename:
+                flash("目标路径存在同名" + type + file.filename +
+                      "，已将您要 Fork 的" + type + "重命名为 " + tempname)
+            break
+        i += 1
+    # if the file is a folder
+    if file.isdir:
+        movePath = file.path + file.filename + '/'
+        filelist = File.query.filter("path like :p and ownerid=:id").\
+            params(id=file.ownerid, p=movePath+'%')
+        baseLen = len(file.path + file.filename)
+        for _file in filelist:
+            if not _file.isdir and _file.cfileid > 0:
+                current_user.used += _file.cfile.size
+            newPath = _path + tempname +  _file.path[baseLen:]
+            newFile = File(ownerid=current_user.uid,
+                           cfileid=_file.cfileid,
+                           path=newPath,
+                           perlink='',
+                           filename=_file.filename,
+                           linkpass='',
+                           isdir=_file.isdir,
+                           description=_file.description
+                           )
+            db.session.add(newFile)
+            db.session.commit()
+            newFile.perlink = url_for('main.file', id=newFile.uid)
+            db.session.add(newFile)
+            if current_user.used > current_user.maxm:
+                message = Message(sender=User.query.offset(1).first(),
+                                  receiver=current_user,
+                                  message='您的云盘空间已满，请及时清理！')
+                db.session.add(message)
+                flash('您的云盘空间已满！')
+    else:
+        if file.cfileid > 0:
+            if current_user.used + file.cfile.size > current_user.maxm:
+                flash('您的云盘空间不足，无法 Fork！')
+                return redirect(url_for('main.file', id=file.uid))
+    newRootFile = File(ownerid=current_user.uid,
+                    cfileid=file.cfileid,
+                    path=_path,
+                    perlink='',
+                    filename=tempname,
+                    linkpass='',
+                    isdir=file.isdir,
+                    description=file.description)
+    db.session.add(newRootFile)
+    db.session.commit()
+    newRootFile.perlink = url_for('main.file', id=newRootFile.uid)
+    db.session.add(newRootFile)
+    if file.isdir:
+        flash('已 Fork 用户 ' + file.owner.nickname + ' 的目录 ' + file.filename + ' 到 ' + _path + '下')
+    else:
+        current_user.used += file.cfile.size
+        flash('已 Fork 用户 ' + file.owner.nickname + ' 的文件 ' + file.filename + ' 到 ' + _path + '下')
+    db.session.add(current_user)
+    return redirect(url_for('main.file', id=newRootFile.uid))
 
 @main.route('/newfolder/')
 @login_required

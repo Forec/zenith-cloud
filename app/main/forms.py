@@ -65,6 +65,11 @@ class ChatForm(FlaskForm):
             raise ValidationError('消息过长，请限制在300字内')
 
 class SetShareForm(FlaskForm):
-    password = StringField('请设置共享密码（0~4位）',
+    password = StringField('请设置共享密码（0~4位），留空则其他用户可直接下载',
                            validators=[Length(0,4, message="共享密码不能超过 4 位")])
+    submit = SubmitField('确定')
+
+class ConfirmShareForm(FlaskForm):
+    password = StringField('请输入提取码（1~4位）',
+                           validators=[Required()])
     submit = SubmitField('确定')

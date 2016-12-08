@@ -2,51 +2,57 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% import "main/_macros.html" as macros %}
 
-{% block title %}顶点云 - 移动到{% endblock %}
+{% block title %}顶点云 - Fork 到{% endblock %}
 
 {% block page_content %}
 <div class="row">
     <div class="col-md-8">
         {% if _file %}
-        <h2>将 {{ _file.path ~ _file.filename }} 移动到 {{ _path }}</h2>
+        <h2>将用户 <a href="{{ url_for('main.user', id=_file.ownerid) }}">{{ _file.owner.nickname }}</a>
+            {% if _file.isdir %}
+            的目录
+            {% else %}
+            的文件
+            {% endif %}
+            <a href="{{ url_for('main.file', id=_file.uid) }}">{{ _file.filename }}</a> Fork 到 {{ _path }}</h2>
         {% endif %}
     </div>
 
     <div class="col-md-4 right-button-margin" style="text-align:right">
             {% if current_user.can(Permission.WRITE_ARTICLES) %}
-            <a href="{{ url_for('main.move_check', token = current_user.generate_move_token(_file.uid, _path,expiration=3600)) }}">
-                <button type="button" class="btn btn-success">确认移动</button>
+            <a href="{{ url_for('main.fork_check', token = current_user.generate_fork_token(_file.uid, _path, _pass, expiration=3600)) }}">
+                <button type="button" class="btn btn-success">确认 Fork</button>
             </a>
             {% endif %}
 
             {% if _order == "time" %}
                 {% if _direction == "front" %}
-                <a href="{{ url_for('main.move', id=_file.uid, order='time', path=_path, direction='reverse') }}">
+                <a href="{{ url_for('main.fork_do', id=_file.uid, order='time', path=_path, _pass=_pass, direction='reverse') }}">
                     <button type="button" class="btn btn-primary">按时间排序</button>
                 </a>
                 {% else %}
-                <a href="{{ url_for('main.move', id=_file.uid, order='time', path=_path, direction='front') }}">
+                <a href="{{ url_for('main.fork_do', id=_file.uid, order='time', path=_path, _pass=_pass, direction='front') }}">
                     <button type="button" class="btn btn-warning">按时间排序</button>
                 </a>
                 {% endif %}
             {% else %}
-                <a href="{{ url_for('main.move', id=_file.uid, order='time', path=_path, direction='front') }}">
+                <a href="{{ url_for('main.fork_do', id=_file.uid, order='time', path=_path, _pass=_pass, direction='front') }}">
                     <button type="button" class="btn btn-default">按时间排序</button>
                 </a>
             {% endif %}
 
             {% if _order == "name" %}
                 {% if _direction == "front" %}
-                <a href="{{ url_for('main.move', id=_file.uid, order='name', path=_path, direction='reverse') }}">
+                <a href="{{ url_for('main.fork_do', id=_file.uid, order='name', path=_path, _pass=_pass, direction='reverse') }}">
                     <button type="button" class="btn btn-primary">按名称排序</button>
                 </a>
                 {% else %}
-                <a href="{{ url_for('main.move', id=_file.uid, order='name', path=_path, direction='front') }}">
+                <a href="{{ url_for('main.fork_do', id=_file.uid, order='name', path=_path, _pass=_pass, direction='front') }}">
                     <button type="button" class="btn btn-warning">按名称排序</button>
                 </a>
                 {% endif %}
             {% else %}
-                <a href="{{ url_for('main.move', id=_file.uid, order='name', path=_path, direction='front') }}">
+                <a href="{{ url_for('main.fork_do', id=_file.uid, order='name', path=_path, _pass=_pass, direction='front') }}">
                     <button type="button" class="btn btn-default">按名称排序</button>
                 </a>
             {% endif %}
@@ -56,14 +62,14 @@
 <div class="link-block">
     当前路径：
     {% for __path, _pathView in pathlists %}
-        <a class="link-item" href="{{ url_for('main.move', path=__path, id=_file.uid) }}">
+        <a class="link-item" href="{{ url_for('main.fork_do',  path=__path, id=_file.uid, _pass=_pass) }}">
             {{ _pathView }}</a>
     {% endfor %}
 </div>
 
 <div class="post-tabs">
     {% if files %}
-    {% include 'main/_moveownfiles.html' %}
+    {% include 'main/_forkownfiles.html' %}
     {% else %}
     <p>已经不可以再继续了哦~</p>
     {% endif %}
@@ -71,7 +77,7 @@
 
 {% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, 'main.move',
+    {{ macros.pagination_widget(pagination, 'main.fork_do', _pass=_pass,
         order=_order, direction=_direction, path=_path, id=_file.uid) }}
 </div>
 {% endif %}
