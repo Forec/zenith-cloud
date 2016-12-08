@@ -139,9 +139,6 @@
     </div>
 </div>
 
-{% include 'main/_files.html' %}
-
-
 <h4 id="comments">评论 共 {{ file.comments.count() }} 条</h4>
 {% if current_user.can(Permission.COMMENT) %}
 <div class="comment-form">

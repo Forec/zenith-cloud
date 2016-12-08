@@ -11,6 +11,7 @@ from .. import db
 from ..models import User, Role, Permission, File, \
     Comment, Message,Pagination
 from ..decorators import admin_required, permission_required
+import codecs
 
 videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
 photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']
@@ -140,10 +141,10 @@ def user(id):
                     paths.append(file.path+file.filename+'/')
     filelist = sorted(filelist, key=lambda x:x.created, reverse=True)
     filelist = generateFileTypes(filelist)
-    pagination = Pagination(page=page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+    pagination = Pagination(page=page, per_page=current_app.config['PROFILE_ZENITH_FILES_PER_PAGE'],
                             total_count=len(filelist))
-    files = filelist[(page-1)*current_app.config['ZENITH_FILES_PER_PAGE']:
-                      page*current_app.config['ZENITH_FILES_PER_PAGE']]
+    files = filelist[(page-1)*current_app.config['PROFILE_ZENITH_FILES_PER_PAGE']:
+                      page*current_app.config['PROFILE_ZENITH_FILES_PER_PAGE']]
     return render_template('main/user.html', user = user, files= files, share_count=len(filelist),
                            pagination=pagination)
 
@@ -188,6 +189,8 @@ def edit_profile_admin(id):
 @main.route('/file/<int:id>', methods=['GET', 'POST'])
 def file(id):
     file = File.query.get_or_404(id)
+    if file.owner != current_user and file.private == True and not current_user.can(Permission.ADMINISTER):
+        abort(403)
     form =CommentForm()
     if form.validate_on_submit():
         comment = Comment(body = form.body.data,
@@ -206,7 +209,6 @@ def file(id):
     )
     pathLists = generatePathList(file.path)
     file_type = generateFileTypes([file])[0][1]
-    print(file_type)
     comments = pagination.items
     return render_template('main/file.html', comments = comments, file_type=file_type, pathlists = pathLists,
                            pagination = pagination, file = file, form = form,
