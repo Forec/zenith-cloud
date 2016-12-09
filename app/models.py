@@ -269,6 +269,30 @@ class User(UserMixin, db.Model):
             return None
         return [fileid, data.get('path'), password]
 
+    def generate_download_token(self, fileid, _linkpass, expiration):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'download': fileid, 'linkpass': _linkpass, 'user':self.uid})
+    def download_token_verify(self, token):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        if data.get('download') is None or data.get('user') is None or data.get('linkpass') is None:
+            return None
+        user = User.query.filter_by(uid=data.get('user')).first()
+        if user.uid != self.uid and \
+            not user.can(Permission.ADMINISTER):
+            return None
+        fileid = data.get('download')
+        password = data.get('linkpass')
+        file = File.query.get(fileid)
+        if file is None or \
+            (file.private==True and file.ownerid != self.uid and not self.can(Permission.ADMINISTER)) or \
+            file.linkpass != password:
+            return None
+        return [fileid, password]
+
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
             url = 'https://secure.gravatar.com/avatar'

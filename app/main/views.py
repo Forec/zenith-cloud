@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from flask import render_template, session, redirect, url_for, \
-    abort, flash, request, current_app, make_response
+    abort, flash, request, current_app, make_response, send_from_directory
 from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, \
@@ -9,9 +9,10 @@ from .forms import EditProfileForm, EditProfileAdminForm, \
 from sqlalchemy import or_, and_
 from .. import db
 from ..models import User, Role, Permission, File, \
-    Comment, Message,Pagination
+    Comment, Message,Pagination, CFILE
 from ..decorators import admin_required, permission_required
 import codecs
+import os, random, string, shutil
 
 videoList = ['.avi', '.mp4', '.mpeg', '.flv', '.rmvb', '.rm', '.wmv']
 photoList = ['.jpg', '.jpeg', '.png', '.svg', '.bmp', '.psd']
@@ -535,10 +536,83 @@ def cloud():
     return render_template('main/cloud.html', files = file_types, _type=type, _order=order, curpath=path,
                           _direction=direction ,pagination = pagination, pathlists=generatePathList(path))
 
-@main.route('/download/<int:id>')
+@main.route('/download/<int:id>', methods=['GET', 'POST'])
 @login_required
 def download(id):
-    return "TODO"
+    file = File.query.get_or_404(id)
+    if file is None or (file.private == True and \
+                        file.owner != current_user and \
+                        not current_user.can(Permission.ADMINISTER)):
+        abort(403)
+    if file.linkpass is None or file.linkpass == '':
+        return redirect(url_for('main.download_do',
+                                token=current_user.generate_download_token(file.uid, '', expiration=3600)))
+    form = ConfirmShareForm()
+    if form.validate_on_submit():
+        if form.password.data == file.linkpass:
+            return redirect(url_for('main.download_do',
+                                token=current_user.generate_download_token(file.uid, file.linkpass, expiration=3600)))
+        else:
+            flash('提取码错误！')
+            return redirect(url_for('main.download', id=file.uid))
+    return render_template('main/fork_verify.html', file=file, form=form)
+
+@main.route('/download_do/<token>')
+@login_required
+def download_do(token):
+    fileid_pass = current_user.download_token_verify(token)
+    if fileid_pass is None:
+        print("1")
+        abort(403)
+    _fileid = fileid_pass[0]
+    _pass = fileid_pass[1]
+    if _fileid is None:
+        print("2")
+        abort(403)
+    if _pass is None:
+        print("5")
+        _pass = ''
+    file = File.query.get_or_404(_fileid)
+    if file is None or \
+       (file.private == True and file.owner != current_user and \
+                        not current_user.can(Permission.ADMINISTER)) or \
+            (file.private == False and file.linkpass != _pass and \
+            current_user != file.owner and not current_user.can(Permission.ADMINISTER)):
+        print("4")
+        abort(403)
+    cfile = CFILE.query.get_or_404(file.cfileid)
+    if not os.path.exists(current_app.config['ZENITH_FILE_STORE_PATH'] + str(cfile.uid)):
+        abort(500)
+    f = open(current_app.config['ZENITH_FILE_STORE_PATH'] + str(cfile.uid), 'rb')
+    data = f.read()
+    response = make_response(data)
+    response.headers["Content-Disposition"] = "attachment; filename=" + file.filename
+    return response
+    # while True:
+    #     randomFolder = current_app.config['ZENITH_FILE_STORE_PATH'] + \
+    #                    ''.join(random.sample(['a', 'b','c','d','e','f','g','h','i','j','k','l',
+    #                                   'm','n','o', 'p', 'q', 'r','s','t','u','v','w','x','y','z',
+    #                                   '1','2','3','4','5','6','7','8','9','0'], 11))
+    #     if os.path.exists(randomFolder):
+    #         continue
+    #     os.mkdir(randomFolder)
+    #     shutil.copy(current_app.config['ZENITH_FILE_STORE_PATH'] + str(cfile.uid),
+    #                 randomFolder + '//' + file.filename)
+    #     break
+    # sended = False
+    # if os.path.exists(randomFolder + '//' + file.filename):
+    #     return send_from_directory(randomFolder, file.filename, as_attachment=True)
+    #     sended = True
+    # try:
+    #     os.remove(randomFolder + '//' + file.filename)
+    # except:
+    #     pass
+    # try:
+    #     os.rmdir(randomFolder)
+    # except:
+    #     pass
+    # else:
+    #     abort(500)
 
 @main.route('/upload/')
 @login_required
