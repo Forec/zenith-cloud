@@ -95,7 +95,7 @@
                                 <li><a href="{{ url_for('main.set_private', id=file.uid) }}">取消共享</a></li>
                             {% endif %}
 	                    {% elif current_user.is_administrator() %}
-                        <li><a href="{{ url_for('main.delete_file',id=file.uid) }}">删除 [管理员]</a></li>
+                        <li><a href="{{ url_for('main.moderate_files_delete',id=file.uid) }}">删除 [管理员]</a></li>
                             {% if file.private %}
                                 <li><a href="{{ url_for('main.set_share', id=file.uid) }}">共享 [管理员]</a></li>
                             {% else %}

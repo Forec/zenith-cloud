@@ -1,3 +1,9 @@
+# 作者：Forec
+# 最后修改时间：2016-12-9
+# 邮箱：forec@bupt.edu.cn
+# 关于此文件: 服务器所有的配置信息在此文件中指定，具体功能由功能项后
+#    的注释标明
+
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -5,23 +11,27 @@ class Config:
     SECRET_KEY = '9d0e91f3372224b3ec7afec2' \
                  '4313e745efcf00ba4a5b767b' \
                  '35b17834d5f26efac197fd69' \
-                 'd881dd92e629dbfdc2f1fbf6'
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
-    ZENITH_MAIL_SUBJECT_PREFIX = '[顶点云]'
-    ZENITH_MAIL_SENDER = 'cloud-storage@forec.cn'
-    ZENITH_FILES_PER_PAGE = 10
-    ZENITH_FOLLOWERS_PER_PAGE = 10
-    ZENITH_COMMENTS_PER_PAGE = 10
-    PROFILE_ZENITH_FILES_PER_PAGE = 6
-    ZENITH_MESSAGES_PER_PAGE = 10
-    ZENITH_FILE_STORE_PATH = 'G:\\Cloud\\'
+                 'd881dd92e629dbfdc2f1fbf6'         # 用于为安全操作生成 token 的密钥，不可泄露
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True            # 数据库在服务器终止时 commit 变动
+    SQLALCHEMY_TRACK_MODIFICATIONS = True           # 数据库追踪改动
+    ZENITH_MAIL_SUBJECT_PREFIX = '[顶点云]'         # 服务器发送验证邮件的主题前缀
+    ZENITH_MAIL_SENDER = 'cloud-storage@forec.cn'   # 服务器向用户发送验证邮件的邮箱
+    ZENITH_FILES_PER_PAGE = 10              # Index 页面每页显示的文件数量
+    ZENITH_FOLLOWERS_PER_PAGE = 10          # 每页显示的关注者数量
+    ZENITH_COMMENTS_PER_PAGE = 10           # 每页显示的评论数量
+    PROFILE_ZENITH_FILES_PER_PAGE = 6       # 用户资料页每页显示的文件数量
+    ZENITH_MESSAGES_PER_PAGE = 10           # Message 页面每页显示的消息数量
+    ZENITH_FILE_STORE_PATH = 'G:\\Cloud\\'  # 服务器存储用户文件的路径
+    ZENITH_TEMPFILE_STORE_PATH = ZENITH_FILE_STORE_PATH + 'TEMP\\'
+        # 服务器生成随机目录所在的路径，默认为文件存储路径下的 TMEP 文件夹
+    ZENITH_TEMPFOLDER_LENGTH = 12   # 服务器生成的随机目录名长度
+    ZENITH_PATH_SEPERATOR = '\\'    # 服务器所属文件系统的目录分隔符，Windows为\\，*nix 为//
     EMAIL_ADMIN ='forec@bupt.edu.cn'
     @staticmethod
     def init_app(app):
         pass
 
-class DevelopmentConfig(Config):
+class DevelopmentConfig(Config):            # 开发者环境配置
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'work.db')
     MAIL_SERVER = 'smtp.exmail.qq.com'
     MAIL_PORT = 25#465
@@ -29,7 +39,7 @@ class DevelopmentConfig(Config):
     MAIL_USERNAME = "cloud-storage@forec.cn"
     MAIL_PASSWORD = "Cloud-Storage-2016"
 
-class TestingConfig(Config):
+class TestingConfig(Config):                # 测试环境配置
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'work.db')
 
