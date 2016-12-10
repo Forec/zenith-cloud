@@ -125,6 +125,15 @@ def index():
     else:
         query = File.query.filter("private=0").all()
     page = request.args.get('page', 1, type=int)
+    key = request.args.get('key', '', type=str)
+
+    # 关键字搜索表单
+    form = SearchForm()
+    if form.validate_on_submit():
+        return redirect(url_for('main.index',
+                                key=form.key.data))
+    form.key.data = key
+
     query = sorted(query,
                    key = lambda x: len(x.path),
                    reverse = False)
@@ -153,10 +162,19 @@ def index():
                 if file.isdir:
                     paths_users.append((file.path+file.filename+'/',
                                         file.ownerid))
-    filelist = sorted(filelist,
+    _filelist = sorted(filelist,
                       key=lambda x:x.created,
                       reverse=True)
         # 按时间对文件排序，最近创建的文件最先显示
+
+    if key == '':
+        filelist = _filelist
+    else:
+        # 用户指定搜索关键词，需对结果做匹配检查
+        filelist = []
+        for _file in _filelist:
+            if key in _file.filename:
+                filelist.append(_file)
 
     pagination = Pagination(page=page,
                             per_page=current_app.\
@@ -167,7 +185,9 @@ def index():
                       page*current_app.\
                         config['ZENITH_FILES_PER_PAGE']]
     return render_template('index.html',
+                           form = form,
                            files = files,
+                           _len = len(files),
                            pagination = pagination,
                            show_followed=show_followed)
 
@@ -763,30 +783,29 @@ def cloud():
                                 ))
     form.key.data = key
 
+    # 无论用户是否指定关键词，先根据用户指定的文件类型，查询对应的文件
+    if type == 'video':
+        query = current_user.files.filter(generateFilelike(videoList))
+    elif type == 'document':
+        query = current_user.files.filter(generateFilelike(docList))
+    elif type == 'photo':
+        query = current_user.files.filter(generateFilelike(photoList))
+    elif type == 'music':
+        query = current_user.files.filter(generateFilelike(musicList))
+    elif type == 'compress':
+        query = current_user.files.filter(generateFilelike(compressList))
+    else:
+        query = current_user.files.filter("path=:p").params(p=path)
+    # 确保只显示属于当前用户的目录和文件
+    query = query.filter("ownerid=:oid").params(oid=current_user.uid)
+
     # 当用户指定关键字时，在当前目录下递归检索所有可能文件。
     if key != '':
-        query = File.query.\
-            filter("filename like :fn and "
-                   "ownerid=:d and path like :p").\
-            params(fn = '%' + key + '%',
-                   d = current_user.uid,
-                   path = path + '%')
-
-    else:   # 用户未指定关键词，根据用户指定的文件类型，查询对应的文件
-        if type == 'video':
-            query = current_user.files.filter(generateFilelike(videoList))
-        elif type == 'document':
-            query = current_user.files.filter(generateFilelike(docList))
-        elif type == 'photo':
-            query = current_user.files.filter(generateFilelike(photoList))
-        elif type == 'music':
-            query = current_user.files.filter(generateFilelike(musicList))
-        elif type == 'compress':
-            query = current_user.files.filter(generateFilelike(compressList))
-        else:
-            query = current_user.files.filter("path=:p").params(p=path)
-        # 确保只显示属于当前用户的目录和文件
-        query.filter("ownerid=:oid").params(oid=current_user.uid)
+        query = query.filter("filename like :lfn and "
+                     "ownerid=:id and path like :_path").\
+                      params(lfn = '%' + key + '%',
+                             id = current_user.uid,
+                             _path = path + '%')
 
     # 按用户指定顺序对文件排序
     if order == 'name':
@@ -812,6 +831,7 @@ def cloud():
                            _type=type,
                            form=form,
                            _order=order,
+                           key = key,
                            curpath=path,
                           _direction=direction ,
                            pagination = pagination,

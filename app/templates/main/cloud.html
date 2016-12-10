@@ -11,51 +11,51 @@
 <div class="row">
     <div class="col-md-7">
     {% if _type== "all" %}
-    <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-success">全部</button>
     </a>
     {% else %}
-    <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-default">全部</button>
     </a>
     {% endif %}
 
     {% if _type== "music" %}
-    <a href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-success">音乐</button>
     </a>
     {% else %}
-    <a href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-default">音乐</button>
     </a>
     {% endif %}
 
     {% if _type== "video" %}
-    <a href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-success">视频</button>
     </a>
     {% else %}
-    <a href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-default">视频</button>
     </a>
     {% endif %}
 
     {% if _type== "document" %}
-    <a href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-success">文档</button>
     </a>
     {% else %}
-    <a href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-default">文档</button>
     </a>
     {% endif %}
 
     {% if _type== "photo" %}
-    <a href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-success">图片</button>
     </a>
     {% else %}
-    <a href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order) }}">
+    <a href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order, key=key) }}">
         <button type="button" class="btn btn-default">图片</button>
     </a>
     {% endif %}
@@ -72,45 +72,42 @@
 
     {% if _order == "time" %}
         {% if _direction == "front" %}
-        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, direction='reverse') }}">
+        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='reverse') }}">
             <button type="button" class="btn btn-primary">按时间排序</button>
         </a>
         {% else %}
-        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, direction='front') }}">
+        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='front') }}">
             <button type="button" class="btn btn-warning">按时间排序</button>
         </a>
         {% endif %}
     {% else %}
-        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, direction='front') }}">
+        <a href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='front') }}">
             <button type="button" class="btn btn-default">按时间排序</button>
         </a>
     {% endif %}
 
     {% if _order == "name" %}
         {% if _direction == "front" %}
-        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='reverse') }}">
+        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='reverse') }}">
             <button type="button" class="btn btn-primary">按名称排序</button>
         </a>
         {% else %}
-        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='front') }}">
+        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front') }}">
             <button type="button" class="btn btn-warning">按名称排序</button>
         </a>
         {% endif %}
     {% else %}
-        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, direction='front') }}">
+        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front') }}">
             <button type="button" class="btn btn-default">按名称排序</button>
         </a>
     {% endif %}
     </div>
 
     <div class="col-md-3" style="text-align:right">
-        <form method="POST" action="{{ url_for('main.cloud') }}">
+        <form method="POST" action="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front') }}">
             {{ form.hidden_tag() }}
             <div class="row">
-                <div class="col-md-3">
-                    {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
-                </div>
-                    {{ form.go(class="btn btn-success", placeholder="搜索") }}
+                {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
             </div>
         </form>
     </div>
@@ -135,7 +132,11 @@
     {% if files %}
     {% include 'main/_ownfiles.html' %}
     {% else %}
-    <p>这里什么都没有哦~</p>
+        {% if key == '' %}
+            <h3 class="text-warning">这里什么都没有哦~</h3>
+        {% else %}
+            <h3 class="text-warning">没有检索到相关文件</h3>
+        {% endif %}
     {% endif %}
 </div>
 {% if pagination %}

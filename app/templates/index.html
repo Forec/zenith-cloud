@@ -8,14 +8,27 @@
 <div class="page-header">
     <h1>{% if current_user.is_authenticated %}{{ current_user.nickname }}{% else %}游客{% endif %}，您好!</h1>
 </div>
-<div>
-    <h2 style="display:inline">与世界分享你的文件</h2>
-    <div style="float:right">
-    {% if current_user.can(Permission.WRITE_ARTICLES) %}
-    <a href="{{ url_for('main.upload', path='/public/') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
-    {% endif %}
+<div class="row">
+    <div class="col-md-7">
+        <h2 style="display:inline">与世界分享你的文件</h2>
+    </div>
+
+    <div class="col-md-3" style="text-align:right">
+        <form method="POST" action="{{ url_for('main.index') }}">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
+            </div>
+        </form>
+    </div>
+
+    <div class="col-md-2" style="text-align:right">
+        {% if current_user.can(Permission.WRITE_ARTICLES) %}
+        <a href="{{ url_for('main.upload', path='/public/') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
+        {% endif %}
     </div>
 </div>
+
 <div class="post-tabs">
     <ul class="nav nav-tabs">
         <li{% if not show_followed %} class="active"{% endif %}><a href="{{ url_for('.show_all') }}">全部</a></li>
@@ -23,7 +36,12 @@
         <li{% if show_followed %} class="active"{% endif %}><a href="{{ url_for('.show_followed') }}">我关注的</a></li>
         {% endif %}
     </ul>
-    {% include 'main/_files.html' %}
+
+    {% if _len > 0 %}
+        {% include 'main/_files.html' %}
+    {% else %}
+        <h2 class="text-warning">未检索到相关文件<h2>
+    {% endif %}
 </div>
 {% if pagination %}
 <div class="pagination">

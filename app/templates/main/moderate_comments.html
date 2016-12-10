@@ -6,9 +6,14 @@
 {% block title %}起点云 - 评论管理{% endblock %}
 
 {% block page_content %}
+
 <div class="page-header">
-    {{ wtf.quick_form(form) }}
+    <form method="POST" action="{{ url_for('main.moderate_comments') }}">
+        {{ form.hidden_tag() }}
+        {{ form.key(class="form-control", placeholder="根据关键字检索评论") }}
+    </form>
 </div>
+
 {% set moderate = True %}
 {% include 'main/_comments.html' %}
 {% if pagination %}
