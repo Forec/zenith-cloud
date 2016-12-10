@@ -103,7 +103,7 @@
     {% endif %}
     </div>
 
-    <div class="col-md-3" style="text-align:right">
+    <div class="col-md-2" style="text-align:right">
         <form method="POST" action="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front') }}">
             {{ form.hidden_tag() }}
             <div class="row">
@@ -111,7 +111,14 @@
             </div>
         </form>
     </div>
-    <div class="col-md-2" style="text-align:right">
+    <div class="col-md-3" style="text-align:right">
+        <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key='', direction='front') }}">
+            {% if key == '' %}
+                <button type="button" class="btn btn-default">清空筛选条件</button>
+            {% else %}
+                <button type="button" class="btn btn-success">清空筛选条件</button>
+            {% endif %}
+        </a>
         <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传</button></a>
     <a href="{{ url_for('main.newfolder', path=_path) }}">
         <button type="button" class="btn btn-info">新文件夹</button>
@@ -141,7 +148,8 @@
 </div>
 {% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, 'main.cloud', type=_type, order=_order, direction=_direction) }}
+    {{ macros.pagination_widget(pagination, 'main.cloud', key=key,
+        type=_type, order=_order, direction=_direction) }}
 </div>
 {% endif %}
 {% endblock %}

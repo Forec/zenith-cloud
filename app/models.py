@@ -293,6 +293,61 @@ class User(UserMixin, db.Model):
             return None
         return [fileid, password]
 
+    def generate_view_token(self,
+                            rootid,
+                            _linkpass,
+                            type,
+                            order,
+                            direction,
+                            path,
+                            key,
+                            expiration):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({
+            'view': rootid,
+            'linkpass': _linkpass,
+            'user': self.uid,
+            'order': order,
+            'direction': direction,
+            'path': path,
+            'key': key,
+            'type': type
+        })
+
+    def view_token_verify(self, token):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        if data.get('view') is None or \
+            data.get('user') is None or \
+            data.get('linkpass') is None:
+            return None
+        user = User.query.filter_by(uid=data.get('user')).first()
+        if user.uid != self.uid and \
+            not user.can(Permission.ADMINISTER):
+            return None
+        fileid = data.get('view')
+        password = data.get('linkpass')
+        file = File.query.get(fileid)
+        if file is None or \
+           (file.private==True and \
+            file.ownerid != self.uid and \
+            not self.can(Permission.ADMINISTER)) or \
+           file.linkpass != password:
+            return None
+        return {
+            'type': data.get('type') or 'all',
+            'order': data.get('order') or 'time',
+            'direction': data.get('direction') or 'front',
+            'key': data.get('key') or '',
+            'password': data.get('linkpass'),
+            'rootid': data.get('view'),
+            'path': data.get('path') or \
+                    file.path + file.filename + '/'
+        }
+
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
             url = 'https://secure.gravatar.com/avatar'
@@ -522,6 +577,7 @@ class File(db.Model):
             pathDeep = randint(0, 5)
             pathPart = '/'
             prePrivate = 1
+            _linkpass =  str(randint(1000,9999))
             for j in range(0, pathDeep):
                 folder = forgery_py.lorem_ipsum.word()
                 isFile = File.query.filter_by(path=pathPart).\
@@ -538,7 +594,7 @@ class File(db.Model):
                          perlink = '',
                          cfileid = -1,
                          isdir=True,
-                         linkpass = str(randint(1000,9999)),
+                         linkpass =_linkpass,
                          created=forgery_py.date.date(True),
                          ownerid=u.uid,
                          private = prePrivate,
@@ -556,7 +612,7 @@ class File(db.Model):
                                 suffixList[suffixType][suffixTypeIndex],
                      perlink = forgery_py.lorem_ipsum.word(),
                      cfile= _cfile,
-                     linkpass = str(randint(1000,9999)),
+                     linkpass =_linkpass,
                      private = prePrivate,
                      created=forgery_py.date.date(True),
                      ownerid = u.uid,

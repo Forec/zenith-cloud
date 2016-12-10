@@ -799,9 +799,21 @@ def cloud():
     # 确保只显示属于当前用户的目录和文件
     query = query.filter("ownerid=:oid").params(oid=current_user.uid)
 
-    # 当用户指定关键字时，在当前目录下递归检索所有可能文件。
     if key != '':
-        query = query.filter("filename like :lfn and "
+        # 当用户指定关键字时，在当前目录下递归检索所有可能文件。
+        if type in ['video', 'document', 'photo', 'music',
+                        'compress']:
+            # 若用户已指定查询类型
+            query = query.\
+                filter("filename like :lfn and "
+                     "ownerid=:id and path like :_path").\
+                      params(lfn = '%' + key + '%',
+                             id = current_user.uid,
+                             _path = path + '%')
+        else:
+            # 用户未指定查询类型时在整个目录下递归检索
+            query = File.query.\
+                filter("filename like :lfn and "
                      "ownerid=:id and path like :_path").\
                       params(lfn = '%' + key + '%',
                              id = current_user.uid,
@@ -838,6 +850,261 @@ def cloud():
                            pathlists=generatePathList(path))
 
 # ------------------------------------------------------------------------------
+# view_share_folder_entry 函数提供了用户访问其他用户共享目录的认证入口。用户须
+# 在此界面验证（如果共享目录存在共享密码）
+@main.route('/check-share-folder/<int:id>', methods=['GET', 'POST'])
+@login_required
+def view_share_folder_entry(id):
+    file = File.query.get_or_404(id)
+    if file is None or (file.private == True and \
+                        file.owner != current_user and \
+                        not current_user.can(Permission.ADMINISTER)):
+    # 当文件不存在/文件为私有且不属于当前用户且当前用户不具有
+    # 管理员权限时，返回403错误
+        abort(403)
+    if file.linkpass is None or file.linkpass == '' or \
+        file.owner == current_user or \
+        current_user.can(Permission.ADMINISTER):
+        # 文件未设置共享密码或属于当前用户或当前用户具有管理员权限，直接跳转到查看界面
+        return redirect(url_for('main.view_do',
+            token=current_user.generate_view_token(rootid=file.uid,
+                                                   type='all',
+                                                   order='time',
+                                                   direction='front',
+                                                   key='',
+                                                   path=file.path +
+                                                        file.filename +
+                                                        '/',
+                                                   _linkpass=file.linkpass,
+                                                   expiration=3600)))
+    form = ConfirmShareForm()
+    if form.validate_on_submit():
+        if form.password.data == file.linkpass:
+            # 文件提取码正确
+            return redirect(url_for('main.view_do',
+                token=current_user.generate_view_token(rootid=file.uid,
+                                                       type='all',
+                                                       order='time',
+                                                       direction='front',
+                                                       key='',
+                                                       path=file.path +
+                                                            file.filename +
+                                                            '/',
+                                                       _linkpass=file.linkpass,
+                                                       expiration=3600)))
+        else:
+            flash('提取码错误！')
+            return redirect(url_for('main.view_share_folder_entry',
+                                    id=file.uid))
+    return render_template('main/fork_verify.html',
+                           file=file,
+                           form=form)
+
+# ------------------------------------------------------------------------------
+# view_do 为用户提供了访问其他用户共享目录的界面。
+@main.route('/view-do/', methods=['GET', 'POST'])
+@login_required
+def view_do():
+    # generateFilelike 函数根据传入的 list 中包含的文件后缀名，生成
+    # 对应的 SQL 查询语句，用于按类型（文件后缀名）索引文件
+    def generateFilelike(list):
+        string = ""
+        for suffix in list:
+            string += "or filename like '%" + \
+                      suffix + "' "
+        return '('+string[3:]+')'
+
+    # generateSharedPathList 是 generatePathList 函数的另一版本，此
+    # 函数不生成根目录，而是以用户共享的目录为根。
+    def generateSharedPathList(basePath, path):
+        toDisplay = path[len(basePath):].split('/')[:-1]
+        # /home/forec/ 下的共享目录 /home/forec/work/***
+        # 则要显示给用户的目录为 work/***
+        pathList = []
+        base = ""
+        for folder in toDisplay:
+            pathList.append((basePath + base + folder + '/',
+                             folder + '/'))
+            base += folder + '/'
+        return pathList
+
+    token = request.args.get('token', None, type=str)
+    page = request.args.get('page', 1, type=int)
+        # 界面需要分页，用户当前要访问的页数
+    if token is None:
+        abort(403)
+
+    args = current_user.view_token_verify(token)
+    if args is None:
+        abort(403)
+    type = args.get('type') or 'all'
+        # 用户指定的文件类型，默认为 'all'
+    key = args.get('key') or ''
+        # 用户指定的检索关键字，默认为空
+    order = args.get('order') or 'time'
+        # 用户指定的排序方式，默认为按照创建时间排序
+    direction = args.get('direction') or 'front'
+        # 用户指定的顺序，默认为正序
+    path = args.get('path')
+        # 用户当前访问的总路径
+    fileid = args.get('rootid')
+        # 用户当前要访问的目录 Id
+    password = args.get('password')
+        # 该目录的共享密码
+    rootfile = File.query.get(fileid)
+
+    # 检验访问的合法性
+    if rootfile is None or \
+        (rootfile.owner != current_user and \
+        (rootfile.private or rootfile.linkpass != password) and \
+         not current_user.can(Permission.ADMINISTER)):
+        # 文件不存在 或
+        # 文件不属于当前用户且 文件为私有或提取码不正确 且 当前
+        # 用户不具备管理员权限
+        abort(403)
+    if not rootfile.isdir:
+        return redirect(url_for('main.file', id=file.uid))
+    if rootfile.isdir and rootfile.owner == current_user:
+        # 当前用户持有该目录
+        return redirect(url_for('main.cloud',
+                                path=rootfile.path +
+                                     rootfile.filename +
+                                     '/'))
+    # 修正不合法的路径
+    if path is None or path == '':
+        path = rootfile.path +\
+               rootfile.filename +\
+               '/'
+
+    # 当路径不为根目录时，检查该路径对于当前用户是否合法（该用户是否已创建该目录）
+    if path != '/':
+        if len(path.split('/')) < 3 or path[-1] != '/':
+            abort(403)
+        ___filename = path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 "
+                                   "and filename=:f and ownerid=:d").\
+                            params(p=___path,
+                                   f=___filename,
+                                   d=rootfile.ownerid).first()
+        if isPath is None or \
+           (isPath.private and \
+            not current_user.can(Permission.ADMINISTER)) or \
+           (password != isPath.linkpass and \
+            not current_user.can(Permission.ADMINISTER)):
+            # 目录不存在或 目录为私有且当前用户非管理员 或
+            # 目录提取码不正确且当前用户非管理员
+            abort(403)
+        if isPath.owner == current_user:
+            return redirect(url_for('main.cloud', path = path))
+
+    if isPath is None:
+        abort(403)
+    currentFolder = isPath
+
+    # 生成搜索表单，当用户提交时跳转并查询
+    form = SearchForm()
+    if form.validate_on_submit():
+        return redirect(url_for('main.view_do',
+                token=current_user.generate_view_token(
+                                key = form.key.data,
+                                rootid = rootfile.uid,
+                                _linkpass =
+                                    currentFolder.linkpass,
+                                path = path,
+                                type = type,
+                                order = order,
+                                direction = direction,
+                                expiration=3600
+                ),
+                page = page))
+    form.key.data = key
+
+    # 无论用户是否指定关键词，先根据用户指定的文件类型，查询对应的文件
+    if type == 'video':
+        query = rootfile.owner.files.\
+            filter(generateFilelike(videoList))
+    elif type == 'document':
+        query = rootfile.owner.files.\
+            filter(generateFilelike(docList))
+    elif type == 'photo':
+        query = rootfile.owner.files.\
+            filter(generateFilelike(photoList))
+    elif type == 'music':
+        query = rootfile.owner.files.\
+            filter(generateFilelike(musicList))
+    elif type == 'compress':
+        query = rootfile.owner.files.\
+            filter(generateFilelike(compressList))
+    else:
+        query = rootfile.owner.files.\
+            filter("path=:p").params(p=path)
+
+    # 确保只显示属于共享用户的共享目录和文件
+    # 代码中的 _path 不可被修改为其他占位符！
+    query = query.\
+        filter("ownerid=:oid and private=0 and "
+               "path like :_path and linkpass=:_link").\
+        params(oid=rootfile.ownerid,
+               _path=path+'%',
+               _link=rootfile.linkpass)
+
+    if key != '':
+        # 当用户指定关键字时，在当前目录下递归检索所有可能文件。
+        if type in ['video', 'document', 'photo', 'music',
+                        'compress']:
+            # 若用户已指定查询类型
+            query = query.\
+                filter("filename like :lfn and "
+                     "ownerid=:id and path like :_path").\
+                      params(lfn = '%' + key + '%',
+                             id = rootfile.ownerid,
+                             _path = path + '%')
+        else:
+            # 用户未指定查询类型时在整个目录下递归检索
+            query = File.query.\
+                filter("filename like :lfn and "
+                     "ownerid=:id and path like :_path").\
+                      params(lfn = '%' + key + '%',
+                             id = rootfile.ownerid,
+                             _path = path + '%')
+
+    # 按用户指定顺序对文件排序
+    if order == 'name':
+        if direction == 'reverse':
+            query = query.order_by(File.filename.desc())
+        else:
+            query = query.order_by(File.filename.asc())
+    else:
+        if direction == 'reverse':
+            query = query.order_by(File.created.asc())
+        else:
+            query = query.order_by(File.created.desc())
+
+    # 对文件列表分页
+    pagination = query.paginate(
+        page, per_page=current_app.config['ZENITH_FILES_PER_PAGE'],
+        error_out=False
+    )
+    files = pagination.items
+    file_types = generateFileTypes(files)
+    return render_template('main/viewShares.html',
+                           files = file_types,
+                           form= form,
+                           _type= type or 'all',
+                           _order= order or 'time',
+                           key = key or '',
+                           rootfile = rootfile,
+                           path= path,
+                           _direction= direction or 'front',
+                           pagination = pagination,
+                           pathlists= generateSharedPathList(
+                                   rootfile.path,
+                                   path
+                           ))
+
+# ------------------------------------------------------------------------------
 # download 函数为设有分享密码的文件/目录提供了验证界面，否则直接跳转到 download_do 入口。
 @main.route('/download/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -850,8 +1117,9 @@ def download(id):
     # 管理员权限时，返回403错误
         abort(403)
     if file.linkpass is None or file.linkpass == '' or \
-        file.owner == current_user:
-        # 文件未设置共享密码或属于当前用户，直接跳转到下载界面
+        file.owner == current_user or \
+        current_user.can(Permission.ADMINISTER):
+        # 文件未设置共享密码或属于当前用户或当前用户为管理员，直接跳转到下载界面
         return redirect(url_for('main.download_do',
             token=current_user.generate_download_token(file.uid,
                                                        file.linkpass,

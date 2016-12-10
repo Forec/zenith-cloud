@@ -1,10 +1,32 @@
 <ul class="posts">
-    {% for file in files %}
+    {% for file, file_type in files %}
     <li class="post">
         <div class="post-thumbnail">
-            <a href="{{ url_for('.user', id=file.owner.uid) }}">
-                <img class="img-rounded profile-thumbnail" src="{{ file.owner.gravatar(size=40) }}">
-            </a>
+            {% if file.isdir == True %}
+            <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='director.png') }}">
+            {% else %}
+                {% if file_type == "video" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='video.png') }}">
+                {% elif file_type == "photo" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='photo.png') }}">
+                {% elif file_type == "compress" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='compress.png') }}">
+                {% elif file_type == "doc" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='doc.png') }}">
+                {% elif file_type == "ppt" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='ppt.png') }}">
+                {% elif file_type == "excel" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='excel.png') }}">
+                {% elif file_type == "txt" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='txt.png') }}">
+                {% elif file_type == "md" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='md.png') }}">
+                {% elif file_type == "music" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='music.png') }}">
+                {% else %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='file.png') }}">
+                {% endif %}
+            {% endif %}
         </div>
         <div class="post-content">
             <div class="post-date">
@@ -23,69 +45,28 @@
                     {% endif %}
                 {% endif %}
                 &nbsp;&nbsp;
-
-                发布时间：{{ moment(file.created).fromNow() }}
+                创建时间：{{ moment(file.created).fromNow() }}
             </div>
-            <div class="post-author">资源发布者：
-                <a href="{{ url_for('.user', id=file.owner.uid) }}">
-                    {{ file.owner.nickname }}
-                </a>
-                &nbsp;&nbsp;&nbsp;
-                {% if file.isdir %}
-                目录：
+            <div class="post-author">
+                {% if file.isdir == True %}
+                <a href="{{ url_for('main.view_do', token = current_user.generate_view_token(
+                 rootid=rootfile.uid, type='all', key ='', _linkpass= rootfile.linkpass,
+                 path=path ~ file.filename ~ '/', order=_order, direction=_direction, expiration=3600)) }}">
+                    {{ file.filename }}</a>
                 {% else %}
-                文件：
-                {% endif %}
-                {% if file.owner == current_user %}
-                {% if file.isdir %}
-                <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', ) }}">
-                    {{ file.filename }}
-                </a>
-                {% else %}
-                <a href="{{ url_for('.file', id=file.uid ) }}">
-                    {{ file.filename }}
-                </a>
-                {% endif %}
-                {% else %}
-                <a href="{{ url_for('.file', id=file.uid) }}">
-                    {{ file.filename }}
-                </a>
+                <a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a>
                 {% endif %}
             </div>
-
-            <div class="post-body">
-                {% if file.isdir %}
-                目录描述：
-                {% else %}
-                文件描述：
-                {% endif %}
-                {% if file.description %}
-                    {% if file.description == '' %}
-                        无
-                    {% else %}
-                        {{ file.description|truncate(140, False) }}
-                    {% endif %}
-                {% else %}
-                    无
-                {% endif %}
-            </div>
-
             <div class="post-footer">
+
                 <span class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown">
                         <span class = "label label-primary">操作<span class="caret"></span></span>
                     </a>
                     <ul class="dropdown-menu">
                         {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
-                        <li><a href="{{ url_for('main.download', id=file.uid) }}">下载</a></li>
-                        {% endif %}
-
-                        {% if file.private == False and current_user != file.owner and current_user.is_authenticated%}
-                        <li><a href="{{ url_for('main.fork', id=file.uid) }}">Fork</a></li>
-                        {% endif %}
-
-                        {% if file.isdir and current_user != file.owner and current_user.is_authenticated %}
-                        <li><a href="{{ url_for('main.view_share_folder_entry', id=file.uid) }}">进入目录</a></li>
+                        <li><a href="{{ url_for('main.download_do', token=
+                            current_user.generate_download_token(file.uid, file.linkpass, expiration=3600)) }}">下载</a></li>
                         {% endif %}
 
                         {% if current_user == file.owner %}
@@ -107,7 +88,6 @@
                             {% endif %}
                         {% endif %}
                         <li><a href="{{ url_for('.file', id=file.uid) }}">资源外链</a></li>
-
                     </ul>
                 </span>
                <a href="{{ url_for('.file', id=file.uid) }}#comments">
