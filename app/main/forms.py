@@ -1,18 +1,37 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, \
-    BooleanField, SelectField, FileField
-from wtforms.validators import Required, Length, Email, Regexp, ValidationError
-from flask_pagedown.fields import PageDownField
-from ..models import Role, User, File
+# 作者：Forec
+# 最后修改时间：2016-12-10
+# 邮箱：forec@bupt.edu.cn
+# 关于此文件：包含了 main 蓝本中使用到的全部 wtf 表单
 
+from ..models import Role, User
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, \
+    TextAreaField, BooleanField, SelectField, FileField
+from wtforms.validators import Required, Length, \
+    Email, ValidationError
+
+# ------------------------------------------------------------------
+# 用户编辑自己个人资料的表单，昵称长度必须在 3 到 64 个字符之间，且必须唯一
 class EditProfileForm(FlaskForm):
-    nickname = StringField('昵称', validators=[Length(0, 64)])
+    nickname = StringField('昵称', validators=[Length(3, 64)])
     about_me = TextAreaField('关于我')
     submit = SubmitField('提交')
 
+    def validate_nickname(self, field):     # 验证昵称未被其他用户使用
+        if field.data != self.user.nickname and \
+            User.query.filter_by(nickname=field.data).first():
+            raise ValidationError('该昵称已被使用.')
+
+# ------------------------------------------------------------------
+# 管理员编辑用户资料的表单，电子邮箱和昵称必须唯一。
 class EditProfileAdminForm(FlaskForm):
-    email = StringField('电子邮箱', validators=[Required(), Length(5,64), Email()])
-    nickname = StringField('昵称', validators=[Required(), Length(1, 64)])
+    email = StringField('电子邮箱',
+                        validators=[Required(),
+                                    Length(5,64),
+                                    Email()])
+    nickname = StringField('昵称',
+                        validators=[Required(),
+                                    Length(3, 64)])
     confirmed = BooleanField('已验证邮箱')
     role = SelectField('身份', coerce=int)
     about_me = TextAreaField('关于我')
@@ -21,54 +40,81 @@ class EditProfileAdminForm(FlaskForm):
     def __init__(self, user, *args, **kwargs):
         super(EditProfileAdminForm, self).__init__(*args, **kwargs)
         self.role.choices = [(role.id, role.name)
-                             for role in Role.query.order_by(Role.name).all()]
+                for role in Role.query.order_by(Role.name).all()]
         self.user = user
 
-    def validate_email(self, field):
+    def validate_email(self, field):    # 验证邮箱未被其他用户注册
         if field.data != self.user.email and \
-                User.query.filter_by(email=field.data).first():
+            User.query.filter_by(email=field.data).first():
             raise ValidationError('该邮箱已注册.')
 
-    def validate_nickname(self, field):
+    def validate_nickname(self, field):     # 验证昵称未被其他用户使用
         if field.data != self.user.nickname and \
-                User.query.filter_by(nickname=field.data).first():
+            User.query.filter_by(nickname=field.data).first():
             raise ValidationError('该昵称已被使用.')
 
+# ------------------------------------------------------------------------
+# 用户上传文件的表单，文件名长度不能超过 128 字符。
 class FileForm(FlaskForm):
-    file = FileField('', validators=[Required()])
+    filename = StringField('文件名',
+                           validators=[Required(),
+                                       Length(1, 128)])
+    file = FileField('选择文件')
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('确定上传')
-    def validate_body(self, field):
+
+    def validate_body(self, field):     # 限制资源描述在 200 字符内
         if len(field.data) > 200:
             raise ValidationError('描述过长，请限制在200字内')
 
+# -------------------------------------------------------------------------
+# 用户执行删除文件操作时，用于确认的表单。
 class FileDeleteConfirmForm(FlaskForm):
-    filename = StringField("文件名", validators=[Required(), Length(1, 128)])
+    filename = StringField("文件名",
+                           validators=[Required(),
+                                       Length(1, 128)])
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('修改')
-    def validate_body(self, field):
+
+    def validate_body(self, field):     # 限制资源描述在 200 字符内
         if len(field.data) > 200:
             raise ValidationError('描述过长，请限制在200字内')
 
+# -------------------------------------------------------------------------
+# 用户评论提交表单
 class CommentForm(FlaskForm):
-    body = StringField('添加评论', validators=[Required()])
+    body = StringField('添加评论',
+                       validators=[Required()])
     submit = SubmitField('提交')
 
+# --------------------------------------------------------------------------
+# 管理员在搜索关键字评论/文件、用户搜索关键字文件/消息时的表单。
 class SearchForm(FlaskForm):
-    key = StringField('搜索', validators=[])
+    key = StringField()
+    go = SubmitField('搜索')
 
+# --------------------------------------------------------------------------
+# 用户聊天时发送消息的表单，消息不能超过 300 字符。
 class ChatForm(FlaskForm):
-    body = TextAreaField('发送消息', validators=[Length(0, 300)])
+    body = TextAreaField('发送消息',
+                         validators=[Length(1, 300)])
     submit = SubmitField('发送')
+
     def validate_body(self, field):
-        if len(field.data) > 300:
+        if len(field.data) > 300:       # 限制消息长度在 300 字符内
             raise ValidationError('消息过长，请限制在300字内')
 
+# ---------------------------------------------------------------------------
+# 用户设置文件共享属性的表单。
 class SetShareForm(FlaskForm):
-    password = StringField('请设置共享密码（0~4位），留空则其他用户可直接下载',
-                           validators=[Length(0,4, message="共享密码不能超过 4 位")])
+    password = StringField(
+        '请设置共享密码（0~4位），'
+        '留空则其他用户可直接下载',
+        validators=[Length(0,4,message="共享密码不能超过 4 位")])
     submit = SubmitField('确定')
 
+# ----------------------------------------------------------------------------
+# 用户下载/Fork其他用户的资源时，输入提取码的验证表单。
 class ConfirmShareForm(FlaskForm):
     password = StringField('请输入提取码（1~4位）',
                            validators=[Required()])

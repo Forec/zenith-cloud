@@ -9,7 +9,7 @@
     <h1>{% if current_user.is_authenticated %}{{ current_user.nickname }} 的云盘{% endif %}</h1>
 </div>
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-7">
     {% if _type== "all" %}
     <a href="{{ url_for('main.cloud', type='all', direction=_direction, order=_order) }}">
         <button type="button" class="btn btn-success">全部</button>
@@ -102,8 +102,20 @@
         </a>
     {% endif %}
     </div>
-    <div class="col-md-4" style="text-align:right">
-        <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
+
+    <div class="col-md-3" style="text-align:right">
+        <form method="POST" action="{{ url_for('main.cloud') }}">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-3">
+                    {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
+                </div>
+                    {{ form.go(class="btn btn-success", placeholder="搜索") }}
+            </div>
+        </form>
+    </div>
+    <div class="col-md-2" style="text-align:right">
+        <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传</button></a>
     <a href="{{ url_for('main.newfolder', path=_path) }}">
         <button type="button" class="btn btn-info">新文件夹</button>
     </a>

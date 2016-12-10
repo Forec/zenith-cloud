@@ -5,7 +5,7 @@
 #    文件操作、下载、聊天模块、管理员界面等。
 # 蓝本：main
 
-import codecs, os, random, string, shutil, zipfile, os.path
+import os, random, shutil, zipfile, os.path
 
 from datetime     import datetime, timedelta
 from sqlalchemy   import or_, and_
@@ -708,7 +708,7 @@ def messages():
 
 # --------------------------------------------------------------------------
 # cloud 函数提供了“我的云盘”界面入口
-@main.route('/cloud/')
+@main.route('/cloud/', methods=['GET', 'POST'])
 @login_required
 def cloud():
     # generateFilelike 函数根据传入的 list 中包含的文件后缀名，生成
@@ -723,6 +723,8 @@ def cloud():
         # 用户指定的文件类型，默认为 'all'
     path = request.args.get('path', '/', type=str)
         # 用户当前访问的目录，默认为根目录 '/'
+    key = request.args.get('key', '', type=str)
+        # 用户指定的检索关键字，默认为空
     order = request.args.get('order', 'time', type=str)
         # 用户指定的排序方式，默认为按照创建时间排序
     direction = request.args.get('direction', 'front', type=str)
@@ -748,21 +750,43 @@ def cloud():
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
-    # 根据用户指定的文件类型，查询对应的文件
-    if type == 'video':
-        query = current_user.files.filter(generateFilelike(videoList))
-    elif type == 'document':
-        query = current_user.files.filter(generateFilelike(docList))
-    elif type == 'photo':
-        query = current_user.files.filter(generateFilelike(photoList))
-    elif type == 'music':
-        query = current_user.files.filter(generateFilelike(musicList))
-    elif type == 'compress':
-        query = current_user.files.filter(generateFilelike(compressList))
-    else:
-        query = current_user.files.filter("path=:p").params(p=path)
-    # 确保只显示属于当前用户的目录和文件
-    query.filter("ownerid=:oid").params(oid=current_user.uid)
+    # 生成搜索表单，当用户提交时跳转并查询
+    form = SearchForm()
+    if form.validate_on_submit():
+        return redirect(url_for('main.cloud',
+                                key = form.key.data,
+                                page=page,
+                                path=path,
+                                type=type,
+                                order=order,
+                                direction=direction
+                                ))
+    form.key.data = key
+
+    # 当用户指定关键字时，在当前目录下递归检索所有可能文件。
+    if key != '':
+        query = File.query.\
+            filter("filename like :fn and "
+                   "ownerid=:d and path like :p").\
+            params(fn = '%' + key + '%',
+                   d = current_user.uid,
+                   path = path + '%')
+
+    else:   # 用户未指定关键词，根据用户指定的文件类型，查询对应的文件
+        if type == 'video':
+            query = current_user.files.filter(generateFilelike(videoList))
+        elif type == 'document':
+            query = current_user.files.filter(generateFilelike(docList))
+        elif type == 'photo':
+            query = current_user.files.filter(generateFilelike(photoList))
+        elif type == 'music':
+            query = current_user.files.filter(generateFilelike(musicList))
+        elif type == 'compress':
+            query = current_user.files.filter(generateFilelike(compressList))
+        else:
+            query = current_user.files.filter("path=:p").params(p=path)
+        # 确保只显示属于当前用户的目录和文件
+        query.filter("ownerid=:oid").params(oid=current_user.uid)
 
     # 按用户指定顺序对文件排序
     if order == 'name':
@@ -786,6 +810,7 @@ def cloud():
     return render_template('main/cloud.html',
                            files = file_types,
                            _type=type,
+                           form=form,
                            _order=order,
                            curpath=path,
                           _direction=direction ,

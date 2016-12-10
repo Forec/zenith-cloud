@@ -13,7 +13,10 @@
 </div>
 
 <div class="page-header">
-    {{ wtf.quick_form(form) }}
+    <form method="POST" action="{{ url_for('main.messages') }}">
+        {{ form.hidden_tag() }}
+        {{ form.key(class="form-control", placeholder="根据关键字检索消息") }}
+    </form>
 </div>
 
 {% if messages %}
