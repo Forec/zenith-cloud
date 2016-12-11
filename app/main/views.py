@@ -16,7 +16,8 @@ from flask_login  import login_required, current_user
 from .forms       import EditProfileForm, EditProfileAdminForm, \
                         FileForm, CommentForm, SearchForm, \
                         FileDeleteConfirmForm, ChatForm, \
-                        SetShareForm, ConfirmShareForm
+                        SetShareForm, ConfirmShareForm, \
+                        NewFolderForm
 from .            import main
 from ..           import db
 from ..decorators import admin_required, permission_required
@@ -185,6 +186,7 @@ def index():
                       page*current_app.\
                         config['ZENITH_FILES_PER_PAGE']]
     return render_template('index.html',
+                           key =key or '',
                            form = form,
                            files = files,
                            _len = len(files),
@@ -193,8 +195,8 @@ def index():
 
 # -----------------------------------------------------------------
 # show_all 用于将用户 cookie 中的 show_followed 选项复位
+# 注意此处不需 login_required
 @main.route('/all')
-@login_required
 def show_all():
     resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('show_followed', '', max_age=30*24*60*60)
@@ -500,6 +502,16 @@ def edit_file(id):
             form.filename.data is None:
             flash("文件名不合法！")
             return redirect(url_for('.file', id=file.uid))
+        _file = File.query.\
+            filter('filename=:lfn and ownerid=:_id and path=:_path').\
+            params(lfn = form.filename.data,
+                   _id = current_user.uid,
+                   _path = file.path).first()
+        if _file is not None and _file.uid != file.uid:
+            # 目录下已存在与新文件名同名的文件/目录
+            flash('当前目录下已存在与您新指定的文件同名的目录！')
+            return redirect(url_for('main.edit_file',
+                                    id=file.uid))
         file.filename = form.filename.data
         file.description = form.body.data
         db.session.add(file)
@@ -757,7 +769,6 @@ def cloud():
     # 当路径不为根目录时，检查该路径对于当前用户是否合法（该用户是否已创建该目录）
     if path != '/':
         if len(path.split('/')) < 3 or path[-1] != '/':
-            print("short")
             abort(403)
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
@@ -814,10 +825,12 @@ def cloud():
             # 用户未指定查询类型时在整个目录下递归检索
             query = File.query.\
                 filter("filename like :lfn and "
-                     "ownerid=:id and path like :_path").\
+                     "ownerid=:_suid and path like :_path").\
                       params(lfn = '%' + key + '%',
-                             id = current_user.uid,
+                             _suid = current_user.uid,
                              _path = path + '%')
+            for _file in query.all():
+                print(_file.uid , _file.filename, _file.path, _file.ownerid)
 
     # 按用户指定顺序对文件排序
     if order == 'name':
@@ -844,8 +857,8 @@ def cloud():
                            form=form,
                            _order=order,
                            key = key,
-                           curpath=path,
-                          _direction=direction ,
+                           _path=path,
+                           _direction=direction ,
                            pagination = pagination,
                            pathlists=generatePathList(path))
 
@@ -1443,6 +1456,10 @@ def copy_check(token):
                    d=current_user.uid).first()
         if isSameExist:
             # 寻找到同名文件
+            if isSameExist.isdir:
+                sameType = '文件夹'
+            else:
+                sameType = '文件'
             if file.isdir:  # 待拷贝为目录时，只需在目录名后添加 '-副本i'
                 type = "文件夹"
                 if i == 0:
@@ -1469,7 +1486,7 @@ def copy_check(token):
         else:
             if tempname != file.filename:
                 # 若 tempname 与原文件/目录名不同说明存在同名文件
-                flash("目标目录存在同名" + type + file.filename +
+                flash("目标目录存在同名" + sameType + file.filename +
                       "，已将您要复制的" + type + "重命名为 " + tempname)
             break
         i += 1
@@ -1674,6 +1691,10 @@ def move_check(token):
                    f = tempname,
                    d=current_user.uid).first()
         if isSameExist:
+            if isSameExist.isdir:
+                sameType = '文件夹'
+            else:
+                sameType = '文件'
             if isSameExist.uid == file.uid:
                 # 若要移动到的目录为当前文件所在目录，则无需移动
                 if file.isdir:
@@ -1709,7 +1730,7 @@ def move_check(token):
                             '-副本' + str(i) + '.' + suffix
         else:
             if tempname != file.filename:
-                flash("目标目录存在同名" + type + file.filename +
+                flash("目标目录存在同名" + sameType + file.filename +
                       "，已将您要移动的" + type + "重命名为 " + tempname)
             break
         i += 1
@@ -1754,11 +1775,13 @@ def fork(id):
             return redirect('main.file', id=file.uid)
     if file is None or file.private == True:
         abort(403)
-    if file.linkpass is None or file.linkpass == '':
+    if file.linkpass is None or \
+        file.linkpass == '' or \
+        current_user.can(Permission.ADMINISTER):
         return redirect(url_for('main.fork_do',
                                 path = '/',
                                 id = file.uid,
-                                _pass = ''))
+                                _pass = file.linkpass))
     form = ConfirmShareForm()
     if form.validate_on_submit():
         if form.password.data == file.linkpass:
@@ -1933,6 +1956,10 @@ def fork_check(token):
                    f = tempname,
                    d = current_user.uid).first()
         if isSameExist:
+            if isSameExist.isdir:
+                sameType = '文件夹'
+            else:
+                sameType = '文件'
             if file.isdir:
                 type = "文件夹"
                 if i == 0:
@@ -1958,7 +1985,7 @@ def fork_check(token):
                             '-副本' + str(i) + '.' + suffix
         else:
             if tempname != file.filename:
-                flash("目标路径存在同名" + type + file.filename +
+                flash("目标路径存在同名" + sameType + file.filename +
                       "，已将您要 Fork 的" + type + "重命名为 " + tempname)
             break
         i += 1
@@ -2035,11 +2062,94 @@ def fork_check(token):
 # ------------------------------------------------------------------------
 # newfolder 为用户创建目录提供了入口，用户可在云盘界面、复制、移动、Fork 的同
 # 时创建新文件夹。此入口提供了简单的目录编辑界面，在确认创建后会重定向回原始URL。
-@main.route('/newfolder/')
+@main.route('/newfolder/', methods=['GET', 'POST'])
 @login_required
 def newfolder():
-    # TODO
-    pass
+    path = request.args.get('path', '/', type=str)
+    if path is None:
+        abort(403)
+    print("path:", path)
+
+    # 当要创建文件夹的路径不为根目录时，检查该路径对于当前用户是否合法（该用户
+    #     是否已创建该目录）
+    if path != '/':
+        if len(path.split('/')) < 3 or path[-1] != '/':
+            print("fuck3")
+            abort(403)
+        ___filename = path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = path[:___filenameLen]
+        isPath = File.query.\
+            filter("path=:_path and isdir=1 and "
+                   "filename=:lfn and ownerid=:_id").\
+            params(_path=___path,
+                   lfn=___filename,
+                   _id=current_user.uid).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+
+    form = NewFolderForm()
+    if form.validate_on_submit():
+
+        # 判断是否在同目录下存在同名文件/目录
+        tempname = form.foldername.data
+        i = 0
+        while 1:
+            isSameExist = File.query.\
+                filter("path=:p and filename=:f and ownerid=:d").\
+                params(p=path,
+                       f = tempname,
+                       d=current_user.uid).first()
+            if isSameExist:
+                if isSameExist.isdir:
+                    sameType = '文件夹'
+                else:
+                    sameType = '文件'
+                if i == 0:
+                    tempname = form.foldername.data + '-副本'
+                else:
+                    tempname = form.foldername.data + '-副本' + str(i)
+            else:
+                if tempname != form.foldername.data:
+                    flash("目标目录存在同名" + sameType +
+                          form.foldername.data + "，已将您要移动的"
+                          "文件夹重命名为 " + tempname)
+                break
+            i += 1
+
+        # 创建新目录
+        f = File(filename=tempname,
+                 isdir=True,
+                 private=True,
+                 path=path,
+                 cfileid=-1,
+                 linkpass='',
+                 ownerid=current_user.uid,
+                 description=form.body.data,
+                 perlink=''
+                 )
+        db.session.add(f)
+        db.session.commit()
+        # 提交以获得 uid 并产生 perlink
+        f = File.query.\
+            filter('filename=:lfn and path=:_path and ownerid=:_id ').\
+            params(lfn = tempname,
+                   _path = path,
+                   _id = current_user.uid).first()
+        if f is None:
+            abort(500)
+        f.perlink = url_for('main.file',
+                                  id=f.uid)
+        db.session.add(f)
+        if form.share.data:
+            return redirect(url_for('main.set_share',
+                                    id=f.uid))
+        else:
+            return redirect(url_for('main.file',
+                                    id=f.uid))
+    return render_template('main/newfolder.html',
+                           path = path,
+                           form = form)
 
 # ------------------------------------------------------------------------
 # delete_message 为用户提供了删除聊天消息的入口，一条聊天消息的接收/发送方均

@@ -50,7 +50,7 @@
             </div>
             <div class="post-author">
                 {% if file.isdir == True %}
-                <a href="{{ url_for('main.fork_do', path= _path ~ file.filename ~ '/', _pass=_pass,
+                <a href="{{ url_for('main.fork_do', path= file.path ~ file.filename ~ '/', _pass=_pass,
                     direction=_direction, order=_order, id=_file.uid) }}">
                     {{ file.filename }}</a>
                 {% else %}

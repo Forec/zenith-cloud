@@ -119,3 +119,17 @@ class ConfirmShareForm(FlaskForm):
     password = StringField('请输入提取码（1~4位）',
                            validators=[Required()])
     submit = SubmitField('确定')
+
+# ----------------------------------------------------------------------------
+# 用户创建文件夹界面
+class NewFolderForm(FlaskForm):
+    foldername = StringField("文件夹名",
+                           validators=[Required(),
+                                       Length(1, 128)])
+    body = TextAreaField("目录描述（回车和多余空字符将被过滤）")
+    share = BooleanField("分享此目录")
+    submit = SubmitField('新建')
+
+    def validate_body(self, field):     # 限制资源描述在 200 字符内
+        if len(field.data) > 200:
+            raise ValidationError('描述过长，请限制在200字内')

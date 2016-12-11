@@ -101,13 +101,6 @@
     </div>
 
     <div class="post-footer">
-                {% if file.isdir and file.owner != current_user %}
-                <span class="label label-success">
-                    <a href="{{ url_for('main.view_share_folder_entry', id=file.uid) }}">
-                        进入目录
-                    </a>
-                </span>
-                {% endif %}
                 <span class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown">
                         <span class = "label label-primary">操作<span class="caret"></span></span>
@@ -121,7 +114,7 @@
                         <li><a href="{{ url_for('main.fork', id=file.uid) }}">Fork</a></li>
                         {% endif %}
 
-                        {% if file.isdir and current_user != file.owner and current_user.is_authenticated %}
+                        {% if file.isdir and current_user != file.owner %}
                         <li><a href="{{ url_for('main.view_share_folder_entry', id=file.uid) }}">进入目录</a></li>
                         {% endif %}
 

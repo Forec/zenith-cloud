@@ -9,7 +9,7 @@
     <h1>{% if current_user.is_authenticated %}{{ current_user.nickname }}{% else %}游客{% endif %}，您好!</h1>
 </div>
 <div class="row">
-    <div class="col-md-7">
+    <div class="col-md-6">
         <h2 style="display:inline">与世界分享你的文件</h2>
     </div>
 
@@ -22,10 +22,15 @@
         </form>
     </div>
 
-    <div class="col-md-2" style="text-align:right">
-        {% if current_user.can(Permission.WRITE_ARTICLES) %}
-        <a href="{{ url_for('main.upload', path='/public/') }}"><button type="button" class="btn btn-success">上传新文件</button></a>
-        {% endif %}
+    <div class="col-md-3" style="text-align:right">
+        <a href="{{ url_for('main.index', key='') }}">
+            {% if key == '' %}
+                <button type="button" class="btn btn-default disabled">清空筛选条件</button>
+            {% else %}
+                <button type="button" class="btn btn-success">清空筛选条件</button>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传</button></a>
     </div>
 </div>
 

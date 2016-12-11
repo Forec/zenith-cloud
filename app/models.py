@@ -191,7 +191,6 @@ class User(UserMixin, db.Model):
         else:
             files_related = File.query.filter(File.path.like(file.path+file.filename+'/%')).all()
             for _file in files_related:
-                print(_file.filename)
                 if _file.cfileid > 0:
                     cfile = _file.cfile
                     cfile.ref -= 1
