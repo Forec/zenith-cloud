@@ -184,8 +184,15 @@ class User(UserMixin, db.Model):
             if file.cfileid > 0:
                 cfile = file.cfile
                 cfile.ref -= 1
-                db.session.add(cfile)
                 self.used -= cfile.size
+                if cfile.ref <= 0:
+                    os.remove(
+                        current_app.config['ZENITH_FILE_STORE_PATH'] +
+                        str(cfile.uid)
+                    )
+                    db.session.delete(cfile)
+                else:
+                    db.session.add(cfile)
                 db.session.add(self)
             db.session.delete(file)
         else:
@@ -194,8 +201,16 @@ class User(UserMixin, db.Model):
                 if _file.cfileid > 0:
                     cfile = _file.cfile
                     cfile.ref -= 1
-                    db.session.add(cfile)
                     self.used -= cfile.size
+                    print("ref:", cfile.ref)
+                    if cfile.ref <= 0:
+                        os.remove(
+                            current_app.config['ZENITH_FILE_STORE_PATH'] +
+                            str(cfile.uid)
+                        )
+                        db.session.delete(cfile)
+                    else:
+                        db.session.add(cfile)
                     db.session.add(self)
                 db.session.delete(_file)
             db.session.delete(file)
@@ -412,7 +427,7 @@ class User(UserMixin, db.Model):
                      confirmed = True,
                      about_me = forgery_py.lorem_ipsum.sentence(),
                      member_since = forgery_py.date.date(True))
-            f = File(path = '/',
+            f1 = File(path = '/',
                      filename = 'public',
                      perlink = '',
                      cfileid= -1,
@@ -422,8 +437,19 @@ class User(UserMixin, db.Model):
                      created= u.member_since,
                      owner = u,
                      description ='')
+            f2 = File(path = '/',
+                     filename = 'upload',
+                     perlink = '',
+                     cfileid= -1,
+                     isdir=True,
+                     linkpass = '',
+                     private = 1,
+                     created= u.member_since,
+                     owner = u,
+                     description ='')
             db.session.add(u)
-            db.session.add(f)
+            db.session.add(f1)
+            db.session.add(f2)
             try:
                 db.session.commit()
             except IntegrityError:

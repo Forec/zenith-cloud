@@ -119,10 +119,12 @@
                 <button type="button" class="btn btn-success">清空筛选条件</button>
             {% endif %}
         </a>
-        <a href="{{ url_for('main.upload') }}"><button type="button" class="btn btn-success">上传</button></a>
-    <a href="{{ url_for('main.newfolder', path=_path) }}">
-        <button type="button" class="btn btn-info">新文件夹</button>
-    </a>
+        <a href="{{ url_for('main.upload', path=_path) }}">
+            <button type="button" class="btn btn-success">上传</button>
+        </a>
+        <a href="{{ url_for('main.newfolder', path=_path) }}">
+            <button type="button" class="btn btn-info">新文件夹</button>
+        </a>
     </div>
 </div>
 

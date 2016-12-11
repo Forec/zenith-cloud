@@ -5,8 +5,9 @@
 
 from ..models import Role, User
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, SubmitField, \
-    TextAreaField, BooleanField, SelectField, FileField
+    TextAreaField, BooleanField, SelectField
 from wtforms.validators import Required, Length, \
     Email, ValidationError
 
@@ -55,11 +56,8 @@ class EditProfileAdminForm(FlaskForm):
 
 # ------------------------------------------------------------------------
 # 用户上传文件的表单，文件名长度不能超过 128 字符。
-class FileForm(FlaskForm):
-    filename = StringField('文件名',
-                           validators=[Required(),
-                                       Length(1, 128)])
-    file = FileField('选择文件')
+class UploadForm(FlaskForm):
+    file = FileField('选择文件', validators=[FileRequired()])
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('确定上传')
 
@@ -121,7 +119,7 @@ class ConfirmShareForm(FlaskForm):
     submit = SubmitField('确定')
 
 # ----------------------------------------------------------------------------
-# 用户创建文件夹界面
+# 用户创建文件夹表单
 class NewFolderForm(FlaskForm):
     foldername = StringField("文件夹名",
                            validators=[Required(),

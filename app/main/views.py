@@ -14,7 +14,7 @@ from flask        import render_template, session, redirect, url_for, \
                         make_response, send_from_directory
 from flask_login  import login_required, current_user
 from .forms       import EditProfileForm, EditProfileAdminForm, \
-                        FileForm, CommentForm, SearchForm, \
+                        UploadForm, CommentForm, SearchForm, \
                         FileDeleteConfirmForm, ChatForm, \
                         SetShareForm, ConfirmShareForm, \
                         NewFolderForm
@@ -23,6 +23,7 @@ from ..           import db
 from ..decorators import admin_required, permission_required
 from ..models     import User, Role, Permission, File, \
                         Comment, Message,Pagination, CFILE
+from werkzeug.utils import secure_filename
 
 # --------------------------------------------------------------------
 # 以下列表为服务器支持的不同图标显示格式（视频、图片、文档、压缩包、音频），会
@@ -478,7 +479,7 @@ def delete_file_confirm(token):
         flash('文件已被删除')
         if current_user.can(Permission.ADMINISTER) and \
             uid != current_user.uid:
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.moderate_files'))
         else:
             return redirect(url_for('main.cloud',
                                     path=returnURL,
@@ -650,12 +651,14 @@ def moderate_files():
 @admin_required
 def moderate_files_delete(id):
     file = File.query.get_or_404(id)
-    db.session.delete(file)
-    return redirect(url_for('.moderate_files',
-                            page=request.args.\
-                                get('page', 1, type=int),
-                            key = request.args.\
-                                get('key', '', type=str)))
+    return redirect(url_for('main.delete_file_confirm',
+                            token=current_user.\
+                                generate_delete_token(
+                                    fileid=id,
+                                    expiration=3600
+                            )
+                        )
+                    )
 
 # -------------------------------------------------------------------
 # messages 函数是用户消息界面的入口，提供了用户与其它用户交流的消息缩略，
@@ -1195,7 +1198,7 @@ def download_do(token):
         data = f.read()
         response = make_response(data)
         response.headers["Content-Disposition"] = \
-            "attachment; filename=" + file.filename
+            "attachment; filename=" + file.filename.encode('utf-8')
         return response
 
     # 若要下载的不是目录且文件不为空
@@ -1211,7 +1214,7 @@ def download_do(token):
         data = f.read()
         response = make_response(data)
         response.headers["Content-Disposition"] = \
-            "attachment; filename=" + file.filename
+            "attachment; filename=" + str(file.filename.encode('gbk'))
         return response
 
     # 用户试图下载目录，则在 TEMP 目录下新建一个目录，该目录名称
@@ -1220,9 +1223,7 @@ def download_do(token):
         while True:
             randomBasePath = current_app.\
                 config['ZENITH_TEMPFILE_STORE_PATH'] + \
-                ''.join(random.sample(['a', 'b','c','d','e','f','g','h','i','j','k','l',
-                                      'm','n','o', 'p', 'q', 'r','s','t','u','v','w','x','y','z',
-                                      '1','2','3','4','5','6','7','8','9','0'],
+                ''.join(random.sample(current_app.config['ZENITH_RANDOM_PATH_ELEMENTS'],
                                       current_app.config['ZENITH_TEMPFOLDER_LENGTH']))
             if os.path.exists(randomBasePath):
             # 若创建的随机目录已存在则重新创建
@@ -1315,16 +1316,179 @@ def download_do(token):
         data = f.read()
         response = make_response(data)
         response.headers["Content-Disposition"] = \
-            "attachment; filename=" + file.filename + '.zip'
+            "attachment; filename=" + file.filename.encode('utf-8') + '.zip'
         return response
 
 # --------------------------------------------------------------------
-# upload 为用户上传文件界面提供入口
-@main.route('/upload/')
+# upload_do 为用户上传文件界面提供入口
+@main.route('/upload_do/', methods=['GET', 'POST'])
 @login_required
 def upload():
-    # TODO
-    return 'TODO'
+    def unzip_file(zipfilename, unziptodir):
+        # unzip_file 可将压缩文件解包
+        if not os.path.exists(unziptodir):
+            os.mkdir(unziptodir, 0x0777)
+        zfobj = zipfile.ZipFile(zipfilename)
+        for name in zfobj.namelist():
+            if '/' in name:
+                name = name.replace('/',
+                        current_app.config['ZENITH_PATH_SEPERATOR'])
+            if '\\' in name:
+                name = name.replace('\\',
+                        current_app.config['ZENITH_PATH_SEPERATOR'])
+            if name.endswith(current_app.config['ZENITH_PATH_SEPERATOR']):
+                os.mkdir(os.path.join(unziptodir, name))
+            else:
+                ext_filename = os.path.join(unziptodir, name)
+                ext_dir= os.path.dirname(ext_filename)
+                if not os.path.exists(ext_dir):
+                    os.mkdir(ext_dir,0x0777)
+                outfile = open(ext_filename, 'wb')
+                outfile.write(zfobj.read(name))
+                outfile.close()
+
+    path = request.args.get('path', '/upload/', type=str)
+        # 用户要将文件上传到的目录
+
+    # 当路径不为根目录时，检查该路径对于当前用户是否合法（该用户是否已创建该目录）
+    if path != '/':
+        if len(path.split('/')) < 3 or path[-1] != '/':
+            abort(403)
+        ___filename = path.split('/')[-2]
+        ___filenameLen = -(len(___filename)+1)
+        ___path = path[:___filenameLen]
+        isPath = File.query.filter("path=:p and isdir=1 "
+                                   "and filename=:f and ownerid=:d").\
+                            params(p=___path,
+                                   f=___filename,
+                                   d=current_user.uid).first()
+        if isPath is None or isPath.owner != current_user:
+            abort(403)
+
+    form = UploadForm()
+    if form.validate_on_submit():
+        while True:
+            randomBasePath = current_app.\
+                config['ZENITH_TEMPFILE_STORE_PATH'] + \
+                ''.join(random.sample(
+                        current_app.\
+                            config['ZENITH_RANDOM_PATH_ELEMENTS'],
+                        current_app.\
+                            config['ZENITH_TEMPFOLDER_LENGTH']))
+            if os.path.exists(randomBasePath):
+            # 若创建的随机目录已存在则重新创建
+                continue
+            os.mkdir(randomBasePath)
+            randomBasePath += current_app.\
+                config['ZENITH_PATH_SEPERATOR']
+            break
+        filename = form.file.data.filename
+        for invalidInffix in current_app.config['ZENITH_INVALID_INFFIX']:
+            # 保证文件名安全
+            if invalidInffix in filename:
+                flash('您上传的文件名不合法，请检查并重新上传！')
+                abort(403)
+
+        form.file.data.save(
+                randomBasePath + filename)  # 使用用户文件名保存文件
+        if not os.path.exists(
+                randomBasePath + filename): # 验证文件存在
+            abort(500)
+
+        if filename.split('.')[-1] == \
+            current_app.config['ZENITH_FOLDER_ZIP_SUFFIX']:
+            # 用户上传的是一个目录
+
+            try:
+                unzip_file(randomBasePath + filename,
+                        randomBasePath)
+                zipflag = True
+            except:
+                # 上传目录无法使用 zip 解压，提示错误
+                flash('您压缩的目录内容无法使用 zip 算法解压，'
+                      '请重新检查后上传！')
+                zipflag = False
+
+            os.remove(randomBasePath + filename)
+            if not zipflag:
+                # 无法解压则重定向回上传界面
+                return redirect(url_for('main.upload',
+                                        path=path))
+
+            for parent, dirnames, filenames in os.walk(randomBasePath):
+                # 父目录名称、所有文件夹名称（不含路径）、所有文件名称
+                for _dirname in dirnames:
+                    print(parent, _dirname)
+                for _filename in filenames:
+                    print(parent, _filename)
+                    print(os.path.join(parent, _filename))
+            return 'ok'
+
+        else:
+            # 用户上传的是单个普通文件
+            md5 = CFILE.md5FromFile(
+                    randomBasePath + filename)  # 计算文件 md5
+            cfile = CFILE.query.\
+                    filter("md5=:_md5").\
+                    params(_md5=md5).first()        # 查询是否已存在对应文件
+
+            if cfile is None:
+                # 不存在相同 md5 的文件则创建 CFILE 记录
+                cf = CFILE(
+                    md5 = md5,
+                    size = os.path.\
+                        getsize(
+                        randomBasePath +
+                        filename
+                    ),
+                    ref = 1
+                )
+                db.session.add(cf)
+                db.session.commit()
+                    # commit 以获得 cfileid
+                cf = CFILE.query.\
+                    filter('md5=:_md5').\
+                    params(_md5=md5).first()
+                if cf is None:
+                    abort(500)
+                shutil.copy(
+                    randomBasePath + filename,
+                    current_app.config['ZENITH_FILE_STORE_PATH'] +
+                        str(cf.uid)
+                )
+                if not os.path.exists(
+                    current_app.config['ZENITH_FILE_STORE_PATH'] +
+                        str(cf.uid)
+                ):
+                    db.session.delete(cf)
+                    abort(500)
+            else:
+                cf = cfile      # 已存在相同 md5 文件
+
+            f = File(path = path,
+                     filename = filename,
+                     perlink = '',
+                     cfileid = cf.uid,
+                     isdir = False,
+                     linkpass = '',
+                     private = 1,
+                     owner = current_user,
+                     description = form.body.data
+                     )
+            db.session.add(f)
+            db.session.commit()
+            f = File.query.\
+                filter('filename=:_lfn and path=:_path '
+                       'and ownerid=:_id').\
+                params(_lfn = filename,
+                       _path = path,
+                       _id = current_user.uid).\
+                first()
+            return redirect(url_for('main.file',id = f.uid))
+
+    return render_template('main/upload.html',
+                           form=form,
+                           path=path)
 
 # ----------------------------------------------------------------------
 # copy 函数为用户复制文件/目录界面提供了入口，用户可通过此函数复制自己云盘中的
