@@ -452,7 +452,10 @@ def delete_file(id):
         file.filename = form.filename.data
         file.description = form.body.data
         db.session.add(file)
-        flash('文件信息已被更新')
+        if file.isdir:
+            flash('目录信息已被更新')
+        else:
+            flash('文件信息已被更新')
         return redirect(url_for('.file',id = file.uid))
     form.body.data=file.description
     form.filename.data = file.filename
@@ -476,7 +479,7 @@ def delete_file_confirm(token):
         # 由用户的自定义方法 delete_file 删除此文件/目录，该自定义方法会识别
         # 要删除的是文件/文件夹并删除关联文件
     if returnURL is not None:
-        flash('文件已被删除')
+        flash('成功删除！')
         if current_user.can(Permission.ADMINISTER) and \
             uid != current_user.uid:
             return redirect(url_for('main.moderate_files'))
@@ -510,13 +513,16 @@ def edit_file(id):
                    _path = file.path).first()
         if _file is not None and _file.uid != file.uid:
             # 目录下已存在与新文件名同名的文件/目录
-            flash('当前目录下已存在与您新指定的文件同名的目录！')
+            flash('当前目录下已存在与您新指定的名称同名的文件/目录！')
             return redirect(url_for('main.edit_file',
                                     id=file.uid))
         file.filename = form.filename.data
         file.description = form.body.data
         db.session.add(file)
-        flash('文件信息已被更新')
+        if file.isdir:
+            flash('目录信息已被更新')
+        else:
+            flash('文件信息已被更新')
         return redirect(url_for('.file',id = file.uid))
     form.body.data=file.description
     form.filename.data = file.filename
@@ -810,8 +816,9 @@ def cloud():
         query = current_user.files.filter(generateFilelike(compressList))
     else:
         query = current_user.files.filter("path=:p").params(p=path)
+
     # 确保只显示属于当前用户的目录和文件
-    query = query.filter("ownerid=:oid").params(oid=current_user.uid)
+    query = query.filter("ownerid=:_oid").params(_oid=current_user.uid)
 
     if key != '':
         # 当用户指定关键字时，在当前目录下递归检索所有可能文件。
@@ -832,8 +839,6 @@ def cloud():
                       params(lfn = '%' + key + '%',
                              _suid = current_user.uid,
                              _path = path + '%')
-            for _file in query.all():
-                print(_file.uid , _file.filename, _file.path, _file.ownerid)
 
     # 按用户指定顺序对文件排序
     if order == 'name':
@@ -1198,7 +1203,7 @@ def download_do(token):
         data = f.read()
         response = make_response(data)
         response.headers["Content-Disposition"] = \
-            "attachment; filename=" + file.filename.encode('utf-8')
+            ("attachment; filename=" + file.filename).encode('utf-8')
         return response
 
     # 若要下载的不是目录且文件不为空
@@ -1214,7 +1219,7 @@ def download_do(token):
         data = f.read()
         response = make_response(data)
         response.headers["Content-Disposition"] = \
-            "attachment; filename=" + str(file.filename.encode('gbk'))
+            ("attachment; filename=" + file.filename).encode('utf-8')
         return response
 
     # 用户试图下载目录，则在 TEMP 目录下新建一个目录，该目录名称
@@ -1280,7 +1285,9 @@ def download_do(token):
             cfileName = _file.cfileid
             if cfileName < 0:  # 空文件
                 cfileName = 0
-            shutil.copy(current_app.config['ZENITH_FILE_STORE_PATH'] + '0',
+            shutil.copy(current_app.\
+                            config['ZENITH_FILE_STORE_PATH'] +
+                            str(cfileName),
                         randomBasePath + fileName)
             if not os.path.exists(randomBasePath + fileName):
                 # 文件未能成功复制，返回 500 错误
@@ -1289,10 +1296,11 @@ def download_do(token):
         # zip_dir 可将文件/目录压缩为指定名称的压缩文件
         def zip_dir(dirname, zipfilename):
             toZipFilelist = []
-            if os.path.isfile(dirname):
-                toZipFilelist.append(dirname)
-            else :
+            toZipFilelist.append(dirname)
+            if not os.path.isfile(dirname):
                 for root, dirs, files in os.walk(dirname):
+                    for name in dirs:
+                        toZipFilelist.append(os.path.join(root, name))
                     for name in files:
                         toZipFilelist.append(os.path.join(root, name))
 
@@ -1316,7 +1324,7 @@ def download_do(token):
         data = f.read()
         response = make_response(data)
         response.headers["Content-Disposition"] = \
-            "attachment; filename=" + file.filename.encode('utf-8') + '.zip'
+            ("attachment; filename=" + file.filename +'.zip').encode('utf-8')
         return response
 
 # --------------------------------------------------------------------
@@ -1329,23 +1337,39 @@ def upload():
         if not os.path.exists(unziptodir):
             os.mkdir(unziptodir, 0x0777)
         zfobj = zipfile.ZipFile(zipfilename)
+        baseDir = zfobj.namelist()[0]
         for name in zfobj.namelist():
-            if '/' in name:
-                name = name.replace('/',
+            for inffix in current_app.config['ZENITH_INVALID_INFFIX']:
+                if inffix in name:
+                    if inffix == '/':
+                        count = name.count('//')
+                        if count < 1:
+                            continue
+                    flash('您上传的压缩包中存在违例文件！')
+                    abort(403)
+            writeName = name
+            if '/' in writeName:
+                writeName = writeName.replace('/',
                         current_app.config['ZENITH_PATH_SEPERATOR'])
-            if '\\' in name:
-                name = name.replace('\\',
+            if '\\' in writeName:
+                writeName = writeName.replace('\\',
                         current_app.config['ZENITH_PATH_SEPERATOR'])
-            if name.endswith(current_app.config['ZENITH_PATH_SEPERATOR']):
-                os.mkdir(os.path.join(unziptodir, name))
+            if writeName.endswith(current_app.config['ZENITH_PATH_SEPERATOR']):
+                # 此文件是目录
+                os.mkdir(os.path.join(unziptodir, writeName))
             else:
-                ext_filename = os.path.join(unziptodir, name)
+                ext_filename = os.path.join(unziptodir, writeName)
                 ext_dir= os.path.dirname(ext_filename)
                 if not os.path.exists(ext_dir):
                     os.mkdir(ext_dir,0x0777)
                 outfile = open(ext_filename, 'wb')
                 outfile.write(zfobj.read(name))
                 outfile.close()
+        return baseDir
+
+    def clear(dir):
+        # clear 函数用于将产生的temp文件清空
+        shutil.rmtree(dir)
 
     path = request.args.get('path', '/upload/', type=str)
         # 用户要将文件上传到的目录
@@ -1387,7 +1411,7 @@ def upload():
             # 保证文件名安全
             if invalidInffix in filename:
                 flash('您上传的文件名不合法，请检查并重新上传！')
-                abort(403)
+                return redirect(url_for('main.upload', path =path))
 
         form.file.data.save(
                 randomBasePath + filename)  # 使用用户文件名保存文件
@@ -1398,9 +1422,10 @@ def upload():
         if filename.split('.')[-1] == \
             current_app.config['ZENITH_FOLDER_ZIP_SUFFIX']:
             # 用户上传的是一个目录
-
+            baseDir = None  # 用户上传压缩包代表的目录名
             try:
-                unzip_file(randomBasePath + filename,
+                baseDir = unzip_file(
+                        randomBasePath + filename,
                         randomBasePath)
                 zipflag = True
             except:
@@ -1409,20 +1434,158 @@ def upload():
                       '请重新检查后上传！')
                 zipflag = False
 
-            os.remove(randomBasePath + filename)
             if not zipflag:
                 # 无法解压则重定向回上传界面
+                clear(randomBasePath)
                 return redirect(url_for('main.upload',
                                         path=path))
+
+            if baseDir[-1] != '/':
+                # 用户上传的压缩包中不包含任何目录，为单个文件
+                flash('您上传的压缩包中未包含任何目录结构，'
+                      '请检查后重新上传！')
+                clear(randomBasePath)
+                return redirect(url_for('main.upload',
+                                        path=path))
+
+            basename = baseDir[:-1]
+            tempname = baseDir[:-1]  # 确定要上传的目录下没有同名文件
+            i = 0
+            while 1:
+                isSameExist = File.query.\
+                    filter("path=:p and filename=:f and ownerid=:d").\
+                    params(p=path,
+                           f = tempname,
+                           d=current_user.uid).first()
+                sameType = '文件'
+                if isSameExist:
+                    if isSameExist.isdir:
+                        sameType = '文件夹'
+                    if i == 0:
+                        tempname = basename + '-副本'
+                    else:
+                        tempname = basename + '-副本' + str(i)
+                else:
+                    if tempname != basename:
+                        flash("目标目录存在同名" + sameType +
+                              basename + "，已将您要上传的"
+                              "目录重命名为 " + tempname)
+                    break
+                i += 1
+
+            basePath = path + tempname
+                # 解压出的目录中的所有文件路径前缀均需替换为此
+            replacePathLen = len(randomBasePath + baseDir)
+                # 解压出的目录在服务器中的所有文件路径前缀需要替换的长度
+            os.remove(randomBasePath + filename)
+                # 删除用户上传的压缩包
+
+            # 向数据库创建压缩包根目录
+            baseFolder = File(
+                path = path,
+                filename = tempname,
+                perlink = '',
+                cfileid = -1,
+                isdir=True,
+                linkpass = '',
+                ownerid = current_user.uid,
+                private = form.share.data,
+                description = form.body.data
+            )
+            db.session.add(baseFolder)
 
             for parent, dirnames, filenames in os.walk(randomBasePath):
                 # 父目录名称、所有文件夹名称（不含路径）、所有文件名称
                 for _dirname in dirnames:
-                    print(parent, _dirname)
+                    if _dirname == basename:
+                        continue
+                    # 遍历每个文件夹，创建目录结构
+                    _dirpath = parent[replacePathLen:].\
+                        strip(current_app.\
+                              config['ZENITH_PATH_SEPERATOR'])
+                    _dirpath = _dirpath.replace(
+                            current_app.\
+                                config['ZENITH_PATH_SEPERATOR'],
+                            '/')
+                    if _dirpath != '':
+                        _dirpath += '/'
+                        # 非根目录文件需要增加一个 '/'
+                    _dirpath = basePath + '/' + _dirpath
+
+                    # 在数据库创建目录记录
+                    df = File(
+                        filename = _dirname,
+                        path = _dirpath,
+                        perlink = '',
+                        cfileid = -1,
+                        isdir = True,
+                        linkpass = '',
+                        ownerid = current_user.uid,
+                        private = form.share.data,
+                        description= ''
+                    )
+                    db.session.add(df)
+
                 for _filename in filenames:
-                    print(parent, _filename)
-                    print(os.path.join(parent, _filename))
-            return 'ok'
+                    md5 = CFILE.md5FromFile(
+                            os.path.join(parent,
+                                         _filename))
+                        # 计算每个文件的 md5
+                    cf = CFILE.query.filter("md5=:_md5").\
+                        params(_md5=md5).first()
+                    if cf is None:
+                        # 此文件需加入 CFILE
+                        cf = CFILE(
+                            size=os.path.getsize(
+                                os.path.join(parent,_filename)
+                            ),
+                            ref=1,
+                            md5=md5,
+                        )
+                        db.session.add(cf)
+                        db.session.commit()
+                        cf = CFILE.query.filter("md5=:_md5").\
+                            params(_md5=md5).first()
+                        if cf is None:
+                            # 加入数据库失败
+                            clear(randomBasePath)
+                            abort(500)
+
+                        shutil.copy(
+                            os.path.join(parent, _filename),
+                            current_app.\
+                                config['ZENITH_FILE_STORE_PATH'] +
+                                str(cf.uid)
+                        )   # 拷贝文件到存储目录
+
+                    _filePath = parent[replacePathLen:].\
+                        strip(current_app.\
+                              config['ZENITH_PATH_SEPERATOR'])
+                    _filePath = _filePath.replace(
+                            current_app.\
+                                config['ZENITH_PATH_SEPERATOR'],
+                            '/')
+                    if _filePath != '':
+                        _filePath += '/'
+                    _filePath = basePath + '/' + _filePath
+
+                    # 创建文件 FILE 记录
+                    uf = File(
+                        filename = _filename,
+                        path = _filePath,
+                        perlink = '',
+                        cfileid = cf.uid,
+                        isdir=False,
+                        linkpass='',
+                        private=1,
+                        ownerid=current_user.uid,
+                        description=''
+                    )
+                    db.session.add(uf)
+            db.session.commit()
+            clear(randomBasePath)
+                # 跳转到云盘界面，路径为要上传的目录所在的路径
+            return redirect(url_for('main.cloud', path=path))
 
         else:
             # 用户上传的是单个普通文件
@@ -1484,6 +1647,7 @@ def upload():
                        _path = path,
                        _id = current_user.uid).\
                 first()
+            clear(randomBasePath)
             return redirect(url_for('main.file',id = f.uid))
 
     return render_template('main/upload.html',
@@ -1618,12 +1782,12 @@ def copy_check(token):
             params(p=_path,
                    f = tempname,
                    d=current_user.uid).first()
+
+        sameType = '文件'
         if isSameExist:
             # 寻找到同名文件
             if isSameExist.isdir:
                 sameType = '文件夹'
-            else:
-                sameType = '文件'
             if file.isdir:  # 待拷贝为目录时，只需在目录名后添加 '-副本i'
                 type = "文件夹"
                 if i == 0:
@@ -1854,11 +2018,11 @@ def move_check(token):
             params(p=_path,
                    f = tempname,
                    d=current_user.uid).first()
+
+        sameType = '文件'
         if isSameExist:
             if isSameExist.isdir:
                 sameType = '文件夹'
-            else:
-                sameType = '文件'
             if isSameExist.uid == file.uid:
                 # 若要移动到的目录为当前文件所在目录，则无需移动
                 if file.isdir:
@@ -2119,11 +2283,11 @@ def fork_check(token):
             params(p=_path,
                    f = tempname,
                    d = current_user.uid).first()
+
+        sameType = '文件'
         if isSameExist:
             if isSameExist.isdir:
                 sameType = '文件夹'
-            else:
-                sameType = '文件'
             if file.isdir:
                 type = "文件夹"
                 if i == 0:
@@ -2232,13 +2396,11 @@ def newfolder():
     path = request.args.get('path', '/', type=str)
     if path is None:
         abort(403)
-    print("path:", path)
 
     # 当要创建文件夹的路径不为根目录时，检查该路径对于当前用户是否合法（该用户
     #     是否已创建该目录）
     if path != '/':
         if len(path.split('/')) < 3 or path[-1] != '/':
-            print("fuck3")
             abort(403)
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
@@ -2264,11 +2426,10 @@ def newfolder():
                 params(p=path,
                        f = tempname,
                        d=current_user.uid).first()
+            sameType = '文件'
             if isSameExist:
                 if isSameExist.isdir:
                     sameType = '文件夹'
-                else:
-                    sameType = '文件'
                 if i == 0:
                     tempname = form.foldername.data + '-副本'
                 else:

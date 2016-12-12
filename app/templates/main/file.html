@@ -60,12 +60,15 @@
     <div class="post-author">
         {% if file.isdir %}
         目录名：
+        <a href="{{ url_for('.cloud', path=file.path ~ file.filename ~ '/') }}">
+            {{ file.filename }}
+        </a>
         {% else %}
         文件名：
-        {% endif %}
         <a href="{{ url_for('.file', id=file.uid) }}">
             {{ file.filename }}
         </a>
+        {% endif %}
         &nbsp;&nbsp;&nbsp;
 
         {% if current_user != file.owner %}

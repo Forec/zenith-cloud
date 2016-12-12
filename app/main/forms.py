@@ -4,6 +4,7 @@
 # 关于此文件：包含了 main 蓝本中使用到的全部 wtf 表单
 
 from ..models import Role, User
+from flask import current_app
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, SubmitField, \
@@ -58,12 +59,18 @@ class EditProfileAdminForm(FlaskForm):
 # 用户上传文件的表单，文件名长度不能超过 128 字符。
 class UploadForm(FlaskForm):
     file = FileField('选择文件', validators=[FileRequired()])
+    share = BooleanField('共享此文件/目录')
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('确定上传')
 
     def validate_body(self, field):     # 限制资源描述在 200 字符内
         if len(field.data) > 200:
             raise ValidationError('描述过长，请限制在200字内')
+    def validate_file(self, field):     # 禁止违例文件名
+        for inffix in current_app.config['ZENITH_INVALID_INFFIX']:
+            if inffix in field.data.filename:
+                raise ValidationError('您上传的文件名不合法，'
+                                      '请检查并重新上传！')
 
 # -------------------------------------------------------------------------
 # 用户执行删除文件操作时，用于确认的表单。
