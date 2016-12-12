@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_pagedown import PageDown
 from config import config
-import pymysql
+import os, pymysql
 pymysql.install_as_MySQLdb()
 
 bootstrap = Bootstrap()
@@ -35,5 +35,14 @@ def create_app(config_name):
     app.register_blueprint(main_blueprint)
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix = '/auth')
+
+    try:
+        os.mkdir(config[config_name].ZENITH_FILE_STORE_PATH)
+    except:
+        pass
+    try:
+        os.mkdir(config[config_name].ZENITH_TEMPFILE_STORE_PATH)
+    except:
+        pass
 
     return app

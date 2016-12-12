@@ -8,7 +8,8 @@ from flask import current_app
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, SubmitField, \
-    TextAreaField, BooleanField, SelectField
+    TextAreaField, BooleanField, SelectField, \
+    IntegerField
 from wtforms.validators import Required, Length, \
     Email, ValidationError
 
@@ -34,6 +35,7 @@ class EditProfileAdminForm(FlaskForm):
     nickname = StringField('昵称',
                         validators=[Required(),
                                     Length(3, 64)])
+    maxm = IntegerField('云盘容量（MB）', validators=[Required()])
     confirmed = BooleanField('已验证邮箱')
     role = SelectField('身份', coerce=int)
     about_me = TextAreaField('关于我')

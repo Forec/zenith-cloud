@@ -302,12 +302,14 @@ def edit_profile_admin(id):
         user.role = Role.query.get(form.role.data)
         user.nickname = form.nickname.data
         user.about_me = form.about_me.data
+        user.maxm = form.maxm.data
         db.session.add(user)
         flash('用户 ' + user.nickname +' 资料已更新')
         return redirect(url_for('.user',id=user.uid))
     form.email.data = user.email
     form.confirmed.data = user.confirmed
     form.role.data = user.role_id
+    form.maxm.data = user.maxm
     form.nickname.data = user.nickname
     form.about_me.data = user.about_me
     return render_template('main/edit_profile.html', form=form)
