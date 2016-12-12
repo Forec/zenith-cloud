@@ -1,5 +1,5 @@
 # 作者：Forec
-# 最后修改日期：2016-12-10
+# 最后修改日期：2016-12-12
 # 邮箱：forec@bupt.edu.cn
 # 关于此文件：此文件包含了服务器除认证外的所有的界面入口，包括首页、云盘界面、
 #    文件操作、下载、聊天模块、管理员界面等。
@@ -250,18 +250,25 @@ def user(id):
                       reverse=True)
         # 将文件按创建时间排序，最近创建的文件显示在最前
     filelist = generateFileTypes(filelist)
+    if filelist is None:
+        total_count = 0
+    else:
+        total_count = len(filelist)
     pagination = Pagination(page=page,
                             per_page=current_app.\
                             config['PROFILE_ZENITH_FILES_PER_PAGE'],
-                            total_count=len(filelist))
-    files = filelist[(page-1)*current_app.\
-                        config['PROFILE_ZENITH_FILES_PER_PAGE']:
-                      page*current_app.\
-                        config['PROFILE_ZENITH_FILES_PER_PAGE']]
+                            total_count=total_count)
+    if filelist is not None:
+        files = filelist[(page-1)*current_app.\
+                            config['PROFILE_ZENITH_FILES_PER_PAGE']:
+                          page*current_app.\
+                            config['PROFILE_ZENITH_FILES_PER_PAGE']]
+    else:
+        files = []
     return render_template('main/user.html',
                            user = user,
                            files= files,
-                           share_count=len(filelist),   # 用户共享的资源数量
+                           share_count=total_count,   # 用户共享的资源数量
                            pagination=pagination)
 
 # -----------------------------------------------------------------------
@@ -1334,6 +1341,11 @@ def download_do(token):
 def upload():
     def unzip_file(zipfilename, unziptodir):
         # unzip_file 可将压缩文件解包
+
+        # --------------------------------------------------------
+        # 注：需修改 zipfile 源代码包含 flags & 0x800 的两个
+        # if 代码段，将默认编码方式改为 gbk（windows下）。
+
         if not os.path.exists(unziptodir):
             os.mkdir(unziptodir, 0x0777)
         zfobj = zipfile.ZipFile(zipfilename)
@@ -1577,14 +1589,26 @@ def upload():
                         cfileid = cf.uid,
                         isdir=False,
                         linkpass='',
-                        private=1,
+                        private=form.share.data,
                         ownerid=current_user.uid,
                         description=''
                     )
                     db.session.add(uf)
             db.session.commit()
             clear(randomBasePath)
-                # 跳转到云盘界面，路径为要上传的目录所在的路径
+            if form.share.data is True:
+                baseFolder = File.query.\
+                                filter('filename=:_lfn and path=:_path '
+                                       'and ownerid=:_id').\
+                                params(_lfn = tempname,
+                                       _path = path,
+                                       _id = current_user.uid).\
+                                first()
+                if baseFolder is None:
+                    abort(500)
+                return redirect(url_for('main.set_share',
+                                        id = baseFolder.uid))
+                # 不共享时跳转到云盘界面，路径为要上传的目录所在的路径
             return redirect(url_for('main.cloud', path=path))
 
         else:
@@ -1634,7 +1658,7 @@ def upload():
                      cfileid = cf.uid,
                      isdir = False,
                      linkpass = '',
-                     private = 1,
+                     private = form.share.data,
                      owner = current_user,
                      description = form.body.data
                      )
@@ -1648,6 +1672,9 @@ def upload():
                        _id = current_user.uid).\
                 first()
             clear(randomBasePath)
+            if form.share.data is True:
+                return redirect(url_for('main.set_share',
+                                        id=f.uid))
             return redirect(url_for('main.file',id = f.uid))
 
     return render_template('main/upload.html',

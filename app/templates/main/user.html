@@ -26,10 +26,11 @@
 
             {% if current_user.can(Permission.FOLLOW) and user != current_user %}
                 {% if not current_user.is_following(user) %}
-                <a href="{{ url_for('.follow', id=user.uid) }}" class="btn btn-primary">Follow</a>
+                <a href="{{ url_for('.follow', id=user.uid) }}" class="btn btn-primary">关注他</a>
                 {% else %}
-                <a href="{{ url_for('.unfollow', id=user.uid) }}" class="btn btn-default">Unfollow</a>
+                <a href="{{ url_for('.unfollow', id=user.uid) }}" class="btn btn-default">取消关注</a>
                 {% endif %}
+                <a href="{{ url_for('main.chat', id=user.uid) }}" class="btn btn-success">私信</a>
             {% endif %}
 
         {% if user == current_user %}
