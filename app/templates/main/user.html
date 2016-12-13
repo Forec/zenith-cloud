@@ -3,7 +3,7 @@
 {% block title %}顶点云 - {{ user.nickname }}{% endblock %}
 
 {% block page_content %}
-<section id="top" class="two">
+<section id="top" class="three">
     <div class="container">
         <header>
             <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=224) }}">
@@ -61,12 +61,13 @@
                     <h3>用户 {{ user.nickname }} 发布了 {{ share_count }} 项共享资源</h3>
                 </footer>
                 {% include 'main/_userfiles.html' %}
-                {% if pagination %}
+            </div>
+
+            {% if pagination %}
                 <div class="pagination">
                     {{ macros.pagination_widget(pagination, 'main.user', id=user.uid) }}
                 </div>
-                {% endif %}
-            </div>
+            {% endif %}
         </header>
     </div>
 </section>

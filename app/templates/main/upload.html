@@ -4,10 +4,12 @@
 {% block title %}顶点云 - 上传文件{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h2>上传文件到 <a href="{{ url_for('main.cloud', path=path) }}">{{ path }}</a></h2>
-</div>
-<div class="col-md-4">
-    {{ wtf.quick_form(form) }}
-</div>
+<section id="top" class="three">
+    <div class="container">
+        <header>
+            <h2>上传文件到目录 “<a href="{{ url_for('main.cloud', path=path) }}">{{ path }}</a>”</h2>
+            {{ wtf.quick_form(form) }}
+        </header>
+    </div>
+</section>
 {% endblock %}

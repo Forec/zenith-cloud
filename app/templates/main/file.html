@@ -83,9 +83,8 @@
                                     {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
                                 {% endif %}
                             {% endif %}
+                            &nbsp;&nbsp;
                         {% endif %}
-                        &nbsp;&nbsp;
-
                         {% if current_user == file.owner %}
                         创建时间：{{ moment(file.created).fromNow() }}
                         {% else %}

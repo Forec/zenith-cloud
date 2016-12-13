@@ -29,32 +29,40 @@
             {% endif %}
         </div>
         <div class="post-content">
-            <div class="post-date">
-                {% if not file.isdir %}
-                    {% if file.cfileid > 0 %}
-                        文件大小：
-                        {% if file.cfile.size < 1024 %}
-                            {{ file.cfile.size }} B
-                        {% elif file.cfile.size < 1048576 %}
-                            {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
-                        {% elif file.cfile.size < 1073741824 %}
-                            {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
-                        {% else %}
-                            {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
-                        {% endif %}
+            <div class="post-header">
+
+                <div class="post-author">
+                    <p style="line-height:100%;margin:6px 0px 0px 0px">
+                    {% if file.isdir == True %}
+                    <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', direction=_direction, order=_order) }}">
+                        {{ file.filename }}</a>
+                    {% else %}
+                    <a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a>
                     {% endif %}
-                {% endif %}
-                &nbsp;&nbsp;
-                创建时间：{{ moment(file.created).fromNow() }}
+                    </p>
+                </div>
+
+                <div class="post-date">
+                    {% if not file.isdir %}
+                        {% if file.cfileid > 0 %}
+                            文件大小：
+                            {% if file.cfile.size < 1024 %}
+                                {{ file.cfile.size }} B
+                            {% elif file.cfile.size < 1048576 %}
+                                {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                            {% elif file.cfile.size < 1073741824 %}
+                                {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                            {% else %}
+                                {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                            {% endif %}
+                        {% endif %}
+                        &nbsp;&nbsp;
+                    {% endif %}
+                    创建时间：{{ moment(file.created).fromNow() }}
+                </div>
+
             </div>
-            <div class="post-author">
-                {% if file.isdir == True %}
-                <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', direction=_direction, order=_order) }}">
-                    {{ file.filename }}</a>
-                {% else %}
-                <a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a>
-                {% endif %}
-            </div>
+
             <div class="post-footer">
 
                 <span class="dropdown">

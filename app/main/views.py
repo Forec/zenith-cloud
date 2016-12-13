@@ -105,6 +105,13 @@ def rules():
     return render_template('main/rules.html')
 
 # ----------------------------------------------------------------
+# moderate 函数提供了 “管理” 界面的入口
+@main.route('/moderate')
+@admin_required
+def moderate():
+    return render_template('main/moderate.html')
+
+# ----------------------------------------------------------------
 # index 为服务器主页入口点，将展示用户共享的资源描述，并保证了对于同一路
 # 径下的子目录/文件，只展示顶层路径，如：
 #  /

@@ -9,6 +9,7 @@
 <link rel="shortcut icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" type="image/x-icon">
 <link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" type="image/x-icon">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/basic.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap/bootstrap.min.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/template/main.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/notification/ns-default.css') }}" />
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/notification/ns-style-bar.css') }}" />
@@ -33,7 +34,7 @@
 			{% if current_user.is_authenticated %}	
 				<!--已登陆用户显示头像和简介，用户昵称链接到用户资料界面-->
 			<span class="image avatar48"><img src="{{ current_user.gravatar(size=48) }}" alt="" /></span>
-				<h1 id="title" style="margin-left:40px"><a href="{{ url_for('main.user', id=current_user.uid) }}">{{ current_user.nickname }}</a></h1>
+				<h1 style="margin-left:40px"><a href="{{ url_for('main.user', id=current_user.uid) }}">{{ current_user.nickname }}</a></h1>
 				<div style="margin-left:60px">
 					<p>{{ current_user.about_me }}</p>
 				</div>
@@ -47,19 +48,24 @@
 		<!-- Nav -->
 		<nav id="nav">
 			<ul>
-				<li><a href="{{ url_for('main.index') }}" id="top-link" class="skel-layers-ignoreHref">
+				<li><a href="{{ url_for('main.index') }}" class="skel-layers-ignoreHref">
 					<span class="icon fa-share-alt">发现</span></a></li>
 				{% if current_user.is_authenticated %}
 					<li><a href="{{ url_for('main.cloud', page=1, type='all', path='/', order='time', direction='front') }}" id="top-link" class="skel-layers-ignoreHref">
 						<span class="icon fa-cloud">我的云盘</span></a></li>
-					<li><a href="{{ url_for('auth.secure_center') }}" id="portfolio-link" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('auth.secure_center') }}" class="skel-layers-ignoreHref">
 						<span class="icon fa-lock">安全中心</span></a></li>
-					<li><a href="{{ url_for('main.messages', key='') }}" id="about-link" class="skel-layers-ignoreHref">
-						<span class="icon fa-user">消息</span></a></li>
-					<li><a href="{{ url_for('auth.logout') }}" id="contact-link" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('main.messages', key='') }}" class="skel-layers-ignoreHref">
+						<span class="icon fa-bell">消息</span></a></li>
+                    {% if current_user.can(Permission.MODERATE_FILES) %}
+    					<li><a href="{{ url_for('main.moderate', key='') }}" class="skel-layers-ignoreHref">
+	    					<span class="icon fa-check">管理</span></a></li>
+                    {% endif %}
+
+					<li><a href="{{ url_for('auth.logout') }}" class="skel-layers-ignoreHref">
 						<span class="icon fa-sign-out">登出</span></a></li>
 				{% else %}
-					<li><a href="{{ url_for('auth.login') }}" id="contact-link" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('auth.login') }}" class="skel-layers-ignoreHref">
 						<span class="icon fa-sign-in">登入</span></a></li>
 				{% endif %}
 			</ul>
@@ -96,6 +102,8 @@
 {{ moment.include_jquery() }}
 {{ moment.lang("zh-CN") }}
 
+<!--<script src="{{ url_for('static', filename='js/bootstrap/bootstrap.js') }}"></script>-->
+<!--<script src="{{ url_for('static', filename='js/bootstrap/bootstrap.min.js') }}"></script>-->
 <script src="{{ url_for('static', filename='js/template/jquery.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/template/jquery.scrolly.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/template/jquery.scrollzer.min.js') }}"></script>

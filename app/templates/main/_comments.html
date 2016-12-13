@@ -12,7 +12,7 @@
             <div class="comment-author"><a href="{{ url_for('.user', id=comment.author.uid) }}">{{ comment.author.nickname }}</a></div>
             <div class="comment-body">
                 {% if comment.disabled %}
-                <p><i>此评论已被 评论发布者 或 资源发布者 或 管理员 设置为不可见。</i></p>
+                    <p><i>此评论已被 评论发布者 或 资源发布者 或 管理员 设置为不可见。</i></p>
                 {% endif %}
                 {% if moderate or not comment.disabled %}
                     {% if comment.body_html %}
