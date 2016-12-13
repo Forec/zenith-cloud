@@ -1,7 +1,7 @@
-<ul class="posts">
+<ul class="comments">
     {% for message, count in messages %}
-    <li class="post">
-        <div class="post-thumbnail">
+    <li class="comment">
+        <div class="comment-thumbnail">
             <a href="{{ url_for('main.user', id=message.sender.uid) }}">
                 <img class="img-rounded profile-thumbnail" src=
                         "
@@ -13,9 +13,10 @@
                 >
             </a>
         </div>
-        <div class="post-content">
-            <div class="post-date">时间：{{ moment(message.created).fromNow() }}</div>
-            <div class="post-author">
+
+        <div class="comment-content">
+            <div class="comment-date">时间：{{ moment(message.created).fromNow() }}</div>
+            <div class="comment-author">
                 与
                 {% if message.sender == current_user %}
                 <a href="{{ url_for('main.chat', id=message.receiver.uid) }}">
@@ -31,19 +32,21 @@
                  （还有{{ count }}条未读消息未显示）
                 {% endif %}
             </div>
-            <div>
-            {% if not message.viewed and message.receiver == current_user %}
-                <b>
-                <p class="text-warning">
-                    {{ message.message }}
-                </p>
-                </b>
-            {% else %}
-                <p class="text-mute">
-                    {{ message.message }}
-                </p>
-            {% endif %}
+
+            <div class="comment-body">
+                {% if not message.viewed and message.receiver == current_user %}
+                    <b>
+                    <p class="text-warning">
+                        {{ message.message }}
+                    </p>
+                    </b>
+                {% else %}
+                    <p class="text-mute">
+                        {{ message.message }}
+                    </p>
+                {% endif %}
             </div>
+
             <div class="post-footer">
                 {% if current_user == message.receiver %}
                 <a href="{{ url_for('main.chat', id=message.sender.uid) }}">

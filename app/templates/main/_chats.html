@@ -1,20 +1,20 @@
-<ul class="posts">
+<ul class="comments">
     {% for message, viewed in messages %}
-    <li class="post">
-        <div class="post-thumbnail">
+    <li class="comment">
+        <div class="comment-thumbnail">
             <a href="{{ url_for('main.user', id=message.sender.uid) }}">
                 <img class="img-rounded profile-thumbnail" src="{{ message.sender.gravatar(size=40) }}">
             </a>
         </div>
-        <div class="post-content">
-            <div class="post-date">时间：{{ moment(message.created).fromNow() }}</div>
-            <div class="post-author">
+        <div class="comment-content">
+            <div class="comment-date">时间：{{ moment(message.created).fromNow() }}</div>
+            <div class="comment-author">
                 <a href="{{ url_for('main.user', id=message.sender.uid) }}">
                     {{ message.sender.nickname }}
                 </a>
             </div>
 
-            <div>
+            <div class="comment-body">
             {% if not viewed and message.receiver == current_user %}
                 <b>
                 <p class="text-mute" style="background-color:#f0ffff">

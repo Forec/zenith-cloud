@@ -1,5 +1,5 @@
 # 作者：Forec
-# 最后修改时间：2016-12-12
+# 最后修改时间：2016-12-13
 # 邮箱：forec@bupt.edu.cn
 # 关于此文件：包含了 main 蓝本中使用到的全部 wtf 表单
 
@@ -17,8 +17,10 @@ from wtforms.validators import Required, Length, \
 # ------------------------------------------------------------------
 # 用户编辑自己个人资料的表单，昵称长度必须在 3 到 64 个字符之间，且必须唯一
 class EditProfileForm(FlaskForm):
-    nickname = StringField('昵称', validators=[Length(3, 64)])
-    about_me = TextAreaField('关于我', validators=[Length(0, 60, message='不能超过 40 个字符！')])
+    nickname = StringField('昵称',
+        validators=[Length(3, 64, message='昵称长度必须在 3 ~ 64 个字符之间！')])
+    about_me = TextAreaField('关于我',
+        validators=[Length(0, 60, message='不能超过 40 个字符！')])
     submit = SubmitField('提交')
 
     def validate_nickname(self, field):     # 验证昵称未被其他用户使用
@@ -30,13 +32,14 @@ class EditProfileForm(FlaskForm):
 # 管理员编辑用户资料的表单，电子邮箱和昵称必须唯一。
 class EditProfileAdminForm(FlaskForm):
     email = StringField('电子邮箱',
-                        validators=[Required(),
-                                    Length(5,64),
-                                    Email()])
+            validators=[Required(),
+                        Length(5,64,'你输入的电子邮箱过长！'),
+                        Email(message='不是合法的电子邮箱地址！')])
     nickname = StringField('昵称',
-                        validators=[Required(),
-                                    Length(3, 64)])
-    maxm = IntegerField('云盘容量（MB）', validators=[Required()])
+            validators=[Required(),
+                        Length(3, 64)])
+    maxm = IntegerField('云盘容量（MB）',
+            validators=[Required()])
     confirmed = BooleanField('已验证邮箱')
     role = SelectField('身份', coerce=int)
     about_me = TextAreaField('关于我')
@@ -61,7 +64,8 @@ class EditProfileAdminForm(FlaskForm):
 # ------------------------------------------------------------------------
 # 用户上传文件的表单，文件名长度不能超过 128 字符。
 class UploadForm(FlaskForm):
-    file = FileField('选择文件', validators=[FileRequired()])
+    file = FileField('选择文件',
+            validators=[FileRequired()])
     share = BooleanField('共享此文件/目录')
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('确定上传')
@@ -79,8 +83,8 @@ class UploadForm(FlaskForm):
 # 用户执行删除文件操作时，用于确认的表单。
 class FileDeleteConfirmForm(FlaskForm):
     filename = StringField("文件名",
-                           validators=[Required(),
-                                       Length(1, 128)])
+        validators=[Required(),
+                    Length(1, 128)])
     body = TextAreaField("资源描述（回车和多余空字符将被过滤）")
     submit = SubmitField('修改')
 
@@ -105,12 +109,8 @@ class SearchForm(FlaskForm):
 # 用户聊天时发送消息的表单，消息不能超过 300 字符。
 class ChatForm(FlaskForm):
     body = TextAreaField('发送消息',
-                         validators=[Length(1, 300)])
+        validators=[Length(1, 300, message='消息过长，请限制在150字内')])
     submit = SubmitField('发送')
-
-    def validate_body(self, field):
-        if len(field.data) > 300:       # 限制消息长度在 300 字符内
-            raise ValidationError('消息过长，请限制在300字内')
 
 # ---------------------------------------------------------------------------
 # 用户设置文件共享属性的表单。
@@ -132,12 +132,12 @@ class ConfirmShareForm(FlaskForm):
 # 用户创建文件夹表单
 class NewFolderForm(FlaskForm):
     foldername = StringField("文件夹名",
-                           validators=[Required(),
-                                       Length(1, 128)])
+        validators=[Required(),
+                    Length(1, 64, message='文件夹名长度不能超过 64 个 ASCII 字符')])
     body = TextAreaField("目录描述（回车和多余空字符将被过滤）")
     share = BooleanField("分享此目录")
     submit = SubmitField('新建')
 
     def validate_body(self, field):     # 限制资源描述在 200 字符内
         if len(field.data) > 200:
-            raise ValidationError('描述过长，请限制在200字内')
+            raise ValidationError('描述过长，请限制在100字内')

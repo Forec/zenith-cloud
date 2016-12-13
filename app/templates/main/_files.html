@@ -8,55 +8,55 @@
         </div>
         <div class="post-content">
             <div class="post-header">
-            <div class="post-author">
-                <p style="line-height:100%;margin:6px 0px 0px 0px">
-                发布者：
-                <a href="{{ url_for('.user', id=file.owner.uid) }}">
-                    {{ file.owner.nickname }}
-                </a>
-                &nbsp;&nbsp;&nbsp;
-                {% if file.isdir %}
-                目录：
-                {% else %}
-                文件：
-                {% endif %}
-                {% if file.owner == current_user %}
-                {% if file.isdir %}
-                <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', ) }}">
-                    {{ file.filename }}
-                </a>
-                {% else %}
-                <a href="{{ url_for('.file', id=file.uid ) }}">
-                    {{ file.filename }}
-                </a>
-                {% endif %}
-                {% else %}
-                <a href="{{ url_for('.file', id=file.uid) }}">
-                    {{ file.filename }}
-                </a>
-                {% endif %}
-                </p>
-            </div>
-
-            <div class="post-date">
-                {% if not file.isdir %}
-                    {% if file.cfileid > 0 %}
-                        文件大小：
-                        {% if file.cfile.size < 1024 %}
-                            {{ file.cfile.size }} B
-                        {% elif file.cfile.size < 1048576 %}
-                            {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
-                        {% elif file.cfile.size < 1073741824 %}
-                            {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
-                        {% else %}
-                            {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
-                        {% endif %}
+                <div class="post-author">
+                    <p style="line-height:100%;margin:6px 0px 0px 0px">
+                    发布者：
+                    <a href="{{ url_for('.user', id=file.owner.uid) }}">
+                        {{ file.owner.nickname }}
+                    </a>
+                    &nbsp;&nbsp;&nbsp;
+                    {% if file.isdir %}
+                    目录：
+                    {% else %}
+                    文件：
                     {% endif %}
-                &nbsp;&nbsp;
-                {% endif %}
-                发布时间：{{ moment(file.created).fromNow() }}
-                </span>
-            </div>
+                    {% if file.owner == current_user %}
+                    {% if file.isdir %}
+                    <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', ) }}">
+                        {{ file.filename }}
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('.file', id=file.uid ) }}">
+                        {{ file.filename }}
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('.file', id=file.uid) }}">
+                        {{ file.filename }}
+                    </a>
+                    {% endif %}
+                    </p>
+                </div>
+
+                <div class="post-date">
+                    {% if not file.isdir %}
+                        {% if file.cfileid > 0 %}
+                            文件大小：
+                            {% if file.cfile.size < 1024 %}
+                                {{ file.cfile.size }} B
+                            {% elif file.cfile.size < 1048576 %}
+                                {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                            {% elif file.cfile.size < 1073741824 %}
+                                {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                            {% else %}
+                                {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                            {% endif %}
+                        {% endif %}
+                    &nbsp;&nbsp;
+                    {% endif %}
+                    发布时间：{{ moment(file.created).fromNow() }}
+                    </span>
+                </div>
             </div>
 
             <div class="post-body">
