@@ -5,6 +5,7 @@
 
 from ..models import Role, User
 from flask import current_app
+from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, SubmitField, \
@@ -17,11 +18,11 @@ from wtforms.validators import Required, Length, \
 # 用户编辑自己个人资料的表单，昵称长度必须在 3 到 64 个字符之间，且必须唯一
 class EditProfileForm(FlaskForm):
     nickname = StringField('昵称', validators=[Length(3, 64)])
-    about_me = TextAreaField('关于我')
+    about_me = TextAreaField('关于我', validators=[Length(0, 60, message='不能超过 40 个字符！')])
     submit = SubmitField('提交')
 
     def validate_nickname(self, field):     # 验证昵称未被其他用户使用
-        if field.data != self.user.nickname and \
+        if field.data != current_user.nickname and \
             User.query.filter_by(nickname=field.data).first():
             raise ValidationError('该昵称已被使用.')
 

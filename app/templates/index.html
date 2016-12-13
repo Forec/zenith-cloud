@@ -5,54 +5,42 @@
 {% block title %}顶点云{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h1>{% if current_user.is_authenticated %}{{ current_user.nickname }}{% else %}游客{% endif %}，您好!</h1>
-</div>
-<div class="row">
-    <div class="col-md-6">
-        <h2 style="display:inline">与世界分享你的文件</h2>
-    </div>
-
-    <div class="col-md-3" style="text-align:right">
-        <form method="POST" action="{{ url_for('main.index') }}">
-            {{ form.hidden_tag() }}
-            <div class="row">
-                {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
+<section id="top" class="three">
+    <div class="container">
+        <header>
+            <div>
+                <form method="POST" action="{{ url_for('main.index') }}">
+                    {{ form.hidden_tag() }}
+                    {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
+                </form>
             </div>
-        </form>
-    </div>
 
-    <div class="col-md-3" style="text-align:right">
-        <a href="{{ url_for('main.index', key='') }}">
-            {% if key == '' %}
-                <button type="button" class="btn btn-default disabled">清空筛选条件</button>
-            {% else %}
-                <button type="button" class="btn btn-success">清空筛选条件</button>
+            <div class="post-tabs">
+                <ul class="nav nav-tabs">
+                    <li {% if not show_followed %} class="active"{% endif %}>
+                        <a href="{{ url_for('.show_all') }}"><span style="font-size:80%">全部</span></a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        <li {% if show_followed %} class="active"{% endif %}>
+                            <a href="{{ url_for('.show_followed') }}"><span style="font-size:80%">我关注的</span></a></li>
+                    {% endif %}
+                </ul>
+
+                {% if _len > 0 %}
+                    {% include 'main/_files.html' %}
+                {% else %}
+                    <h2 class="text-warning">未检索到相关文件</h2>
+                {% endif %}
+            </div>
+            {% if pagination %}
+                <div class="pagination">
+                    {{ macros.pagination_widget(pagination, '.index') }}
+                </div>
             {% endif %}
-        </a>
-        <a href="{{ url_for('main.cloud') }}"><button type="button" class="btn btn-success">进入云盘</button></a>
+        </header>
     </div>
-</div>
+</section>
 
-<div class="post-tabs">
-    <ul class="nav nav-tabs">
-        <li{% if not show_followed %} class="active"{% endif %}><a href="{{ url_for('.show_all') }}">全部</a></li>
-        {% if current_user.is_authenticated %}
-        <li{% if show_followed %} class="active"{% endif %}><a href="{{ url_for('.show_followed') }}">我关注的</a></li>
-        {% endif %}
-    </ul>
-
-    {% if _len > 0 %}
-        {% include 'main/_files.html' %}
-    {% else %}
-        <h2 class="text-warning">未检索到相关文件<h2>
-    {% endif %}
-</div>
-{% if pagination %}
-<div class="pagination">
-    {{ macros.pagination_widget(pagination, '.index') }}
-</div>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}

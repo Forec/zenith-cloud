@@ -1,24 +1,22 @@
 from flask_wtf import FlaskForm
 from flask_login import current_user
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Length, Email, Regexp, EqualTo
+from wtforms.validators import Required, Length, Email, EqualTo
 from wtforms import ValidationError
 from ..models import User
 
 class LoginForm(FlaskForm):
     email = StringField('电子邮箱', validators=[Required(),
-                                             Length(5, 64),
-                                             Email()])
+                                             Email(message='您使用的电子邮箱不合法！')])
     password = PasswordField('密码', validators=[Required(),
-                                                     Length(4,64)])
+                                                     Length(4,64,message='密码长度必须为 4 ~ 64 个字符')])
     remember_me = BooleanField('保持登陆')
     submit = SubmitField('登陆')
 
 class RegistrationForm(FlaskForm):
     email = StringField('电子邮箱', validators=[Required(),
-                                             Length(5,64),
-                                             Email()])
-    nickname = StringField('昵称', validators=[Required(),Length(4,64)])
+                                             Email(message='您使用的电子邮箱不合法！')])
+    nickname = StringField('昵称', validators=[Required(),Length(4,64, message='昵称长度必须为 4 ~ 64 个字符')])
     password = PasswordField('密码', validators=[Required(),
             EqualTo('password2', message='两次输入密码不一致')])
     password2 = PasswordField('确认密码', validators=[Required()])
@@ -32,7 +30,7 @@ class RegistrationForm(FlaskForm):
 
 class ChangePasswordForm(FlaskForm):
     oldPassword = PasswordField('旧密码', validators=[Required(),
-                                                            Length(4,64)])
+                                                            Length(4,64, message='密码长度必须为 4 ~ 64 个字符')])
     newPassword = PasswordField('新密码', validators=[Required(),
                 Length(4,64)])
     newPassword2 = PasswordField('确认新密码', validators=[Required(),
@@ -44,33 +42,34 @@ class ChangePasswordForm(FlaskForm):
 
 
 class ChangeProfileForm(FlaskForm):
-    newNickname = StringField('新昵称', validators=[Required(),Length(4,64)])
+    newNickname = StringField('新昵称', validators=[Required(),Length(4,64,message='昵称长度必须为 4 ~ 64 个字符')])
     password = PasswordField('输入密码', validators=[Required(),
-                                                            Length(4,64)])
+                                                            Length(4,64,  message='密码长度必须为 4 ~ 64 个字符')])
     submit = SubmitField('修改')
     def validate_newNickname(self, field):
         if User.query.filter_by(nickname=field.data).first():
-            raise ValidationError('该昵称已被使用.')
+            raise ValidationError('非常抱歉，该昵称已被使用。')
 
 
 class ChangeEmailForm(FlaskForm):
     email = StringField('新电子邮箱地址', validators=[Required(),
-            Length(5,64), Email()])
+                    Email(message='您输入的电子邮箱不合法！')])
     password = PasswordField('输入密码', validators=[Required(),
-                                                            Length(4,64)])
+                                                            Length(4,64, message='密码长度必须为 4 ~ 64 个字符')])
     submit = SubmitField('修改')
     def validate_newEmail(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('该电子邮箱已被注册')
 
 class PasswordResetRequestForm(FlaskForm):
-    email = StringField('注册时使用的电子邮箱', validators=[Required(), Length(1, 64),
-                                             Email()])
+    email = StringField('注册时使用的电子邮箱',
+                        validators=[Required(),
+                                    Email(message='您输入的电子邮箱地址不合法！')])
     submit = SubmitField('重置密码')
 
 class PasswordResetForm(FlaskForm):
-    email = StringField('电子邮箱', validators=[Required(), Length(5, 64),
-                                             Email()])
+    email = StringField('电子邮箱', validators=[Required(),
+                                             Email(message='您输入的电子邮箱不合法！')])
     password = PasswordField('新密码', validators=[
         Required(), EqualTo('password2', message='两次输入密码不一致')])
     password2 = PasswordField('确认密码', validators=[Required()])

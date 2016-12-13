@@ -4,11 +4,15 @@
 {% block title %}顶点云 - 安全中心{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h1>用户安全中心</h1>
-</div>
-<div class="col-md-4">
-    <p><a href="{{ url_for('auth.change_email_request')}}">更改注册邮箱</a></p>
-    <p><a href="{{ url_for('auth.change_password')}}">更改密码</a></p>
-</div>
+<section id="top" class="three">
+    <div class="container">
+        <header>
+            <br/>
+            <h2>用户安全中心</h2>
+            <p><small><a href="{{ url_for('main.edit_profile')}}">编辑个人资料</a></small></p>
+            <p><small><a href="{{ url_for('auth.change_email_request')}}">更改注册邮箱</a></small></p>
+            <p><small><a href="{{ url_for('auth.change_password')}}">更改密码</a></small></p>
+        </header>
+    </div>
+</section>
 {% endblock %}

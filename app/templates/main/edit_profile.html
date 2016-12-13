@@ -4,10 +4,12 @@
 {% block title %}顶点云 - 编辑资料{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h1>编辑资料</h1>
-</div>
-<div class="col-md-4">
-    {{ wtf.quick_form(form) }}
-</div>
+<section id="top" class="two">
+    <div class="container">
+        <header>
+            <h2>编辑资料</h2>
+            {{ wtf.quick_form(form) }}
+        </header>
+    </div>
+</section>
 {% endblock %}

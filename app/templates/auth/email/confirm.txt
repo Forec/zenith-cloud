@@ -1,4 +1,4 @@
-尊敬的 {{ user.username }},
+尊敬的 {{ user.nickname }},
 
 欢迎加入 顶点云
 

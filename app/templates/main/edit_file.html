@@ -3,16 +3,18 @@
 {% block title %}顶点云 - 修改文件信息{% endblock %}
 
 {% block page_content %}
-<div>
-  {% if file.isdir %}
-  <h1>修改文件夹 {{ file.path ~ file.filename }} 的信息</h1>
-    {% else %}
-    <h1>修改文件 {{ file.path ~ file.filename }} 的信息</h1>
-    {% endif %}
-</div>
-<div>
-  {{ wtf.quick_form(form) }}
-</div>
+<section id="top" class="two">
+    <div class="container">
+        <header>
+            {% if file.isdir %}
+                <h1>修改文件夹 {{ file.path ~ file.filename }} 的信息</h1>
+            {% else %}
+                <h1>修改文件 {{ file.path ~ file.filename }} 的信息</h1>
+            {% endif %}
+            {{ wtf.quick_form(form) }}
+        </header>
+    </div>
+</section>
 {% endblock %}
 
 {% block scripts %}

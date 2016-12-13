@@ -3,30 +3,14 @@
     <li class="post">
         <div class="post-thumbnail">
             <a href="{{ url_for('.user', id=file.owner.uid) }}">
-                <img class="img-rounded profile-thumbnail" src="{{ file.owner.gravatar(size=40) }}">
+                <img class="img-rounded profile-thumbnail" src="{{ file.owner.gravatar(size=56) }}">
             </a>
         </div>
         <div class="post-content">
-            <div class="post-date">
-                {% if not file.isdir %}
-                    {% if file.cfileid > 0 %}
-                        文件大小：
-                        {% if file.cfile.size < 1024 %}
-                            {{ file.cfile.size }} B
-                        {% elif file.cfile.size < 1048576 %}
-                            {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
-                        {% elif file.cfile.size < 1073741824 %}
-                            {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
-                        {% else %}
-                            {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-                &nbsp;&nbsp;
-
-                发布时间：{{ moment(file.created).fromNow() }}
-            </div>
-            <div class="post-author">资源发布者：
+            <div class="post-header">
+            <div class="post-author">
+                <p style="line-height:100%;margin:6px 0px 0px 0px">
+                发布者：
                 <a href="{{ url_for('.user', id=file.owner.uid) }}">
                     {{ file.owner.nickname }}
                 </a>
@@ -51,9 +35,32 @@
                     {{ file.filename }}
                 </a>
                 {% endif %}
+                </p>
+            </div>
+
+            <div class="post-date">
+                {% if not file.isdir %}
+                    {% if file.cfileid > 0 %}
+                        文件大小：
+                        {% if file.cfile.size < 1024 %}
+                            {{ file.cfile.size }} B
+                        {% elif file.cfile.size < 1048576 %}
+                            {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                        {% elif file.cfile.size < 1073741824 %}
+                            {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                        {% else %}
+                            {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                        {% endif %}
+                    {% endif %}
+                &nbsp;&nbsp;
+                {% endif %}
+                发布时间：{{ moment(file.created).fromNow() }}
+                </span>
+            </div>
             </div>
 
             <div class="post-body">
+                <span>
                 {% if file.isdir %}
                 目录描述：
                 {% else %}
@@ -68,6 +75,7 @@
                 {% else %}
                     无
                 {% endif %}
+                </span>
             </div>
 
             <div class="post-footer">

@@ -32,9 +32,11 @@
 		<div id="logo">
 			{% if current_user.is_authenticated %}	
 				<!--已登陆用户显示头像和简介，用户昵称链接到用户资料界面-->
-			<span class="image avatar48"><img src="{{ current_user.gravatar(size=24) }}" alt="" /></span>
-				<h1 id="title"><a href="{{ url_for('main.user', id=current_user.uid) }}">{{ current_user.nickname }}</a></h1>
-				<p>{{ current_user.about_me }}</p>
+			<span class="image avatar48"><img src="{{ current_user.gravatar(size=48) }}" alt="" /></span>
+				<h1 id="title" style="margin-left:40px"><a href="{{ url_for('main.user', id=current_user.uid) }}">{{ current_user.nickname }}</a></h1>
+				<div style="margin-left:60px">
+					<p>{{ current_user.about_me }}</p>
+				</div>
 			{% else %}
 			<span class="image avatar48"><img src="{{ url_for('static', filename='images/anonymous.jpg') }}" alt="" /></span>
 				<h1 id="title">游客</h1>
@@ -76,12 +78,7 @@
 
 <!-- Main -->
 <div id="main">
-	<!-- Intro -->
-	<section id="top" class="one dark cover">
-		<div class="container">
-			{% block page_content %}{% endblock %}
-		</div>
-	</section>
+	{% block page_content %}{% endblock %}
 </div>
 
 <!-- Footer -->

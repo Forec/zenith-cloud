@@ -1,4 +1,4 @@
-尊敬的 {{ user.username }},
+尊敬的 {{ user.nickname }},
 
 要验证您的邮箱，请点击以下链接:
 

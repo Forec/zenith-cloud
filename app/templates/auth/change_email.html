@@ -4,10 +4,13 @@
 {% block title %}顶点云 - 修改电子邮箱{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h1>更改你的注册邮箱</h1>
-</div>
-<div class="col-md-4">
-    {{ wtf.quick_form(form) }}
-</div>
+<section id="top" class="three">
+    <div class="container">
+        <header>
+            <h2>更改你的注册邮箱</h2>
+            <br/>
+            {{ wtf.quick_form(form) }}
+        </header>
+    </div>
+</section>
 {% endblock %}
