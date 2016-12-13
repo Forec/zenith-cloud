@@ -3,28 +3,28 @@
     <li class="post">
         <div class="post-thumbnail">
             {% if file.isdir == True %}
-            <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='director.png') }}">
+            <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/folder.png') }}">
             {% else %}
                 {% if file_type == "video" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='video.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/video.png') }}">
                 {% elif file_type == "photo" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='photo.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/photo.png') }}">
                 {% elif file_type == "compress" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='compress.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/compress.png') }}">
                 {% elif file_type == "doc" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='doc.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/doc.png') }}">
                 {% elif file_type == "ppt" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='ppt.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/ppt.png') }}">
                 {% elif file_type == "excel" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='excel.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/excel.png') }}">
                 {% elif file_type == "txt" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='txt.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/txt.png') }}">
                 {% elif file_type == "md" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='md.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/md.png') }}">
                 {% elif file_type == "music" %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='music.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/music.png') }}">
                 {% else %}
-                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='file.png') }}">
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/file.png') }}">
                 {% endif %}
             {% endif %}
         </div>
