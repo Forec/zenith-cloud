@@ -30,6 +30,7 @@ class Config:
     ZENITH_INVALID_INFFIX = ['//', '\\', '/', '..', '%', '^', '&',
                              '*', '$', '!', '+', '#']
     ZENITH_SERVER_ADDRESS = 'http://127.0.0.1:5000' # 服务器部署的域名/IP地址
+    SERVER_NAME = ZENITH_SERVER_ADDRESS
     EMAIL_ADMIN ='forec@bupt.edu.cn'                # 管理员账户的邮箱
     ZENITH_RANDOM_PATH_ELEMENTS = ['a', 'b', 'c', 'd', 'e', 'f', 'g',
                                        'h', 'i', 'j', 'k', 'l', 'm', 'n',

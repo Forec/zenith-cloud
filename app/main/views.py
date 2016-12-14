@@ -99,17 +99,17 @@ def generatePathList(p):
     return ans
 
 # ----------------------------------------------------------------
-# rules 函数提供了 “注册须知” 界面的入口
-@main.route('/rules')
-def rules():
-    return render_template('main/rules.html')
-
-# ----------------------------------------------------------------
 # moderate 函数提供了 “管理” 界面的入口
 @main.route('/moderate')
 @admin_required
 def moderate():
-    return render_template('main/moderate.html')
+    return render_template('main/moderate/moderate.html')
+
+# ----------------------------------------------------------------
+# home 函数提供了顶点云介绍界面的入口
+@main.route('/')
+def home():
+    return render_template('home.html')
 
 # ----------------------------------------------------------------
 # index 为服务器主页入口点，将展示用户共享的资源描述，并保证了对于同一路
@@ -123,7 +123,7 @@ def moderate():
 # 在以上目录结构中，如果用户 a 共享了目录 /home/ 及该目录下所有文件，则只
 # 在 index 界面向其它用户显示用户 a 共享了 /home/，而不会显示 /home/ 目
 # 录下的其它目录/文件
-@main.route('/', methods=['GET', 'POST'])
+@main.route('/index', methods=['GET', 'POST'])
 def index():
     show_followed = False
     if current_user.is_authenticated:
@@ -193,7 +193,7 @@ def index():
                         config['ZENITH_FILES_PER_PAGE']:
                       page*current_app.\
                         config['ZENITH_FILES_PER_PAGE']]
-    return render_template('index.html',
+    return render_template('index/index.html',
                            key =key or '',
                            form = form,
                            files = files,
@@ -272,7 +272,7 @@ def user(id):
                             config['PROFILE_ZENITH_FILES_PER_PAGE']]
     else:
         files = []
-    return render_template('main/user.html',
+    return render_template('main/profile/user.html',
                            user = user,
                            files= files,
                            share_count=total_count,   # 用户共享的资源数量
@@ -293,7 +293,7 @@ def edit_profile():
         return redirect(url_for('.user', id=current_user.uid))
     form.nickname.data = current_user.nickname
     form.about_me.data = current_user.about_me
-    return render_template('main/edit_profile.html', form=form)
+    return render_template('main/profile/edit_profile.html', form=form)
 
 # -----------------------------------------------------------------------
 # edit_profile_admin 为具有管理员权限的用户提供编辑任意用户资料的入口
@@ -319,7 +319,7 @@ def edit_profile_admin(id):
     form.maxm.data = user.maxm
     form.nickname.data = user.nickname
     form.about_me.data = user.about_me
-    return render_template('main/edit_profile.html', form=form)
+    return render_template('main/profile/edit_profile.html', form=form)
 
 # ----------------------------------------------------------------------
 # file 显示具体的资源信息，包括资源的类型、大小（如果非目录）、描述、评论以及操作
@@ -350,7 +350,7 @@ def file(id):
     pathLists = generatePathList(file.path)
     file_type = generateFileTypes([file])[0][1] # 获取当前显示文件的文件类型
     comments = pagination.items
-    return render_template('main/file.html',
+    return render_template('main/files/file.html',
                            comments = comments,
                            file_type=file_type,
                            pathlists = pathLists,
@@ -414,7 +414,7 @@ def followers(id):
                    'timestamp': item.timestamp
                }
                for item in pagination.items]
-    return render_template('main/followers.html',
+    return render_template('main/profile/followers.html',
                            user=user,
                            title="的关注者",
                            endpoint='.followers',
@@ -440,7 +440,7 @@ def followed_by(id):
                    'timestamp': item.timestamp
                }
                for item in pagination.items]
-    return render_template('main/followers.html',
+    return render_template('main/profile/followers.html',
                            user=user,
                            title="关注的人",
                            endpoint='.followed_by',
@@ -475,7 +475,7 @@ def delete_file(id):
         return redirect(url_for('.file',id = file.uid))
     form.body.data=file.description
     form.filename.data = file.filename
-    return render_template('main/confirm_delete_file.html',
+    return render_template('main/files/confirm_delete_file.html',
                            file = file,
                            form=form,
                            token=current_user.\
@@ -542,7 +542,7 @@ def edit_file(id):
         return redirect(url_for('.file',id = file.uid))
     form.body.data=file.description
     form.filename.data = file.filename
-    return render_template('main/edit_file.html',
+    return render_template('main/files/edit_file.html',
                            file = file,
                            form=form)
 
@@ -574,7 +574,7 @@ def moderate_comments():
                      error_out=False)
     comments = pagination.items
     form.key.data = key
-    return render_template('main/moderate_comments.html',
+    return render_template('main/moderate/moderate_comments.html',
                            page=page,
                            form=form,
                            comments=comments,
@@ -651,7 +651,7 @@ def moderate_files():
                     config['ZENITH_FILES_PER_PAGE'])
     files = pagination.items
     form.key.data = key
-    return render_template('main/moderate_files.html',
+    return render_template('main/moderate/moderate_files.html',
                            files=files,
                            page=page,
                            form=form,
@@ -756,7 +756,7 @@ def messages():
             _message.append((message, 0))
         if _message == []:
             _message = None
-    return render_template('main/messages.html',
+    return render_template('main/messages/messages.html',
                            key=key,
                            form=form,
                            page=page,
@@ -875,7 +875,7 @@ def cloud():
     )
     files = pagination.items
     file_types = generateFileTypes(files)
-    return render_template('main/cloud.html',
+    return render_template('main/cloud/cloud.html',
                            files = file_types,
                            _type=type,
                            form=form,
@@ -933,7 +933,7 @@ def view_share_folder_entry(id):
             flash('提取码错误！')
             return redirect(url_for('main.view_share_folder_entry',
                                     id=file.uid))
-    return render_template('main/fork_verify.html',
+    return render_template('main/share/view_verify.html',
                            file=file,
                            form=form)
 
@@ -1127,7 +1127,7 @@ def view_do():
     files = pagination.items
     file_types = generateFileTypes(files)
 
-    return render_template('main/viewShares.html',
+    return render_template('main/share/viewShares.html',
                            files = file_types,
                            form= form,
                            _type= type or 'all',
@@ -1173,7 +1173,7 @@ def download(id):
         else:
             flash('提取码错误！')
             return redirect(url_for('main.download', id=file.uid))
-    return render_template('main/fork_verify.html',
+    return render_template('main/load/download_verify.html',
                            file=file,
                            form=form)
 
@@ -1687,7 +1687,7 @@ def upload():
                                         id=f.uid))
             return redirect(url_for('main.file',id = f.uid))
 
-    return render_template('main/upload.html',
+    return render_template('main/load/upload.html',
                            form=form,
                            path=path)
 
@@ -1761,7 +1761,7 @@ def copy():
                                 error_out=False)
     files = pagination.items
     file_types = generateFileTypes(files)
-    return render_template('main/copy.html',
+    return render_template('main/copy/copy.html',
                            _file=file,
                            _path=path,
                            files=file_types,
@@ -2003,7 +2003,7 @@ def move():
                                 error_out=False)
     files = pagination.items
     file_types = generateFileTypes(files)
-    return render_template('main/move.html',
+    return render_template('main/move/move.html',
                            _file=file,
                            _path=path,
                            files=file_types,
@@ -2161,7 +2161,7 @@ def fork(id):
             flash('提取码错误！')
             return redirect(url_for('main.fork',
                                     id=file.uid))
-    return render_template('main/fork_verify.html',
+    return render_template('main/fork/fork_verify.html',
                            file=file,
                            form=form)
 
@@ -2252,7 +2252,7 @@ def fork_do():
                                 error_out=False)
     files = pagination.items
     file_types = generateFileTypes(files)
-    return render_template('main/fork.html',
+    return render_template('main/fork/fork.html',
                            _file=file,
                            _path=path,
                            files=file_types,
@@ -2512,7 +2512,7 @@ def newfolder():
         else:
             return redirect(url_for('main.file',
                                     id=f.uid))
-    return render_template('main/newfolder.html',
+    return render_template('main/files/newfolder.html',
                            path = path,
                            form = form)
 
@@ -2614,7 +2614,7 @@ def chat(id):
             __message.sended = True
             db.session.add(__message)
 
-    return render_template('main/chat.html',
+    return render_template('main/messages/chat.html',
                            sender=remote,
                            messages = _message,
                            form=form,
@@ -2705,7 +2705,7 @@ def set_share(id):
             flash('已将文件 ' + file.path + file.filename +
                   ' 设为共享！共享密码为 ' + file.linkpass + '。')
             return redirect(url_for('main.file', id=file.uid))
-    return render_template('main/set_share.html',
+    return render_template('main/share/set_share.html',
                            file=file,
                            form=form)
 

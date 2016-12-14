@@ -7,6 +7,13 @@ from .. import db
 from . import auth
 from ..email import send_email
 
+
+# ----------------------------------------------------------------
+# rules 函数提供了 “注册须知” 界面的入口
+@auth.route('/rules')
+def rules():
+    return render_template('auth/rules.html')
+
 @auth.route('/login', methods = ['GET', 'POST'])
 def login():
     form  = LoginForm()
@@ -78,7 +85,7 @@ def change_password():
             return redirect(url_for('main.index'))
         else:
             flash('密码错误')
-    return render_template('auth/change_password.html', form = form)
+    return render_template('auth/secure/change_password.html', form = form)
 
 @auth.route('/change-email', methods = ['GET', 'POST'])
 @login_required
@@ -95,7 +102,7 @@ def change_email_request():
             return redirect(url_for('main.index'))
         else:
             flash('错误的的用户名或密码')
-    return render_template("auth/change_email.html", form=form)
+    return render_template("auth/secure/change_email.html", form=form)
 
 @auth.route('/change-email/<token>')
 @login_required
@@ -144,7 +151,7 @@ def password_reset(token):
 @auth.route('/secure_center')
 @login_required
 def secure_center():
-    return render_template('auth/secure_center.html')
+    return render_template('auth/secure/secure_center.html')
 
 @auth.before_app_request
 def before_request():
