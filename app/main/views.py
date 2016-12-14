@@ -6,7 +6,7 @@
 # 蓝本：main
 
 import os, random, shutil, zipfile, os.path
-
+from config       import basedir
 from datetime     import datetime, timedelta
 from sqlalchemy   import or_, and_
 from flask        import render_template, session, redirect, url_for, \
@@ -288,6 +288,79 @@ def user(id):
 def edit_profile():
     form = EditProfileForm()
     if form.validate_on_submit():
+        # 验证上传头像的合法性
+        if form.thumbnail.has_file():
+            while True:
+                # 创建随机目录
+                randomBasePath = current_app.\
+                    config['ZENITH_TEMPFILE_STORE_PATH'] + \
+                    ''.join(random.sample(
+                            current_app.\
+                                config['ZENITH_RANDOM_PATH_ELEMENTS'],
+                            current_app.\
+                                config['ZENITH_TEMPFOLDER_LENGTH']))
+                if os.path.exists(randomBasePath):
+                # 若创建的随机目录已存在则重新创建
+                    continue
+                break
+            os.mkdir(randomBasePath)
+            if not os.path.exists(randomBasePath):
+                abort(500)
+            filepath = os.path.join(randomBasePath,
+                                    form.thumbnail.data.filename)
+            suffix = form.thumbnail.data.filename
+            # 判断后缀名是否合法
+            suffix = suffix.split('.')
+            if len(suffix) < 2 or '.' + suffix[-1] not in \
+                current_app.config['ZENITH_VALID_THUMBNAIL']:
+                flash('您上传的头像不符合规范！')
+                os.rmdir(randomBasePath)
+                return redirect(url_for('main.edit_profile',
+                                        _external=True))
+            suffix = '.' + suffix[-1]     # suffix 为后缀名
+
+            form.thumbnail.data.save(filepath)
+            if not os.path.isfile(filepath):
+                abort(500)
+            if os.path.getsize(filepath) > \
+                current_app.config['ZENITH_VALID_THUMBNAIL_SIZE']:
+                # 头像大小大于 512KB
+                flash('您上传的头像过大，已被系统保护性删除，请保证'
+                      '上传的头像文件大小不超过 ' +
+                      str(current_app.\
+                          config['ZENITH_VALID_THUMBNAIL_SIZE'] // 1024) +
+                      'KB！')
+                os.remove(filepath)
+                os.rmdir(randomBasePath)
+                return redirect(url_for('main.edit_profile',
+                                        _external=True))
+            else:
+                # 验证通过，更新头像
+                for _suffix in current_app.config['ZENITH_VALID_THUMBNAIL']:
+                    thumbnailPath = os.path.join(basedir,
+                                'app/static/thumbnail/' +
+                                str(current_user.uid) + _suffix)
+                    if os.path.isfile(thumbnailPath):
+                        # 之前存在头像则先删除
+                        os.remove(thumbnailPath)
+                        break
+
+                # 拷贝新头像
+                shutil.copy(
+                    filepath,
+                    os.path.join(basedir,
+                        'app/static/thumbnail/' +
+                        str(current_user.uid) + suffix)
+                )
+                # 删除缓存
+                os.remove(filepath)
+                os.rmdir(randomBasePath)
+                current_user.avatar_hash = ':' + \
+                    url_for('static',
+                           filename = 'thumbnail/' +
+                                str(current_user.uid) + suffix,
+                           _external=True)
+
         current_user.nickname = form.nickname.data
         current_user.about_me = form.about_me.data
         db.session.add(current_user)
@@ -1464,6 +1537,7 @@ def upload():
 
     form = UploadForm()
     if form.validate_on_submit():
+        isPrivate = not form.share.data
         while True:
             randomBasePath = current_app.\
                 config['ZENITH_TEMPFILE_STORE_PATH'] + \
@@ -1496,6 +1570,8 @@ def upload():
 
         if filename.split('.')[-1] == \
             current_app.config['ZENITH_FOLDER_ZIP_SUFFIX']:
+            toAdd = 0   # 记录要增加的用户云盘使用量
+            left = current_user.maxm - current_user.used    # 剩余量
             # 用户上传的是一个目录
             baseDir = None  # 用户上传压缩包代表的目录名
             try:
@@ -1566,7 +1642,7 @@ def upload():
                 isdir=True,
                 linkpass = '',
                 ownerid = current_user.uid,
-                private = form.share.data,
+                private = isPrivate,
                 description = form.body.data
             )
             db.session.add(baseFolder)
@@ -1598,7 +1674,7 @@ def upload():
                         isdir = True,
                         linkpass = '',
                         ownerid = current_user.uid,
-                        private = form.share.data,
+                        private = isPrivate,
                         description= ''
                     )
                     db.session.add(df)
@@ -1619,6 +1695,11 @@ def upload():
                             ref=1,
                             md5=md5,
                         )
+                        toAdd += cf.size
+                        if toAdd > left:
+                            # 用户云盘空间不足
+                            flash('您的云盘空间不足，仅为您上传部分文件！')
+                            break
                         db.session.add(cf)
                         db.session.commit()
                         cf = CFILE.query.filter("md5=:_md5").\
@@ -1634,6 +1715,18 @@ def upload():
                                 config['ZENITH_FILE_STORE_PATH'] +
                                 str(cf.uid)
                         )   # 拷贝文件到存储目录
+
+                        if not os.path.exists(
+                            os.path.join(current_app.\
+                                config['ZENITH_FILE_STORE_PATH'],
+                            str(cf.uid))):
+                            # 拷贝文件失败，需撤销文件记录
+                            db.session.delete(cf)
+                            clear(randomBasePath)
+                            abort(500)
+                    else:
+                        cf.ref += 1
+                        db.session.add(cf)
 
                     _filePath = parent[replacePathLen:].\
                         strip(current_app.\
@@ -1654,14 +1747,18 @@ def upload():
                         cfileid = cf.uid,
                         isdir=False,
                         linkpass='',
-                        private=form.share.data,
+                        private=isPrivate,
                         ownerid=current_user.uid,
                         description=''
                     )
                     db.session.add(uf)
+            # 增加用户云盘使用量
+            current_user.used += toAdd
+            db.session.add(current_user)
             db.session.commit()
             clear(randomBasePath)
-            if form.share.data is True:
+
+            if form.share.data:
                 baseFolder = File.query.\
                                 filter('filename=:_lfn and path=:_path '
                                        'and ownerid=:_id').\
@@ -1698,6 +1795,13 @@ def upload():
                     ),
                     ref = 1
                 )
+                if cf.size > current_user.maxm - \
+                    current_user.used:
+                    flash('您的云盘空间不足，无法上传！')
+                    clear(randomBasePath)
+                    return redirect(url_for('main.upload',
+                                            path = path))
+                current_user.used += cf.size
                 db.session.add(cf)
                 db.session.commit()
                     # commit 以获得 cfileid
@@ -1705,6 +1809,7 @@ def upload():
                     filter('md5=:_md5').\
                     params(_md5=md5).first()
                 if cf is None:
+                    clear(randomBasePath)
                     abort(500)
                 shutil.copy(
                     randomBasePath + filename,
@@ -1716,9 +1821,12 @@ def upload():
                         str(cf.uid)
                 ):
                     db.session.delete(cf)
+                    clear(randomBasePath)
                     abort(500)
             else:
                 cf = cfile      # 已存在相同 md5 文件
+                cf.ref += 1
+                db.session.add(cf)
 
             f = File(path = path,
                      filename = filename,
@@ -1726,7 +1834,7 @@ def upload():
                      cfileid = cf.uid,
                      isdir = False,
                      linkpass = '',
-                     private = form.share.data,
+                     private = isPrivate,
                      owner = current_user,
                      description = form.body.data
                      )
@@ -1740,7 +1848,10 @@ def upload():
                        _id = current_user.uid).\
                 first()
             clear(randomBasePath)
-            if form.share.data is True:
+
+            db.session.add(current_user)
+
+            if form.share.data:
                 return redirect(url_for('main.set_share',
                                         id=f.uid,
                                         _external=True))

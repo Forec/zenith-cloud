@@ -17,6 +17,7 @@ from wtforms.validators import Required, Length, \
 # ------------------------------------------------------------------
 # 用户编辑自己个人资料的表单，昵称长度必须在 3 到 64 个字符之间，且必须唯一
 class EditProfileForm(FlaskForm):
+    thumbnail = FileField('上传头像')
     nickname = StringField('昵称',
         validators=[Length(3, 64, message='昵称长度必须在 3 ~ 64 个字符之间！')])
     about_me = TextAreaField('关于我',
@@ -27,6 +28,16 @@ class EditProfileForm(FlaskForm):
         if field.data != current_user.nickname and \
             User.query.filter_by(nickname=field.data).first():
             raise ValidationError('该昵称已被使用.')
+    def validate_thumbnail(self, field):     # 验证昵称未被其他用户使用
+        if not field.has_file():
+            return
+        valid = False
+        for _suffix in current_app.config['ZENITH_VALID_THUMBNAIL']:
+            if _suffix in field.data.filename:
+                valid = True
+        if not valid:
+            raise ValidationError('上传的头像必须为 .jpg/'
+                                  '.jpeg/.png/.ico 格式之一！')
 
 # ------------------------------------------------------------------
 # 管理员编辑用户资料的表单，电子邮箱和昵称必须唯一。

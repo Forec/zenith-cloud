@@ -21,16 +21,17 @@ class Config:
     ZENITH_COMMENTS_PER_PAGE = 10           # 每页显示的评论数量
     PROFILE_ZENITH_FILES_PER_PAGE = 6       # 用户资料页每页显示的文件数量
     ZENITH_MESSAGES_PER_PAGE = 10           # Message 页面每页显示的消息数量
-    ZENITH_FILE_STORE_PATH = 'G:\\Cloud\\'  # 服务器存储用户文件的路径
-    ZENITH_TEMPFILE_STORE_PATH = ZENITH_FILE_STORE_PATH + 'TEMP\\'
-        # 服务器生成随机目录所在的路径，默认为文件存储路径下的 TMEP 文件夹
     ZENITH_TEMPFOLDER_LENGTH = 12   # 服务器生成的随机目录名长度
     ZENITH_PATH_SEPERATOR = '\\'    # 服务器所属文件系统的目录分隔符，Windows为\\，*nix 为//
+    ZENITH_FILE_STORE_PATH = 'G:\\Cloud\\'  # 服务器存储用户文件的路径
+    ZENITH_TEMPFILE_STORE_PATH = ZENITH_FILE_STORE_PATH + \
+                                 'TEMP' + ZENITH_PATH_SEPERATOR
+        # 服务器生成随机目录所在的路径，默认为文件存储路径下的 TMEP 文件夹
     ZENITH_FOLDER_ZIP_SUFFIX = 'zenith'
     ZENITH_INVALID_INFFIX = ['//', '\\', '/', '..', '%', '^', '&',
                              '*', '$', '!', '+', '#']
-    ZENITH_SERVER_ADDRESS = 'http://127.0.0.1:5000' # 服务器部署的域名/IP地址
-    SERVER_NAME = ZENITH_SERVER_ADDRESS
+    #ZENITH_SERVER_ADDRESS = '127.0.0.1'# or 'cloud.forec.cn' # 服务器部署的域名/IP地址
+    #SERVER_NAME = ZENITH_SERVER_ADDRESS
     EMAIL_ADMIN ='forec@bupt.edu.cn'                # 管理员账户的邮箱
     ZENITH_RANDOM_PATH_ELEMENTS = ['a', 'b', 'c', 'd', 'e', 'f', 'g',
                                        'h', 'i', 'j', 'k', 'l', 'm', 'n',
@@ -42,6 +43,10 @@ class Config:
                                        'N', 'O', 'P', 'Q', 'R', 'S', 'T',
                                        'U', 'V', 'W', 'X', 'Y', 'Z']
         # 用于生成随机路径的元素
+    ZENITH_VALID_THUMBNAIL = ['.jpg', '.png', '.ico', '.jpeg']
+        # 允许用户使用的头像后缀名
+    ZENITH_VALID_THUMBNAIL_SIZE = 512 * 1024 # 最大 512K 头像
+
     @staticmethod
     def init_app(app):
         pass

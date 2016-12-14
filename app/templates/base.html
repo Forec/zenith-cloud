@@ -33,7 +33,7 @@
 		<div id="logo">
 			{% if current_user.is_authenticated %}	
 				<!--已登陆用户显示头像和简介，用户昵称链接到用户资料界面-->
-			<span class="image avatar48"><img src="{{ current_user.gravatar(size=48) }}" alt="" /></span>
+			<span class="image img-rounded avatar48"><img src="{{ current_user.gravatar(size=48) }}" alt="" /></span>
 				<h1 style="margin-left:40px"><a href="{{ url_for('main.user', id=current_user.uid, _external=True) }}">{{ current_user.nickname }}</a></h1>
 				<div style="margin-left:60px">
 					<p>{{ current_user.about_me }}</p>

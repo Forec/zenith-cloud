@@ -3,10 +3,10 @@
 {% block title %}顶点云 - {{ user.nickname }}{% endblock %}
 
 {% block page_content %}
-<section id="top" class="three">
+<section id="top" class="two">
     <div class="container">
         <header>
-            <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=224) }}">
+            <img class="img-rounded user-profile-thumbnail" src="{{ user.gravatar(size=224) }}">
             <div>
                 <span><b>昵称：</b>{{ user.nickname }}</span>
                 {% if user == current_user %}

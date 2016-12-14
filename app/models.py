@@ -1,7 +1,8 @@
-from . import db
 import os
+from . import db
+from config import basedir
 from datetime import datetime
-from flask import Flask
+from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, and_
 from . import login_manager
@@ -363,6 +364,24 @@ class User(UserMixin, db.Model):
         }
 
     def gravatar(self, size=100, default='identicon', rating='g'):
+        # 若存在用户自定义头像则返回自定义头像
+        if self.avatar_hash is not None and self.avatar_hash[0] == ':':
+            # 定义 avatar_hash 的第一个字符为 : 时有自定义头像
+            return self.avatar_hash[1:]
+        for _suffix in current_app.config['ZENITH_VALID_THUMBNAIL']:
+            thumbnailPath = os.path.join(basedir,
+                                 'app/static/thumbnail/' +
+                                    str(self.uid) + _suffix)
+            if os.path.isfile(thumbnailPath):
+                thumbnailURL = url_for('static',
+                               filename = 'thumbnail/' +
+                                          str(self.uid) +
+                                          _suffix,
+                               _external=True)
+                self.avatar_hash = ':'+ thumbnailURL
+                return thumbnailURL
+
+        # 不存在自定义头像则从 gravatar 获取
         if request.is_secure:
             url = 'https://secure.gravatar.com/avatar'
         else:

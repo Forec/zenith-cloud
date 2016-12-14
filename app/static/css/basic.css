@@ -1,5 +1,10 @@
 .profile-thumbnail {
     position: relative;
+    width: 56px;
+}
+.user-profile-thumbnail {
+    position: relative;
+    width: 224px;
 }
 .profile-header {
     min-height: 224px;
@@ -106,6 +111,7 @@ div.comment-author {
 }
 div.comment-thumbnail {
     position: absolute;
+    width:40px;
 }
 div.comment-content {
     font-size: 80%;
