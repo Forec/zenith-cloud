@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "main/_macros.html" as macros %}
+
+{% block title %}顶点云 - 消息列表{% endblock %}
+
+{% block page_content %}
+<section id="top" class="three">
+    <div class="container">
+        <header>
+            <div>
+                <h2 style="display:inline">消息列表</h2>
+                <div style="float:right">
+                    <a href="{{ url_for('main.messages', key='') }}"><button type="button" class="btn btn-success">刷新</button></a>
+                </div>
+            </div>
+
+            <div class="page-header">
+                <form method="POST" action="{{ url_for('main.messages') }}">
+                    {{ form.hidden_tag() }}
+                    {{ form.key(class="form-control", placeholder="根据关键字检索消息") }}
+                </form>
+            </div>
+
+            {% if messages %}
+            <div style="text-align:left">
+                {% include 'main/messages/_messages.html' %}
+            </div>
+            {% else %}
+
+            <div>
+                <p>找不到您要搜索的消息</p>
+            </div>
+            {% endif %}
+            {% if pagination %}
+            <div class="pagination">
+                {{ macros.pagination_widget(pagination, 'main.messages') }}
+            </div>
+            {% endif %}
+        </header>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}
