@@ -60,5 +60,27 @@ def init():
     Comment.generate_fake(70)
     Message.generate_fake(100)
 
+@manager.command
+def simple_init():
+    '''Simple Init the database'''
+    db.drop_all()
+    db.create_all()
+    Role.insert_roles()
+    u = User(email='forec@bupt.edu.cn', \
+             nickname='Administrator', \
+             password='cloud-storage', \
+             confirmed=True, \
+             role=Role.query.filter_by(name='Administrator').first(), \
+             about_me='顶点云管理员')
+    db.session.add(u)
+    u = User(email='test@test.com', \
+             nickname='测试者', \
+             password='cloud-storage', \
+             confirmed=True, \
+             role=Role.query.filter_by(name='User').first(), \
+             about_me='欢迎来到顶点云的线上测试')
+    db.session.add(u)
+    db.session.commit()
+
 if __name__ == "__main__":
     manager.run()
