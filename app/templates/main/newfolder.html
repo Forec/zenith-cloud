@@ -3,13 +3,17 @@
 {% block title %}顶点云 - 新文件夹{% endblock %}
 
 {% block page_content %}
-<div>
-  <h1>在 {{ path }} 下创建新文件夹</h1>
-</div>
-<div>
-  {{ wtf.quick_form(form) }}
-</div>
-</br>
+<section id="top" class="three">
+    <div class="container">
+        <header>
+            <br/>
+            <h1>在 {{ path }} 下创建新文件夹</h1>
+            <p></p>
+            <br/>
+            {{ wtf.quick_form(form) }}
+        </header>
+    </div>
+</section>
 {% endblock %}
 
 {% block scripts %}

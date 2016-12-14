@@ -80,10 +80,10 @@
 
             <div class="post-footer">
                 <span class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown">
-                        <span class = "label label-primary">操作<span class="caret"></span></span>
-                    </a>
-                    <ul class="dropdown-menu">
+                    <span class = "label label-primary dropdown-toggle"
+                          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作</span>
+
+                    <ul class="dropdown-menu  dropdown-menu-right">
                         {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
                         <li><a href="{{ url_for('main.download', id=file.uid) }}">下载</a></li>
                         {% endif %}
@@ -116,15 +116,19 @@
                         {% endif %}
                         <li><a href="{{ url_for('.file', id=file.uid) }}">资源外链</a></li>
 
+                        <li>
+                            <a href="{{ url_for('.file', id=file.uid) }}#comments">
+                                {% if file.comments.count() == 0 %}
+                                    暂无评论
+                                {% else %}
+                                    {{ file.comments.count() }} 条评论
+                                {% endif %}
+                            </a>
+                        </li>
+
                     </ul>
                 </span>
-               <a href="{{ url_for('.file', id=file.uid) }}#comments">
-                    {% if file.comments.count() == 0 %}
-                        <span class="label label-default">暂无评论</span>
-                    {% else %}
-                        <span class="label label-info">{{ file.comments.count() }} 条评论</span>
-                    {% endif %}
-                </a>
+
             </div>
         </div>
     </li>

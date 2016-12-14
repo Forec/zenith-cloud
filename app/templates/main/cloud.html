@@ -85,12 +85,12 @@
                 </div>
             {% endif %}
 
-            <div style="text-align:left">
+            <div style="text-align:center">
                 {% if files %}
                 {% include 'main/_ownfiles.html' %}
                 {% else %}
                     {% if key == '' %}
-                        <h3 class="text-warning">这里什么都没有哦~</h3>
+                        <h3 class="text-warning">这里什么都没有</h3>
                     {% else %}
                         <h3 class="text-warning">没有检索到相关文件</h3>
                     {% endif %}

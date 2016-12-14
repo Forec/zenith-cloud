@@ -308,14 +308,14 @@ class User(UserMixin, db.Model):
         return [fileid, password]
 
     def generate_view_token(self,
-                            rootid,
-                            _linkpass,
-                            type,
-                            order,
-                            direction,
-                            path,
-                            key,
-                            expiration):
+                            rootid = -1,
+                            _linkpass = '',
+                            type = 'all',
+                            order = 'name',
+                            direction = 'front',
+                            path = '',
+                            key = '',
+                            expiration = 3600):
         s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({
             'view': rootid,

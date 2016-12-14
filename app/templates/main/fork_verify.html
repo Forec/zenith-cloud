@@ -4,17 +4,22 @@
 {% block title %}顶点云 - 输入提取码{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h2>请输入
-        {% if file.isdir %}
-        目录
-        {% else %}
-        文件
-        {% endif %}
-        {{ file.filename }}
-        的提取码</h2>
-</div>
-<div class="col-md-4">
-    {{ wtf.quick_form(form) }}
-</div>
+<section id="top" class="three">
+    <div class="container">
+        <header>
+            <br/>
+            <h2>请输入
+                {% if file.isdir %}
+                    目录
+                {% else %}
+                    文件
+                {% endif %}
+                {{ file.filename }}的提取码
+            </h2>
+            <p></p>
+            <br/>
+            {{ wtf.quick_form(form) }}
+        </header>
+    </div>
+</section>
 {% endblock %}

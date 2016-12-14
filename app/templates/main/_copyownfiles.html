@@ -29,56 +29,59 @@
             {% endif %}
         </div>
         <div class="post-content">
-            <div class="post-date">
-                {% if not file.isdir %}
-                    {% if file.cfileid > 0 %}
-                    文件大小：
-                        {% if file.cfile.size < 1024 %}
-                            {{ file.cfile.size }} B
-                        {% elif file.cfile.size < 1048576 %}
-                            {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
-                        {% elif file.cfile.size < 1073741824 %}
-                            {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
-                        {% else %}
-                            {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+            <div class="post-header">
+                <div class="post-author">
+                    {% if file.isdir == True %}
+                    <a href="{{ url_for('.copy', path= file.path ~ file.filename ~ '/',
+                        direction=_direction, order=_order, id=_file.uid) }}">
+                        {{ file.filename }}</a>
+                    {% else %}
+                    <a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a>
+                    {% endif %}
+                </div>
+
+                <div class="post-date">
+                    {% if not file.isdir %}
+                        {% if file.cfileid > 0 %}
+                        文件大小：
+                            {% if file.cfile.size < 1024 %}
+                                {{ file.cfile.size }} B
+                            {% elif file.cfile.size < 1048576 %}
+                                {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                            {% elif file.cfile.size < 1073741824 %}
+                                {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                            {% else %}
+                                {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                            {% endif %}
                         {% endif %}
                     {% endif %}
-                {% endif %}
-                &nbsp;&nbsp;
+                    &nbsp;&nbsp;
 
-                创建时间：{{ file.created }}
+                    创建时间：{{ file.created }}
+                </div>
             </div>
-            <div class="post-author">
-                {% if file.isdir == True %}
-                <a href="{{ url_for('.copy', path= file.path ~ file.filename ~ '/',
-                    direction=_direction, order=_order, id=_file.uid) }}">
-                    {{ file.filename }}</a>
-                {% else %}
-                <a href="{{ url_for('.file', id=file.uid) }}">{{ file.filename }}</a>
-                {% endif %}
-            </div>
+
             <div class="post-footer">
                 <span class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown">
-                        <span class = "label label-primary">操作<span class="caret"></span></span>
-                    </a>
-                    <ul class="dropdown-menu">
+                    <span class = "label label-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作</span>
+
+                    <ul class="dropdown-menu  dropdown-menu-right">
                         {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
-                        <li><a href="{{ url_for('main.download', id=file.uid) }}">下载</a></li>
+                            <li><a href="{{ url_for('main.download', id=file.uid) }}">下载</a></li>
                         {% endif %}
 
                         {% if current_user == file.owner %}
-	                    <li><a href="{{ url_for('main.copy', id=file.uid, path='/') }}">复制</a></li>
-	                    <li><a href="{{ url_for('main.move', id=file.uid, path='/') }}">移动</a></li>
-	                    <li><a href="{{ url_for('main.edit_file', id=file.uid) }}">编辑</a></li>
-                        <li><a href="{{ url_for('main.delete_file',id=file.uid) }}">删除</a></li>
+                            <li><a href="{{ url_for('main.copy', id=file.uid, path='/') }}">复制</a></li>
+                            <li><a href="{{ url_for('main.move', id=file.uid, path='/') }}">移动</a></li>
+                            <li><a href="{{ url_for('main.edit_file', id=file.uid) }}">编辑</a></li>
+                            <li><a href="{{ url_for('main.delete_file',id=file.uid) }}">删除</a></li>
                             {% if file.private %}
                                 <li><a href="{{ url_for('main.set_share', id=file.uid) }}">共享</a></li>
                             {% else %}
                                 <li><a href="{{ url_for('main.set_private', id=file.uid) }}">取消共享</a></li>
                             {% endif %}
 	                    {% elif current_user.is_administrator() %}
-                        <li><a href="{{ url_for('main.moderate_files_delete',id=file.uid) }}">删除 [管理员]</a></li>
+                            <li><a href="{{ url_for('main.moderate_files_delete',id=file.uid) }}">删除 [管理员]</a></li>
                             {% if file.private %}
                                 <li><a href="{{ url_for('main.set_share', id=file.uid) }}">共享 [管理员]</a></li>
                             {% else %}
@@ -86,16 +89,18 @@
                             {% endif %}
                         {% endif %}
                         <li><a href="{{ url_for('.file', id=file.uid) }}">资源外链</a></li>
+                        <li>
+                            <a href="{{ url_for('.file', id=file.uid) }}#comments">
+                                {% if file.comments.count() == 0 %}
+                                    暂无评论
+                                {% else %}
+                                    {{ file.comments.count() }} 条评论
+                                {% endif %}
+                            </a>
+                        </li>
 
                     </ul>
                 </span>
-               <a href="{{ url_for('.file', id=file.uid) }}#comments">
-                    {% if file.comments.count() == 0 %}
-                        <span class="label label-default">暂无评论</span>
-                    {% else %}
-                        <span class="label label-info">{{ file.comments.count() }} 条评论</span>
-                    {% endif %}
-                </a>
             </div>
         </div>
     </li>

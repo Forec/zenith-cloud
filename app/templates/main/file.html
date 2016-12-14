@@ -82,8 +82,8 @@
                                 {% else %}
                                     {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
                                 {% endif %}
+                                &nbsp;&nbsp;
                             {% endif %}
-                            &nbsp;&nbsp;
                         {% endif %}
                         {% if current_user == file.owner %}
                         创建时间：{{ moment(file.created).fromNow() }}
@@ -112,10 +112,9 @@
 
                 <div class="post-footer">
                     <span class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown">
-                            <span class = "label label-primary">操作<span class="caret"></span></span>
-                        </a>
-                        <ul class="dropdown-menu">
+                        <span class = "label label-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作</span>
+
+                        <ul class="dropdown-menu dropdown-menu-right">
                             {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
                                 <li><a href="{{ url_for('main.download', id=file.uid) }}">下载</a></li>
                             {% endif %}

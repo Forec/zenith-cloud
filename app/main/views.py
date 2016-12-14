@@ -1126,6 +1126,7 @@ def view_do():
     )
     files = pagination.items
     file_types = generateFileTypes(files)
+
     return render_template('main/viewShares.html',
                            files = file_types,
                            form= form,
@@ -1732,9 +1733,9 @@ def copy():
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
-    # 抽取所有当前路径下的文件/目录并按用户指定方式排序
+    # 抽取所有当前路径下的目录并按用户指定方式排序
     query = current_user.files.\
-        filter("path=:p and uid<>:id and ownerid=:d").\
+        filter("path=:p and uid<>:id and isdir=1 and ownerid=:d").\
         params(p=path,
                id=file.uid,
                d=current_user.uid)
@@ -1927,8 +1928,11 @@ def copy_check(token):
         flash('文件 ' + file.path + file.filename +
               ' 已拷贝到 ' + _path + '下')
     db.session.add(current_user)
-    # 复制成功重定向到新文件/目录的详细界面
-    return redirect(url_for('main.file', id=newRootFile.uid))
+    # 复制成功重定向到新文件的详细界面或目录的云盘
+    if not file.isdir:
+        return redirect(url_for('main.file', id=newRootFile.uid))
+    else:
+        return redirect(url_for('main.cloud', path= newRootFile.path))
 
 # ---------------------------------------------------------------------
 # move 函数为用户移动文件/目录界面提供了入口，用户可通过此函数移动自己云盘中的
@@ -1973,7 +1977,7 @@ def move():
 
     # 抽取所有当前路径下的文件/目录并按用户指定方式排序
     query = current_user.files.\
-        filter("path=:p and uid<>:id and ownerid=:d").\
+        filter("path=:p and uid<>:id and isdir=1 and ownerid=:d").\
         params(p=path,
                id=file.uid,
                d=current_user.uid)
@@ -2221,9 +2225,9 @@ def fork_do():
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
-    # 抽取所有当前路径下的文件/目录并按用户指定方式排序
+    # 抽取所有当前路径下的目录并按用户指定方式排序
     query = current_user.files.\
-        filter("path=:p and ownerid=:d").\
+        filter("path=:p and ownerid=:d and isdir=1").\
         params(p=path,
                d=current_user.uid)
     if order == 'name':
