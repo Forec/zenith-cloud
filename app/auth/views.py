@@ -37,7 +37,7 @@ def logout():
 @auth.route('/register', methods = ['GET', 'POST'])
 def register():
     # 展示状态，禁止注册
-    return render_template('testing.html')
+    return render_template('auth/testing.html')
 
     # form = RegistrationForm()
     # if current_user.is_authenticated:

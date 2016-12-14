@@ -79,7 +79,7 @@
                 <span class="dropdown">
                     <span class = "label label-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作</span>
 
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-right">
                         {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
                         <li><a href="{{ url_for('main.download', id=file.uid, _external=True) }}">下载</a></li>
                         {% endif %}

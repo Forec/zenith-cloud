@@ -67,18 +67,39 @@ def simple_init():
     db.create_all()
     Role.insert_roles()
     u = User(email='forec@bupt.edu.cn', \
-             nickname='Administrator', \
-             password='cloud-storage', \
+             nickname='Forec', \
+             password='zenith', \
              confirmed=True, \
              role=Role.query.filter_by(name='Administrator').first(), \
              about_me='顶点云管理员')
     db.session.add(u)
     u = User(email='test@test.com', \
              nickname='测试者', \
-             password='cloud-storage', \
+             password='zenith', \
              confirmed=True, \
              role=Role.query.filter_by(name='User').first(), \
              about_me='欢迎来到顶点云的线上测试')
+    db.session.add(u)
+    u = User(email='dragoncat@forec.cn', \
+             nickname='龙猫', \
+             password='zenith', \
+             confirmed=True, \
+             role=Role.query.filter_by(name='User').first(), \
+             about_me='我是最萌的')
+    db.session.add(u)
+    u = User(email='dragoncat@forec.cn', \
+             nickname='non1996', \
+             password='zenith', \
+             confirmed=True, \
+             role=Role.query.filter_by(name='User').first(), \
+             about_me='听说你要开车')
+    db.session.add(u)
+    u = User(email='rabbit@forec.cn', \
+             nickname='飞翔的兔子', \
+             password='zenith', \
+             confirmed=True, \
+             role=Role.query.filter_by(name='User').first(), \
+             about_me='一只热爱生活的兔子')
     db.session.add(u)
     db.session.commit()
 
