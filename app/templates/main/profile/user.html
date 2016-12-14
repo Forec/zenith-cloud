@@ -10,7 +10,7 @@
             <div>
                 <span><b>昵称：</b>{{ user.nickname }}</span>
                 {% if user == current_user %}
-                    &nbsp;&nbsp;<a class="btn btn-default" href="{{ url_for('.edit_profile') }}">编辑资料</a>
+                    &nbsp;&nbsp;<a class="btn btn-default" href="{{ url_for('.edit_profile', _external=True) }}">编辑资料</a>
                 {% endif %}
                 <br/>
                 <span class = "badge">已使用： {{ user.used // 1048576 }} M </span>
@@ -32,8 +32,8 @@
                 <br/>
                 <span>
                     <!--积分：<span class="badge">{{ user.score }}</span>-->
-                    <a href="{{ url_for('.followers', id=user.uid) }}"><b>关注者：</b><span class="badge">{{ user.followers.count()-1 }}</span></a>&nbsp;&nbsp;
-                    <a href="{{ url_for('.followed_by', id=user.uid) }}"><b>{% if current_user==user %}我{% else %}他{% endif %}关注的：</b><span class="badge">{{ user.followed.count()-1 }}</span></a>&nbsp;&nbsp;
+                    <a href="{{ url_for('.followers', id=user.uid, _external=True) }}"><b>关注者：</b><span class="badge">{{ user.followers.count()-1 }}</span></a>&nbsp;&nbsp;
+                    <a href="{{ url_for('.followed_by', id=user.uid, _external=True) }}"><b>{% if current_user==user %}我{% else %}他{% endif %}关注的：</b><span class="badge">{{ user.followed.count()-1 }}</span></a>&nbsp;&nbsp;
                     {% if current_user.is_authenticated and user != current_user and user.is_following(current_user) %}
                     | <span class="label label-default"><b>该用户已关注你</b></span>
                     {% endif %}
@@ -41,15 +41,15 @@
 
                 {% if current_user.can(Permission.FOLLOW) and user != current_user %}
                     {% if not current_user.is_following(user) %}
-                        <a href="{{ url_for('.follow', id=user.uid) }}" class="btn btn-primary">关注他</a>
+                        <a href="{{ url_for('.follow', id=user.uid, _external=True) }}" class="btn btn-primary">关注他</a>
                     {% else %}
-                        <a href="{{ url_for('.unfollow', id=user.uid) }}" class="btn btn-default">取消关注</a>
+                        <a href="{{ url_for('.unfollow', id=user.uid, _external=True) }}" class="btn btn-default">取消关注</a>
                     {% endif %}
-                    <a href="{{ url_for('main.chat', id=user.uid) }}" class="btn btn-success">私信</a>
+                    <a href="{{ url_for('main.chat', id=user.uid, _external=True) }}" class="btn btn-success">私信</a>
                 {% endif %}
 
                 {% if current_user.is_administrator() %}
-                    <a class="inline btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.uid) }}">编辑资料 [管理员]</a>
+                    <a class="inline btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.uid, _external=True) }}">编辑资料 [管理员]</a>
                 {% endif %}
                 <br/>
             </div>

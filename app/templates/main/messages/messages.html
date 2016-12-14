@@ -11,12 +11,12 @@
             <div>
                 <h2 style="display:inline">消息列表</h2>
                 <div style="float:right">
-                    <a href="{{ url_for('main.messages', key='') }}"><button type="button" class="btn btn-success">刷新</button></a>
+                    <a href="{{ url_for('main.messages', key='', _external=True) }}"><button type="button" class="btn btn-success">刷新</button></a>
                 </div>
             </div>
 
             <div class="page-header">
-                <form method="POST" action="{{ url_for('main.messages') }}">
+                <form method="POST" action="{{ url_for('main.messages', _external=True) }}">
                     {{ form.hidden_tag() }}
                     {{ form.key(class="form-control", placeholder="根据关键字检索消息") }}
                 </form>

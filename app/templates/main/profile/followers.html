@@ -16,7 +16,7 @@
                     {% if follow.user != user %}
                         <tr>
                             <td  style="text-align:left">
-                                <a href="{{ url_for('.user', id=follow.user.uid) }}">
+                                <a href="{{ url_for('.user', id=follow.user.uid, _external=True) }}">
                                 <img class="img-rounded" src="{{ follow.user.gravatar(size=32) }}">
                                 {{ follow.user.nickname }}
                                 </a>

@@ -14,7 +14,7 @@
             </p>
             <p>
                 需要重发一封确认邮件？
-                <a href="{{ url_for('auth.resend_confirmation') }}">点击此处重发</a>
+                <a href="{{ url_for('auth.resend_confirmation', _external=True) }}">点击此处重发</a>
             </p>
         </header>
     </div>

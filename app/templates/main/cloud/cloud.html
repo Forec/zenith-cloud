@@ -10,7 +10,7 @@
         <header>
 
             <div>
-                <form method="POST" action="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front') }}">
+                <form method="POST" action="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front', _external=True) }}">
                     {{ form.hidden_tag() }}
                     {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
                 </form>
@@ -19,17 +19,17 @@
 
             <div style="text-align:right">
 
-                <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key='', direction='front') }}">
+                <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key='', direction='front', _external=True) }}">
                     {% if key != '' %}
                         <button type="button" class="btn btn-success">清空筛选条件</button>
                     {% endif %}
                 </a>
 
-                <a href="{{ url_for('main.upload', path=_path) }}">
+                <a href="{{ url_for('main.upload', path=_path, _external=True) }}">
                     <button type="button" class="btn btn-success">上传</button>
                 </a>
 
-                <a href="{{ url_for('main.newfolder', path=_path) }}">
+                <a href="{{ url_for('main.newfolder', path=_path, _external=True) }}">
                     <button type="button" class="btn btn-success">新文件夹</button>
                 </a>
 
@@ -50,23 +50,23 @@
                         {% endif %}
                     </button>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='all',direction=_direction, order=_order, key=key) }}">全部</a>
-                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order, key=key) }}">音乐</a>
-                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order, key=key) }}">视频</a>
-                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order, key=key) }}">图片</a>
-                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order, key=key) }}">文档</a>
-                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='compress', direction=_direction, order=_order, key=key) }}">压缩文件</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='all',direction=_direction, order=_order, key=key, _external=True) }}">全部</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order, key=key, _external=True) }}">音乐</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order, key=key, _external=True) }}">视频</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order, key=key, _external=True) }}">图片</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order, key=key, _external=True) }}">文档</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='compress', direction=_direction, order=_order, key=key, _external=True) }}">压缩文件</a>
                         <div class="dropdown-divider"></div>
                         {% if _direction == "front" %}
-                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='reverse') }}">按时间排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='reverse', _external=True) }}">按时间排序</a>
                         {% else %}
-                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='front') }}">按时间排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='front', _external=True) }}">按时间排序</a>
                         {% endif %}
 
                         {% if _direction == "front" %}
-                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='reverse') }}">按名称排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='reverse', _external=True) }}">按名称排序</a>
                         {% else %}
-                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front') }}">按名称排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front', _external=True) }}">按名称排序</a>
                         {% endif %}
                   </div>
                 </div>
@@ -78,7 +78,7 @@
                     <div class="link-block">
                     当前路径：
                     {% for __path, _pathView in pathlists %}
-                        <a class="link-item" href="{{ url_for('main.cloud', path=__path, order=_order, direction=_direction) }}">
+                        <a class="link-item" href="{{ url_for('main.cloud', path=__path, order=_order, direction=_direction, _external=True) }}">
                             {{ _pathView }}</a>
                     {% endfor %}
                     </div>

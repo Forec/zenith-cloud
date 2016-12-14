@@ -2,14 +2,14 @@
     {% for message, viewed in messages %}
     <li class="comment">
         <div class="comment-thumbnail">
-            <a href="{{ url_for('main.user', id=message.sender.uid) }}">
+            <a href="{{ url_for('main.user', id=message.sender.uid, _external=True) }}">
                 <img class="img-rounded profile-thumbnail" src="{{ message.sender.gravatar(size=40) }}">
             </a>
         </div>
         <div class="comment-content">
             <div class="comment-date">时间：{{ moment(message.created).fromNow() }}</div>
             <div class="comment-author">
-                <a href="{{ url_for('main.user', id=message.sender.uid) }}">
+                <a href="{{ url_for('main.user', id=message.sender.uid, _external=True) }}">
                     {{ message.sender.nickname }}
                 </a>
             </div>
@@ -30,13 +30,13 @@
 
             <div class="post-footer">
                 {% if current_user == message.sender %}
-	            <a href="{{ url_for('main.recall_message',id=message.mesid) }}">
+	            <a href="{{ url_for('main.recall_message',id=message.mesid, _external=True) }}">
 		            <span class="label label-warning">撤回</span>
 		        </a>
 	            {% endif %}
 
                 {% if message.receiver == current_user or message.sender == current_user %}
-                <a href="{{ url_for('main.delete_message', id = message.mesid) }}">
+                <a href="{{ url_for('main.delete_message', id = message.mesid, _external=True) }}">
                     <span class="label label-danger">删除</span>
                 </a>
                 {% endif %}

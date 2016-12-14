@@ -9,7 +9,7 @@
     <div class="container">
         <header>
             <div>
-                <form method="POST" action="{{ url_for('main.index') }}">
+                <form method="POST" action="{{ url_for('main.index', _external=True) }}">
                     {{ form.hidden_tag() }}
                     {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
                 </form>
@@ -18,11 +18,11 @@
             <div class="post-tabs">
                 <ul class="nav nav-tabs">
                     <li {% if not show_followed %} class="active"{% endif %}>
-                        <a href="{{ url_for('.show_all') }}"><span style="font-size:80%">全部</span></a>
+                        <a href="{{ url_for('.show_all', _external=True) }}"><span style="font-size:80%">全部</span></a>
                     </li>
                     {% if current_user.is_authenticated %}
                         <li {% if show_followed %} class="active"{% endif %}>
-                            <a href="{{ url_for('.show_followed') }}"><span style="font-size:80%">我关注的</span></a></li>
+                            <a href="{{ url_for('.show_followed', _external=True) }}"><span style="font-size:80%">我关注的</span></a></li>
                     {% endif %}
                 </ul>
 

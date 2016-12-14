@@ -9,8 +9,8 @@
             <br/>
             <h2>管理员界面</h2>
             <br/>
-            <p><small><a href="{{ url_for('main.moderate_files')}}">管理用户文件</a></small></p>
-            <p><small><a href="{{ url_for('main.moderate_comments')}}">管理用户评论</a></small></p>
+            <p><small><a href="{{ url_for('main.moderate_files', _external=True)}}">管理用户文件</a></small></p>
+            <p><small><a href="{{ url_for('main.moderate_comments', _external=True)}}">管理用户评论</a></small></p>
             <br/>
         </header>
     </div>

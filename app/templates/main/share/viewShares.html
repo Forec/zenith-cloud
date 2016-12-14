@@ -12,7 +12,7 @@
             <div>
                 <form method="POST" action="{{ url_for('main.view_do', token = current_user.generate_view_token(
                          rootid=rootfile.uid, type='all', key =form.key.data,_linkpass= rootfile.linkpass, path=path,
-                         order=_order, direction=_direction, expiration=3600)) }}">
+                         order=_order, direction=_direction, expiration=3600), _external=True) }}">
                     {{ form.hidden_tag() }}
                     <div class="row">
                         {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
@@ -25,7 +25,7 @@
 
                 <a href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                          rootid=rootfile.uid, type='all', key ='' ,_linkpass= rootfile.linkpass, path=path,
-                         order=_order, direction=_direction, expiration=3600)) }}">
+                         order=_order, direction=_direction, expiration=3600), _external=True) }}">
                     {% if key != '' %}
                         <button type="button" class="btn btn-success">清空筛选条件</button>
                     {% endif %}
@@ -51,39 +51,41 @@
                     <div class="dropdown-menu">
                         <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                             rootid=rootfile.uid, type='all', key=key, _linkpass= rootfile.linkpass, path=path,
-                            order=_order, direction=_direction, expiration=3600)) }}">全部</a>
+                            order=_order, direction=_direction, expiration=3600), _external=True) }}">全部</a>
                         <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                              rootid=rootfile.uid, type='music', key =key, _linkpass= rootfile.linkpass, path=path,
-                             order=_order, direction=_direction, expiration=3600)) }}">音乐</a>
+                             order=_order, direction=_direction, expiration=3600), _external=True) }}">音乐</a>
                         <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                              rootid=rootfile.uid, type='video', key =key, _linkpass= rootfile.linkpass, path=path,
-                             order=_order, direction=_direction, expiration=3600)) }}">视频</a>
+                             order=_order, direction=_direction, expiration=3600), _external=True) }}">视频</a>
+                        <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
+                             rootid=rootfile.uid, type='photo', key =key, _linkpass= rootfile.linkpass, path=path,
+                             order=_order, direction=_direction, expiration=3600), _external=True) }}">图片</a>
                         <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                              rootid=rootfile.uid, type='document', key =key, _linkpass= rootfile.linkpass, path=path,
-                             order=_order, direction=_direction, expiration=3600)) }}">图片</a>
+                             order=_order, direction=_direction, expiration=3600), _external=True) }}">文档</a>
                         <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                              rootid=rootfile.uid, type='compress', key =key, _linkpass= rootfile.linkpass, path=path,
-                             order=_order, direction=_direction, expiration=3600)) }}">文档</a>
-                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='compress', direction=_direction, order=_order, key=key) }}">压缩文件</a>
+                             order=_order, direction=_direction, expiration=3600), _external=True) }}">压缩文件</a>
                         <div class="dropdown-divider"></div>
                         {% if _direction == "front" %}
                             <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                                  rootid=rootfile.uid, type=_type, key =key,  _linkpass= rootfile.linkpass, path=path,
-                                 order='time', direction='reverse', expiration=3600)) }}">按时间排序</a>
+                                 order='time', direction='reverse', expiration=3600), _external=True) }}">按时间排序</a>
                         {% else %}
                             <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                                  rootid=rootfile.uid, type=_type, key =key,  _linkpass= rootfile.linkpass, path=path,
-                                 order='time', direction='front', expiration=3600)) }}">按时间排序</a>
+                                 order='time', direction='front', expiration=3600), _external=True) }}">按时间排序</a>
                         {% endif %}
 
                         {% if _direction == "front" %}
                             <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                                  rootid=rootfile.uid, type=_type, key =key,  _linkpass= rootfile.linkpass, path=path,
-                                 order='name', direction='reverse', expiration=3600)) }}">按名称排序</a>
+                                 order='name', direction='reverse', expiration=3600), _external=True) }}">按名称排序</a>
                         {% else %}
                             <a class="dropdown-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                                      rootid=rootfile.uid, type=_type, key =key,  _linkpass= rootfile.linkpass, path=path,
-                                     order='name', direction='front', expiration=3600)) }}">按名称排序</a>
+                                     order='name', direction='front', expiration=3600), _external=True) }}">按名称排序</a>
                         {% endif %}
                     </div>
                 </div>
@@ -96,7 +98,7 @@
                     {% for __path, _pathView in pathlists %}
                         <a class="link-item" href="{{ url_for('main.view_do', token = current_user.generate_view_token(
                              rootid=rootfile.uid, type='all', key ='', _linkpass= rootfile.linkpass, path=__path,
-                             order=_order, direction=_direction, expiration=3600)) }}">
+                             order=_order, direction=_direction, expiration=3600), _external=True) }}">
                             {{ _pathView }}</a>
                     {% endfor %}
                     </div>

@@ -9,8 +9,8 @@
             <h2>确认您的删除操作</h2>
             {{ wtf.quick_form(form) }}
             </br>
-            <a class="btn btn-danger" href="{{ url_for('main.delete_file_confirm',token=token) }}">确认删除</a>
-            <a class="btn btn-default" style="margin-left:15px" href="{{ url_for('main.file',id=file.uid) }}">取消</a>
+            <a class="btn btn-danger" href="{{ url_for('main.delete_file_confirm',token=token, _external=True) }}">确认删除</a>
+            <a class="btn btn-default" style="margin-left:15px" href="{{ url_for('main.file',id=file.uid, _external=True) }}">取消</a>
         </header>
     </div>
 </section>

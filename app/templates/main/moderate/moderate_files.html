@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <div>
-                <form method="POST" action="{{ url_for('main.moderate_files') }}">
+                <form method="POST" action="{{ url_for('main.moderate_files', _external=True) }}">
                     {{ form.hidden_tag() }}
                     {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
                 </form>

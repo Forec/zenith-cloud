@@ -16,7 +16,7 @@
 
             <div style="text-align:right">
                 {% if current_user.can(Permission.WRITE_ARTICLES) %}
-                    <a href="{{ url_for('main.move_check', token = current_user.generate_move_token(_file.uid, _path,expiration=3600)) }}">
+                    <a href="{{ url_for('main.move_check', token = current_user.generate_move_token(_file.uid, _path,expiration=3600), _external=True) }}">
                         <button type="button" class="btn btn-success">确认移动</button>
                     </a>
                 {% endif %}
@@ -28,15 +28,15 @@
 
                     <div class="dropdown-menu dropdown-menu-right">
                         {% if _direction == "front" %}
-                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='time', path=_path, direction='front') }}">按时间排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='time', path=_path, direction='front', _external=True) }}">按时间排序</a>
                         {% else %}
-                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='time', path=_path, direction='reverse') }}">按时间排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='time', path=_path, direction='reverse', _external=True) }}">按时间排序</a>
                         {% endif %}
 
                         {% if _direction == "front" %}
-                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='name', path=_path, direction='front') }}">按名称排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='name', path=_path, direction='front', _external=True) }}">按名称排序</a>
                         {% else %}
-                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='name', path=_path, direction='reverse') }}">按名称排序</a>
+                            <a class="dropdown-item" href="{{ url_for('main.move', id=_file.uid, order='name', path=_path, direction='reverse', _external=True) }}">按名称排序</a>
                         {% endif %}
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                 <div class="link-block">
                     当前路径：
                     {% for __path, _pathView in pathlists %}
-                        <a class="link-item" href="{{ url_for('main.move', path=__path, id=_file.uid) }}">
+                        <a class="link-item" href="{{ url_for('main.move', path=__path, id=_file.uid, _external=True) }}">
                             {{ _pathView }}</a>
                     {% endfor %}
                 </div>

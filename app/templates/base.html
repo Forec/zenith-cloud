@@ -6,18 +6,18 @@
 {{ super() }}
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="shortcut icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" type="image/x-icon">
-<link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" type="image/x-icon">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/basic.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap/bootstrap.min.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/template/main.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/notification/ns-default.css') }}" />
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/notification/ns-style-bar.css') }}" />
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome-4.7.0/css/font-awesome.css') }}" />
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome-4.7.0/css/font-awesome.min.css') }}" />
+<link rel="shortcut icon" href="{{ url_for('static', filename='icons/favicon.ico', _external=True) }}" type="image/x-icon">
+<link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico', _external=True) }}" type="image/x-icon">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/basic.css', _external=True) }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap/bootstrap.min.css', _external=True) }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/template/main.css', _external=True) }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/notification/ns-default.css', _external=True) }}" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/notification/ns-style-bar.css', _external=True) }}" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome-4.7.0/css/font-awesome.css', _external=True) }}" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome-4.7.0/css/font-awesome.min.css', _external=True) }}" />
 
 <!--it's interesting the js needs to be put here-->
-<script src="{{ url_for('static', filename='js/notification/modernizr.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notification/modernizr.custom.js', _external=True) }}"></script>
 {% endblock %}
 
 {% block navbar %}
@@ -34,12 +34,12 @@
 			{% if current_user.is_authenticated %}	
 				<!--已登陆用户显示头像和简介，用户昵称链接到用户资料界面-->
 			<span class="image avatar48"><img src="{{ current_user.gravatar(size=48) }}" alt="" /></span>
-				<h1 style="margin-left:40px"><a href="{{ url_for('main.user', id=current_user.uid) }}">{{ current_user.nickname }}</a></h1>
+				<h1 style="margin-left:40px"><a href="{{ url_for('main.user', id=current_user.uid, _external=True) }}">{{ current_user.nickname }}</a></h1>
 				<div style="margin-left:60px">
 					<p>{{ current_user.about_me }}</p>
 				</div>
 			{% else %}
-			<span class="image avatar48"><img src="{{ url_for('static', filename='images/anonymous.jpg') }}" alt="" /></span>
+			<span class="image avatar48"><img src="{{ url_for('static', filename='images/anonymous.jpg', _external=True) }}" alt="" /></span>
 				<h1 id="title">游客</h1>
 				<p>您尚未登陆</p>
 			{% endif %}
@@ -48,24 +48,24 @@
 		<!-- Nav -->
 		<nav id="nav">
 			<ul>
-				<li><a href="{{ url_for('main.index') }}" class="skel-layers-ignoreHref">
+				<li><a href="{{ url_for('main.index', _external=True) }}" class="skel-layers-ignoreHref">
 					<span class="icon fa-share-alt">发现</span></a></li>
 				{% if current_user.is_authenticated %}
-					<li><a href="{{ url_for('main.cloud', page=1, type='all', path='/', order='time', direction='front') }}" id="top-link" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('main.cloud', _external=True, page=1, type='all', path='/', order='time', direction='front') }}" id="top-link" class="skel-layers-ignoreHref">
 						<span class="icon fa-cloud">我的云盘</span></a></li>
-					<li><a href="{{ url_for('auth.secure_center') }}" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('auth.secure_center', _external=True) }}" class="skel-layers-ignoreHref">
 						<span class="icon fa-lock">安全中心</span></a></li>
-					<li><a href="{{ url_for('main.messages', key='') }}" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('main.messages', key='', _external=True) }}" class="skel-layers-ignoreHref">
 						<span class="icon fa-bell">消息</span></a></li>
                     {% if current_user.can(Permission.MODERATE_FILES) %}
-    					<li><a href="{{ url_for('main.moderate', key='') }}" class="skel-layers-ignoreHref">
+    					<li><a href="{{ url_for('main.moderate', key='', _external=True) }}" class="skel-layers-ignoreHref">
 	    					<span class="icon fa-check">管理</span></a></li>
                     {% endif %}
 
-					<li><a href="{{ url_for('auth.logout') }}" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('auth.logout', _external=True) }}" class="skel-layers-ignoreHref">
 						<span class="icon fa-sign-out">登出</span></a></li>
 				{% else %}
-					<li><a href="{{ url_for('auth.login') }}" class="skel-layers-ignoreHref">
+					<li><a href="{{ url_for('auth.login', _external=True) }}" class="skel-layers-ignoreHref">
 						<span class="icon fa-sign-in">登入</span></a></li>
 				{% endif %}
 			</ul>
@@ -74,7 +74,7 @@
 	<div class="bottom">
 		<!-- Social Icons -->
 		<ul class="icons">
-			<li><a href="{{ url_for('main.home') }}" class="icon fa-home"><span class="label">Home</span></a></li>
+			<li><a href="{{ url_for('main.home', _external=True) }}" class="icon fa-home"><span class="label">Home</span></a></li>
 			<li><a href="http://blog.forec.cn" class="icon fa-coffee"><span class="label">Blog</span></a></li>
 			<li><a href="https://github.com/Forec" class="icon fa-github"><span class="label">Github</span></a></li>
 			<li><a href="mailto:forec@bupt.edu.cn" class="icon fa-envelope"><span class="label">Email</span></a></li>
@@ -102,17 +102,17 @@
 {{ moment.include_jquery() }}
 {{ moment.lang("zh-CN") }}
 
-<!--<script src="{{ url_for('static', filename='js/bootstrap/bootstrap.js') }}"></script>-->
-<!--<script src="{{ url_for('static', filename='js/bootstrap/bootstrap.min.js') }}"></script>-->
-<script src="{{ url_for('static', filename='js/template/jquery.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/template/jquery.scrolly.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/template/jquery.scrollzer.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/template/skel.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/template/util.js') }}"></script>
-<script src="{{ url_for('static', filename='js/template/main.js') }}"></script>
+<!--<script src="{{ url_for('static', filename='js/bootstrap/bootstrap.js', _external=True) }}"></script>-->
+<!--<script src="{{ url_for('static', filename='js/bootstrap/bootstrap.min.js', _external=True) }}"></script>-->
+<script src="{{ url_for('static', filename='js/template/jquery.min.js', _external=True) }}"></script>
+<script src="{{ url_for('static', filename='js/template/jquery.scrolly.min.js', _external=True) }}"></script>
+<script src="{{ url_for('static', filename='js/template/jquery.scrollzer.min.js', _external=True) }}"></script>
+<script src="{{ url_for('static', filename='js/template/skel.min.js', _external=True) }}"></script>
+<script src="{{ url_for('static', filename='js/template/util.js', _external=True) }}"></script>
+<script src="{{ url_for('static', filename='js/template/main.js', _external=True) }}"></script>
 
-<script src="{{ url_for('static', filename='js/notification/classie.js') }}"></script>
-<script src="{{ url_for('static', filename='js/notification/notificationFx.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notification/classie.js', _external=True) }}"></script>
+<script src="{{ url_for('static', filename='js/notification/notificationFx.js', _external=True) }}"></script>
 {% for message in get_flashed_messages() %}
     <script>
 		// create the notification

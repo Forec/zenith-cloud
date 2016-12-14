@@ -11,9 +11,9 @@
             {{ wtf.quick_form(form) }}
         </header>
         <footer>
-            <p><small>尚未注册？<a href="{{ url_for('auth.register') }} ">现在加入顶点云</a></small>
+            <p><small>尚未注册？<a href="{{ url_for('auth.register', _external=True) }} ">现在加入顶点云</a></small>
                 <br/>
-                <small>忘记密码？<a href="{{ url_for('auth.password_reset_request') }}">点此重置您的密码</a></small></p>
+                <small>忘记密码？<a href="{{ url_for('auth.password_reset_request', _external=True) }}">点此重置您的密码</a></small></p>
         </footer>
     </div>
 </section>

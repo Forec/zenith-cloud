@@ -140,7 +140,8 @@ def index():
     form = SearchForm()
     if form.validate_on_submit():
         return redirect(url_for('main.index',
-                                key=form.key.data))
+                                key=form.key.data,
+                                _external=True))
     form.key.data = key
 
     query = sorted(query,
@@ -206,7 +207,8 @@ def index():
 # 注意此处不需 login_required
 @main.route('/all')
 def show_all():
-    resp = make_response(redirect(url_for('.index')))
+    resp = make_response(redirect(url_for('.index',
+                                          _external=True)))
     resp.set_cookie('show_followed', '', max_age=30*24*60*60)
     return resp
 
@@ -215,7 +217,8 @@ def show_all():
 @main.route('/followed')
 @login_required
 def show_followed():
-    resp = make_response(redirect(url_for('.index')))
+    resp = make_response(redirect(url_for('.index',
+                                          _external=True)))
     resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
     return resp
 
@@ -290,7 +293,9 @@ def edit_profile():
         db.session.add(current_user)
         db.session.commit()
         flash('您的资料已更新')
-        return redirect(url_for('.user', id=current_user.uid))
+        return redirect(url_for('.user',
+                                id=current_user.uid,
+                                _external=True))
     form.nickname.data = current_user.nickname
     form.about_me.data = current_user.about_me
     return render_template('main/profile/edit_profile.html', form=form)
@@ -312,7 +317,9 @@ def edit_profile_admin(id):
         user.maxm = form.maxm.data
         db.session.add(user)
         flash('用户 ' + user.nickname +' 资料已更新')
-        return redirect(url_for('.user',id=user.uid))
+        return redirect(url_for('.user',
+                                id=user.uid,
+                                _external=True))
     form.email.data = user.email
     form.confirmed.data = user.confirmed
     form.role.data = user.role_id
@@ -338,7 +345,10 @@ def file(id):
                           author = current_user._get_current_object())
         db.session.add(comment)
         flash('您的评论已发布')
-        return redirect(url_for('.file', id=file.uid, page=-1))
+        return redirect(url_for('.file',
+                                id=file.uid,
+                                page=-1,
+                                _external=True))
     page = request.args.get('page', 1, type=int)
     if page == -1:
         page = (file.comments.count() - 1)// \
@@ -370,13 +380,18 @@ def follow(id):
     user = User.query.filter_by(uid=id).first()
     if user is None:
         flash('不合法的用户')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.index',
+                                _external=True))
     if current_user.is_following(user):
         flash('您已关注该用户')
-        return redirect(url_for('.user', id=user.uid))
+        return redirect(url_for('.user',
+                                id=user.uid,
+                                _external=True))
     current_user.follow(user)
     flash('您已关注用户 %s' % user.nickname)
-    return redirect(url_for('.user', id=user.uid))
+    return redirect(url_for('.user',
+                            id=user.uid,
+                            _external=True))
 
 # --------------------------------------------------------------------
 # unfollow 为用户提供了 follow 的逆操作
@@ -387,13 +402,18 @@ def unfollow(id):
     user = User.query.filter_by(uid=id).first()
     if user is None:
         flash('不合法的用户')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.index',
+                                _external=True))
     if not current_user.is_following(user):
         flash('您并未关注该用户')
-        return redirect(url_for('.user', uid=id))
+        return redirect(url_for('.user',
+                                uid=id,
+                                _external=True))
     current_user.unfollow(user)
     flash('您已取消对用户 %s 的关注' % user.nickname)
-    return redirect(url_for('.user', uid=id))
+    return redirect(url_for('.user',
+                            uid=id,
+                            _external=True))
 
 # --------------------------------------------------------------------
 # followers 提供了显示某用户关注者的界面入口
@@ -402,7 +422,8 @@ def followers(id):
     user = User.query.filter_by(uid=id).first()
     if user is None:
         flash('不合法的用户')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.index',
+                                _external=True))
     page = request.args.get('page', 1, type=int)
     pagination = user.followers.\
         paginate(page,
@@ -428,7 +449,8 @@ def followed_by(id):
     user = User.query.filter_by(uid=id).first()
     if user is None:
         flash('不合法的用户')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.index',
+                                _external=True))
     page = request.args.get('page', 1, type=int)
     pagination = user.followed.\
         paginate(page,
@@ -464,7 +486,9 @@ def delete_file(id):
         if form.filename.data == '' or \
             form.filename.data is None:
             flash("文件名不合法！")
-            return redirect(url_for('.file', id=file.uid))
+            return redirect(url_for('.file',
+                                    id=file.uid,
+                                    _external=True))
         file.filename = form.filename.data
         file.description = form.body.data
         db.session.add(file)
@@ -472,7 +496,7 @@ def delete_file(id):
             flash('目录信息已被更新')
         else:
             flash('文件信息已被更新')
-        return redirect(url_for('.file',id = file.uid))
+        return redirect(url_for('.file',id = file.uid, _external=True))
     form.body.data=file.description
     form.filename.data = file.filename
     return render_template('main/files/confirm_delete_file.html',
@@ -498,12 +522,14 @@ def delete_file_confirm(token):
         flash('成功删除！')
         if current_user.can(Permission.ADMINISTER) and \
             uid != current_user.uid:
-            return redirect(url_for('main.moderate_files'))
+            return redirect(url_for('main.moderate_files',
+                                    _external=True))
         else:
             return redirect(url_for('main.cloud',
                                     path=returnURL,
                                     direction='front',
-                                    type='all'))
+                                    type='all',
+                                    _external=True))
     else:
         abort(403)
 
@@ -521,7 +547,9 @@ def edit_file(id):
         if form.filename.data == '' or \
             form.filename.data is None:
             flash("文件名不合法！")
-            return redirect(url_for('.file', id=file.uid))
+            return redirect(url_for('.file',
+                                    id=file.uid,
+                                    _external=True))
         _file = File.query.\
             filter('filename=:lfn and ownerid=:_id and path=:_path').\
             params(lfn = form.filename.data,
@@ -531,7 +559,8 @@ def edit_file(id):
             # 目录下已存在与新文件名同名的文件/目录
             flash('当前目录下已存在与您新指定的名称同名的文件/目录！')
             return redirect(url_for('main.edit_file',
-                                    id=file.uid))
+                                    id=file.uid,
+                                    _external=True))
         file.filename = form.filename.data
         file.description = form.body.data
         db.session.add(file)
@@ -539,7 +568,9 @@ def edit_file(id):
             flash('目录信息已被更新')
         else:
             flash('文件信息已被更新')
-        return redirect(url_for('.file',id = file.uid))
+        return redirect(url_for('.file',
+                                id = file.uid,
+                                _external=True))
     form.body.data=file.description
     form.filename.data = file.filename
     return render_template('main/files/edit_file.html',
@@ -557,7 +588,8 @@ def moderate_comments():
     form = SearchForm()
     if form.validate_on_submit():
         return redirect(url_for('main.moderate_comments',
-                        key=form.key.data))
+                                key=form.key.data,
+                                _external=True))
     page = request.args.get('page', 1, type=int)
     key = request.args.get('key', '', type=str)
     if key == '':
@@ -591,7 +623,8 @@ def moderate_comments_disable(id):
     db.session.add(comment)
     return redirect(url_for('.moderate_comments',
                             page=request.args.\
-                                get('page', 1, type=int)))
+                                get('page', 1, type=int),
+                            _external=True))
 
 # --------------------------------------------------------------------
 # moderate_comments_enable 为评论管理员提供了将某条评论取消屏蔽的入口
@@ -620,7 +653,8 @@ def moderate_comments_disable_own(id):
         db.session.add(comment)
         flash('评论已被设置为不可见')
         return redirect(url_for('.file',
-                                id = comment.file_id))
+                                id = comment.file_id,
+                                _external=True))
 
 # --------------------------------------------------------------------
 # moderate_files 为管理员提供了修改、删除、设置任意文件状态的入口
@@ -632,7 +666,8 @@ def moderate_files():
     form = SearchForm()
     if form.validate_on_submit():
         return redirect(url_for('main.moderate_files',
-                                key=form.key.data))
+                                key=form.key.data,
+                                _external=True))
     page = request.args.get('page', 1, type=int)
     key = request.args.get('key', '', type=str)
     if key == '':
@@ -678,7 +713,8 @@ def moderate_files_delete(id):
                                 generate_delete_token(
                                     fileid=id,
                                     expiration=3600
-                            )
+                            ),
+                            _external=True
                         )
                     )
 
@@ -694,7 +730,8 @@ def messages():
     form = SearchForm()
     if form.validate_on_submit():
         return redirect(url_for('main.messages',
-                                key=form.key.data))
+                                key=form.key.data,
+                                _external=True))
     key = request.args.get('key', '', type=str)
     page = request.args.get('page', 1, type=int)
     pagination = None
@@ -815,7 +852,8 @@ def cloud():
                                 path=path,
                                 type=type,
                                 order=order,
-                                direction=direction
+                                direction=direction,
+                                _external=True
                                 ))
     form.key.data = key
 
@@ -913,7 +951,8 @@ def view_share_folder_entry(id):
                                                         file.filename +
                                                         '/',
                                                    _linkpass=file.linkpass,
-                                                   expiration=3600)))
+                                                   expiration=3600),
+            _external=True))
     form = ConfirmShareForm()
     if form.validate_on_submit():
         if form.password.data == file.linkpass:
@@ -928,11 +967,13 @@ def view_share_folder_entry(id):
                                                             file.filename +
                                                             '/',
                                                        _linkpass=file.linkpass,
-                                                       expiration=3600)))
+                                                       expiration=3600),
+                _external=True))
         else:
             flash('提取码错误！')
             return redirect(url_for('main.view_share_folder_entry',
-                                    id=file.uid))
+                                    id=file.uid,
+                                    _external=True))
     return render_template('main/share/view_verify.html',
                            file=file,
                            form=form)
@@ -1000,13 +1041,16 @@ def view_do():
         # 用户不具备管理员权限
         abort(403)
     if not rootfile.isdir:
-        return redirect(url_for('main.file', id=file.uid))
+        return redirect(url_for('main.file',
+                                id=file.uid,
+                                _external=True))
     if rootfile.isdir and rootfile.owner == current_user:
         # 当前用户持有该目录
         return redirect(url_for('main.cloud',
                                 path=rootfile.path +
                                      rootfile.filename +
-                                     '/'))
+                                     '/',
+                                _external=True))
     # 修正不合法的路径
     if path is None or path == '':
         path = rootfile.path +\
@@ -1034,7 +1078,9 @@ def view_do():
             # 目录提取码不正确且当前用户非管理员
             abort(403)
         if isPath.owner == current_user:
-            return redirect(url_for('main.cloud', path = path))
+            return redirect(url_for('main.cloud',
+                                    path = path,
+                                    _external=True))
 
     if isPath is None:
         abort(403)
@@ -1055,7 +1101,8 @@ def view_do():
                                 direction = direction,
                                 expiration=3600
                 ),
-                page = page))
+                page = page,
+                _external=True))
     form.key.data = key
 
     # 无论用户是否指定关键词，先根据用户指定的文件类型，查询对应的文件
@@ -1161,7 +1208,8 @@ def download(id):
         return redirect(url_for('main.download_do',
             token=current_user.generate_download_token(file.uid,
                                                        file.linkpass,
-                                                       expiration=3600)))
+                                                       expiration=3600),
+            _external=True))
     form = ConfirmShareForm()
     if form.validate_on_submit():
         if form.password.data == file.linkpass:
@@ -1169,10 +1217,13 @@ def download(id):
             return redirect(url_for('main.download_do',
                 token=current_user.generate_download_token(file.uid,
                                                            file.linkpass,
-                                                           expiration=3600)))
+                                                           expiration=3600),
+                _external=True))
         else:
             flash('提取码错误！')
-            return redirect(url_for('main.download', id=file.uid))
+            return redirect(url_for('main.download',
+                                    id=file.uid,
+                                    _external=True))
     return render_template('main/load/download_verify.html',
                            file=file,
                            form=form)
@@ -1433,7 +1484,9 @@ def upload():
             # 保证文件名安全
             if invalidInffix in filename:
                 flash('您上传的文件名不合法，请检查并重新上传！')
-                return redirect(url_for('main.upload', path =path))
+                return redirect(url_for('main.upload',
+                                        path =path,
+                                        _external=True))
 
         form.file.data.save(
                 randomBasePath + filename)  # 使用用户文件名保存文件
@@ -1460,7 +1513,8 @@ def upload():
                 # 无法解压则重定向回上传界面
                 clear(randomBasePath)
                 return redirect(url_for('main.upload',
-                                        path=path))
+                                        path=path,
+                                        _external=True))
 
             if baseDir[-1] != '/':
                 # 用户上传的压缩包中不包含任何目录，为单个文件
@@ -1468,7 +1522,8 @@ def upload():
                       '请检查后重新上传！')
                 clear(randomBasePath)
                 return redirect(url_for('main.upload',
-                                        path=path))
+                                        path=path,
+                                        _external=True))
 
             basename = baseDir[:-1]
             tempname = baseDir[:-1]  # 确定要上传的目录下没有同名文件
@@ -1617,9 +1672,12 @@ def upload():
                 if baseFolder is None:
                     abort(500)
                 return redirect(url_for('main.set_share',
-                                        id = baseFolder.uid))
+                                        id = baseFolder.uid,
+                                        _external=True))
                 # 不共享时跳转到云盘界面，路径为要上传的目录所在的路径
-            return redirect(url_for('main.cloud', path=path))
+            return redirect(url_for('main.cloud',
+                                    path=path,
+                                    _external=True))
 
         else:
             # 用户上传的是单个普通文件
@@ -1684,8 +1742,11 @@ def upload():
             clear(randomBasePath)
             if form.share.data is True:
                 return redirect(url_for('main.set_share',
-                                        id=f.uid))
-            return redirect(url_for('main.file',id = f.uid))
+                                        id=f.uid,
+                                        _external=True))
+            return redirect(url_for('main.file',
+                                    id = f.uid,
+                                    _external=True))
 
     return render_template('main/load/upload.html',
                            form=form,
@@ -1889,7 +1950,9 @@ def copy_check(token):
             db.session.add(newFile)
             db.session.commit()
                 # commit 后才可获得 uid，生成资源外链
-            newFile.perlink = url_for('main.file', id=newFile.uid)
+            newFile.perlink = url_for('main.file',
+                                      id=newFile.uid,
+                                      _external=True)
             db.session.add(newFile)
             if current_user.used > current_user.maxm:
                 # 用户云盘空间不足
@@ -1903,7 +1966,9 @@ def copy_check(token):
         if file.cfileid > 0:
             if current_user.used + file.cfile.size > current_user.maxm:
                 flash('您的云盘空间不足，无法拷贝！')
-                return redirect(url_for('main.file', id=file.uid))
+                return redirect(url_for('main.file',
+                                        id=file.uid,
+                                        _external=True))
 
     # 无论如何都需要拷贝最开始的文件/目录
     newRootFile = File(ownerid=file.ownerid,
@@ -1917,7 +1982,8 @@ def copy_check(token):
     db.session.add(newRootFile)
     db.session.commit()
     newRootFile.perlink = url_for('main.file',
-                                  id=newRootFile.uid)
+                                  id=newRootFile.uid,
+                                  _external=True)
     db.session.add(newRootFile)
 
     # 提示消息
@@ -1930,9 +1996,13 @@ def copy_check(token):
     db.session.add(current_user)
     # 复制成功重定向到新文件的详细界面或目录的云盘
     if not file.isdir:
-        return redirect(url_for('main.file', id=newRootFile.uid))
+        return redirect(url_for('main.file',
+                                id=newRootFile.uid,
+                                _external=True))
     else:
-        return redirect(url_for('main.cloud', path= newRootFile.path))
+        return redirect(url_for('main.cloud',
+                                path= newRootFile.path,
+                                _external=True))
 
 # ---------------------------------------------------------------------
 # move 函数为用户移动文件/目录界面提供了入口，用户可通过此函数移动自己云盘中的
@@ -2071,7 +2141,9 @@ def move_check(token):
                 else:
                     flash("您要移动的文件" + file.filename +
                           "已在目标目录，无需移动！")
-                return redirect(url_for('main.file', id=file.uid))
+                return redirect(url_for('main.file',
+                                        id=file.uid,
+                                        _external=True))
             if file.isdir:
                 type = "文件夹"
                 if i == 0:
@@ -2124,7 +2196,9 @@ def move_check(token):
     if not file.isdir:
         flash('文件 ' + file.path + file.filename +
               ' 已移动到 ' + _path + '下')
-    return redirect(url_for('main.file', id=file.uid))
+    return redirect(url_for('main.file',
+                            id=file.uid,
+                            _external=True))
 
 # ----------------------------------------------------------------
 # fork 函数提供了一个简单的验证界面，用户需要输入要 fork 的文件/目录的
@@ -2149,18 +2223,21 @@ def fork(id):
         return redirect(url_for('main.fork_do',
                                 path = '/',
                                 id = file.uid,
-                                _pass = file.linkpass))
+                                _pass = file.linkpass,
+                                _external=True))
     form = ConfirmShareForm()
     if form.validate_on_submit():
         if form.password.data == file.linkpass:
             return redirect(url_for('main.fork_do',
                                     path = '/',
                                     id = file.uid,
-                                    _pass = file.linkpass))
+                                    _pass = file.linkpass,
+                                    _external=True))
         else:
             flash('提取码错误！')
             return redirect(url_for('main.fork',
-                                    id=file.uid))
+                                    id=file.uid,
+                                    _external=True))
     return render_template('main/fork/fork_verify.html',
                            file=file,
                            form=form)
@@ -2386,7 +2463,9 @@ def fork_check(token):
             db.session.add(newFile)
             db.session.commit()
                 # commit 以获取 uid 来产生资源外链
-            newFile.perlink = url_for('main.file', id=newFile.uid)
+            newFile.perlink = url_for('main.file',
+                                      id=newFile.uid,
+                                      _external=True)
             db.session.add(newFile)
             if current_user.used > current_user.maxm:
                 # 用户已达到云盘可用空间上限
@@ -2401,7 +2480,9 @@ def fork_check(token):
             if current_user.used + file.cfile.size > current_user.maxm:
                 # 资源不足时给出提示信息，并重定向到要 Fork 的资源
                 flash('您的云盘空间不足，无法 Fork！')
-                return redirect(url_for('main.file', id=file.uid))
+                return redirect(url_for('main.file',
+                                        id=file.uid,
+                                        _external=True))
 
     # 添加根文件/目录的记录
     newRootFile = File(ownerid=current_user.uid,
@@ -2415,7 +2496,8 @@ def fork_check(token):
     db.session.add(newRootFile)
     db.session.commit()
     newRootFile.perlink = url_for('main.file',
-                                  id=newRootFile.uid)
+                                  id=newRootFile.uid,
+                                  _external=True)
     db.session.add(newRootFile)
     if file.isdir:
         flash('已 Fork 用户 ' + file.owner.nickname + ' 的目录 ' +
@@ -2425,7 +2507,9 @@ def fork_check(token):
         flash('已 Fork 用户 ' + file.owner.nickname + ' 的文件 ' +
               file.filename + ' 到 ' + _path + '下')
     db.session.add(current_user)
-    return redirect(url_for('main.file', id=newRootFile.uid))
+    return redirect(url_for('main.file',
+                            id=newRootFile.uid,
+                            _external=True))
 
 # ------------------------------------------------------------------------
 # newfolder 为用户创建目录提供了入口，用户可在云盘界面、复制、移动、Fork 的同
@@ -2504,14 +2588,17 @@ def newfolder():
         if f is None:
             abort(500)
         f.perlink = url_for('main.file',
-                                  id=f.uid)
+                            id=f.uid,
+                            _external=True)
         db.session.add(f)
         if form.share.data:
             return redirect(url_for('main.set_share',
-                                    id=f.uid))
+                                    id=f.uid,
+                                    _external=True))
         else:
             return redirect(url_for('main.file',
-                                    id=f.uid))
+                                    id=f.uid,
+                                    _external=True))
     return render_template('main/files/newfolder.html',
                            path = path,
                            form = form)
@@ -2535,7 +2622,8 @@ def delete_message(id):
         else:
             db.session.add(message)
         return redirect(url_for('main.chat',
-                                id=message.sender.uid))
+                                id=message.sender.uid,
+                                _external=True))
     elif message.sender == current_user:
         # 消息发送方删除消息，则将 send_delete 标志位设为 1
         message.send_delete = True
@@ -2544,7 +2632,8 @@ def delete_message(id):
         else:
             db.session.add(message)
         return redirect(url_for('main.chat',
-                                id=message.receiver.uid))
+                                id=message.receiver.uid,
+                                _external=True))
     else:
         abort(403)
 
@@ -2563,7 +2652,9 @@ def recall_message(id):
     else:
         db.session.delete(message)
         flash('消息已被撤回')
-    return redirect(url_for('main.chat', id=message.receiver.uid))
+    return redirect(url_for('main.chat',
+                            id=message.receiver.uid,
+                            _external=True))
 
 # -----------------------------------------------------------------
 # chat 提供了用户聊天入口。chat 的请求参数为聊天对方的用户 uid 标识，其
@@ -2589,7 +2680,9 @@ def chat(id):
         db.session.commit()
         flash("消息已发送")
         form.body.data= ''
-        return redirect(url_for('main.chat', id=id))
+        return redirect(url_for('main.chat',
+                                id=id,
+                                _external=True))
 
     _messages = Message.query.\
         filter("(sendid=:sid and targetid=:tid and recv_delete=0) or "
@@ -2635,7 +2728,9 @@ def close_chat(id):
         message.viewed = True
         message.sended = True
         db.session.add(message)
-    return redirect(url_for('main.messages', key=''))
+    return redirect(url_for('main.messages',
+                            key='',
+                            _external=True))
 
 # ------------------------------------------------------------------------
 # delete_chat 函数为用户提供了一次性删除某个用户所有聊天记录的功能，该函数
@@ -2664,7 +2759,9 @@ def delete_chat(id):
             else:
                 db.session.add(message)
     flash("您与 " + remote.nickname + ' 的对话已删除！')
-    return redirect(url_for('main.messages', key=''))
+    return redirect(url_for('main.messages',
+                            key='',
+                            _external=True))
 
 # ---------------------------------------------------------------
 # set_share 为用户提供了设置文件共享属性的功能，提供了简单的设置密码
@@ -2698,13 +2795,18 @@ def set_share(id):
                     current_user.can(Permission.ADMINISTER):
                 # 管理员设置时返回到主页，否则将出现 403 错误（访问一个
                 #     不存在的网盘目录）
-                return redirect(url_for('main.index'))
+                return redirect(url_for('main.index',
+                                        _external=True))
             else:
-                return redirect(url_for('main.cloud', path=file.path))
+                return redirect(url_for('main.cloud',
+                                        path=file.path,
+                                        _external=True))
         else:
             flash('已将文件 ' + file.path + file.filename +
                   ' 设为共享！共享密码为 ' + file.linkpass + '。')
-            return redirect(url_for('main.file', id=file.uid))
+            return redirect(url_for('main.file',
+                                    id=file.uid,
+                                    _external=True))
     return render_template('main/share/set_share.html',
                            file=file,
                            form=form)
@@ -2732,9 +2834,14 @@ def set_private(id):
         flash('目录 ' + file.path + file.filename + ' 已被设置为私有。')
         if file.owner != current_user and \
                 current_user.can(Permission.ADMINISTER):
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.index',
+                                    _external=True))
         else:
-            return redirect(url_for('main.cloud', path=file.path))
+            return redirect(url_for('main.cloud',
+                                    path=file.path,
+                                    _external=True))
     else:
         flash('文件 ' + file.path + file.filename + ' 已被设置为私有。')
-        return redirect(url_for('main.file', id= file.uid))
+        return redirect(url_for('main.file',
+                                id= file.uid,
+                                _external=True))

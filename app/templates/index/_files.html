@@ -2,7 +2,7 @@
     {% for file in files %}
     <li class="post">
         <div class="post-thumbnail">
-            <a href="{{ url_for('.user', id=file.owner.uid) }}">
+            <a href="{{ url_for('.user', id=file.owner.uid, _external=True) }}">
                 <img class="img-rounded profile-thumbnail" src="{{ file.owner.gravatar(size=56) }}">
             </a>
         </div>
@@ -11,7 +11,7 @@
                 <div class="post-author">
                     <p style="line-height:100%;margin:6px 0px 0px 0px">
                     发布者：
-                    <a href="{{ url_for('.user', id=file.owner.uid) }}">
+                    <a href="{{ url_for('.user', id=file.owner.uid, _external=True) }}">
                         {{ file.owner.nickname }}
                     </a>
                     &nbsp;&nbsp;&nbsp;
@@ -22,16 +22,16 @@
                     {% endif %}
                     {% if file.owner == current_user %}
                     {% if file.isdir %}
-                    <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', ) }}">
+                    <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', _external=True) }}">
                         {{ file.filename }}
                     </a>
                     {% else %}
-                    <a href="{{ url_for('.file', id=file.uid ) }}">
+                    <a href="{{ url_for('.file', id=file.uid , _external=True) }}">
                         {{ file.filename }}
                     </a>
                     {% endif %}
                     {% else %}
-                    <a href="{{ url_for('.file', id=file.uid) }}">
+                    <a href="{{ url_for('.file', id=file.uid, _external=True) }}">
                         {{ file.filename }}
                     </a>
                     {% endif %}
@@ -85,39 +85,39 @@
 
                     <ul class="dropdown-menu  dropdown-menu-right">
                         {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
-                        <li><a href="{{ url_for('main.download', id=file.uid) }}">下载</a></li>
+                        <li><a href="{{ url_for('main.download', id=file.uid, _external=True) }}">下载</a></li>
                         {% endif %}
 
                         {% if file.private == False and current_user != file.owner and current_user.is_authenticated%}
-                        <li><a href="{{ url_for('main.fork', id=file.uid) }}">Fork</a></li>
+                        <li><a href="{{ url_for('main.fork', id=file.uid, _external=True) }}">Fork</a></li>
                         {% endif %}
 
                         {% if file.isdir and current_user != file.owner and current_user.is_authenticated %}
-                        <li><a href="{{ url_for('main.view_share_folder_entry', id=file.uid) }}">进入目录</a></li>
+                        <li><a href="{{ url_for('main.view_share_folder_entry', id=file.uid, _external=True) }}">进入目录</a></li>
                         {% endif %}
 
                         {% if current_user == file.owner %}
-	                    <li><a href="{{ url_for('main.copy', id=file.uid, path='/') }}">复制</a></li>
-	                    <li><a href="{{ url_for('main.move', id=file.uid, path='/') }}">移动</a></li>
-	                    <li><a href="{{ url_for('main.edit_file', id=file.uid) }}">编辑</a></li>
-                        <li><a href="{{ url_for('main.delete_file',id=file.uid) }}">删除</a></li>
+	                    <li><a href="{{ url_for('main.copy', id=file.uid, path='/', _external=True) }}">复制</a></li>
+	                    <li><a href="{{ url_for('main.move', id=file.uid, path='/', _external=True) }}">移动</a></li>
+	                    <li><a href="{{ url_for('main.edit_file', id=file.uid, _external=True) }}">编辑</a></li>
+                        <li><a href="{{ url_for('main.delete_file',id=file.uid, _external=True) }}">删除</a></li>
                             {% if file.private %}
-                                <li><a href="{{ url_for('main.set_share', id=file.uid) }}">共享</a></li>
+                                <li><a href="{{ url_for('main.set_share', id=file.uid, _external=True) }}">共享</a></li>
                             {% else %}
-                                <li><a href="{{ url_for('main.set_private', id=file.uid) }}">取消共享</a></li>
+                                <li><a href="{{ url_for('main.set_private', id=file.uid, _external=True) }}">取消共享</a></li>
                             {% endif %}
 	                    {% elif current_user.is_administrator() %}
-                        <li><a href="{{ url_for('main.moderate_files_delete',id=file.uid) }}">删除 [管理员]</a></li>
+                        <li><a href="{{ url_for('main.moderate_files_delete',id=file.uid, _external=True) }}">删除 [管理员]</a></li>
                             {% if file.private %}
-                                <li><a href="{{ url_for('main.set_share', id=file.uid) }}">共享 [管理员]</a></li>
+                                <li><a href="{{ url_for('main.set_share', id=file.uid, _external=True) }}">共享 [管理员]</a></li>
                             {% else %}
-                                <li><a href="{{ url_for('main.set_private', id=file.uid) }}">取消共享 [管理员]</a></li>
+                                <li><a href="{{ url_for('main.set_private', id=file.uid, _external=True) }}">取消共享 [管理员]</a></li>
                             {% endif %}
                         {% endif %}
-                        <li><a href="{{ url_for('.file', id=file.uid) }}">资源外链</a></li>
+                        <li><a href="{{ url_for('.file', id=file.uid, _external=True) }}">资源外链</a></li>
 
                         <li>
-                            <a href="{{ url_for('.file', id=file.uid) }}#comments">
+                            <a href="{{ url_for('.file', id=file.uid, _external=True) }}#comments">
                                 {% if file.comments.count() == 0 %}
                                     暂无评论
                                 {% else %}

@@ -21,7 +21,7 @@ def login():
         user = User.query.filter_by(email = form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
-            return redirect(request.args.get('next') or url_for('main.index'))
+            return redirect(request.args.get('next') or url_for('main.index', _external=True))
         flash('错误的用户名或密码')
     return render_template('auth/login.html', form = form)
 
@@ -30,14 +30,14 @@ def login():
 def logout():
     logout_user()
     flash('您已经登出')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', _external=True))
 
 @auth.route('/register', methods = ['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if current_user.is_authenticated:
         flash('您已经登陆，登陆状态下无法注册')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.index', _external=True))
     if form.validate_on_submit():
         user = User(email = form.email.data,
                     nickname = form.nickname.data,
@@ -56,12 +56,12 @@ def register():
 @login_required
 def confirm(token):
     if current_user.confirmed:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.index', _external=True))
     if current_user.confirm(token):
         flash('您已经验证了您的邮箱！感谢您的支持！')
     else:
         flash('此验证链接无效或已过期！')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', _external=True))
 
 @auth.route('/confirm')
 @login_required
@@ -70,7 +70,7 @@ def resend_confirmation():
     send_email(current_user.email, '确认您的帐户',
                'auth/email/confirm',user = current_user, token = token)
     flash('一封确认邮件已经发送到您注册时填写的邮箱，请查看以激活您的帐号')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', _external=True))
 
 @auth.route('/change-password', methods=['GET','POST'])
 @login_required
@@ -82,7 +82,7 @@ def change_password():
             db.session.add(current_user)
             db.session.commit()
             flash('您的密码已更新')
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.index', _external=True))
         else:
             flash('密码错误')
     return render_template('auth/secure/change_password.html', form = form)
@@ -99,7 +99,7 @@ def change_email_request():
                        'auth/email/change_email',
                        user = current_user, token = token)
             flash('一封包含指导您激活新邮箱的邮件已经发到您的新邮箱')
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.index', _external=True))
         else:
             flash('错误的的用户名或密码')
     return render_template("auth/secure/change_email.html", form=form)
@@ -111,13 +111,13 @@ def change_email(token):
         flash('您的电子邮箱已经更新')
     else:
         flash('非法请求')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', _external=True))
 
 
 @auth.route('/reset', methods=['GET', 'POST'])
 def password_reset_request():
     if not current_user.is_anonymous:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.index', _external=True))
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email = form.email.data).first()
@@ -129,23 +129,23 @@ def password_reset_request():
                        next = request.args.get('next'))
             flash('一封指导您重置密码的邮件已经发送到您注册时填写的邮箱，请'
               '查看邮件并重置您的密码')
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login', _external=True))
     return render_template('auth/reset_password.html', form=form)
 
 @auth.route('/reset/<token>', methods=['GET', 'POST'])
 def password_reset(token):
     if not current_user.is_anonymous:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.index', _external=True))
     form = PasswordResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is None:
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.index', _external=True))
         if user.reset_password(token, form.password.data):
             flash('您的密码已经重置成功')
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login', _external=True))
         else:
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.index', _external=True))
     return render_template('auth/reset_password.html', form=form)
 
 @auth.route('/secure_center')
@@ -160,11 +160,11 @@ def before_request():
         if not current_user.confirmed \
                 and request.endpoint[:5] != 'auth.' \
                 and request.endpoint != 'static':
-            return redirect(url_for('auth.unconfirmed'))
+            return redirect(url_for('auth.unconfirmed', _external=True))
 
 
 @auth.route('/unconfirmed')
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.index', _external=True))
     return render_template('auth/unconfirmed.html')

@@ -558,8 +558,8 @@ class CFILE(db.Model):
                       )
             db.session.add(c)
             db.session.commit()
-            CFILE.makeFile("G:\\Cloud\\"+str(c.uid), _size)
-            c.md5 = CFILE.md5FromFile("G:\\Cloud\\"+str(c.uid))
+            CFILE.makeFile(current_app.config['ZENITH_FILE_STORE_PATH']+str(c.uid), _size)
+            c.md5 = CFILE.md5FromFile(current_app.config['ZENITH_FILE_STORE_PATH']+str(c.uid))
             db.session.add(c)
             db.session.commit()
 
