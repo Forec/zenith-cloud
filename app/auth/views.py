@@ -32,12 +32,12 @@ def login():
 def logout():
     logout_user()
     flash('您已经登出')
-    return redirect(url_for('main.index', _external=True))
+    return redirect(url_for('auth.login', _external=True))
 
 @auth.route('/register', methods = ['GET', 'POST'])
 def register():
     # 展示状态，禁止注册
-    return render_template('auth/testing.html')
+    return render_template('auth/testing.html', _external=True)
 
     # form = RegistrationForm()
     # if current_user.is_authenticated:

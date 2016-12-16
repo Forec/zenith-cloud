@@ -87,7 +87,7 @@ def simple_init():
              role=Role.query.filter_by(name='User').first(), \
              about_me='我是最萌的')
     db.session.add(u)
-    u = User(email='dragoncat@forec.cn', \
+    u = User(email='non1996@forec.cn', \
              nickname='non1996', \
              password='zenith', \
              confirmed=True, \
