@@ -1,3 +1,8 @@
+# 顶点云在 Linux 环境下的安装脚本
+
+git clone https://github.com/Forec/cloud-storage-webserver.git
+mv cloud-storage-webserver cloud
+cd cloud
 mkdir venv
 cd venv
 python3 -m venv .

@@ -95,9 +95,9 @@ class LinuxConfig(Config):
                     "Cloud-Storage-2016"
 
 config = {
-    'development' : DevelopmentConfig,
-    'linux': LinuxConfig,
-    'windows': WindowsConfig,
-    'testing' : TestingConfig,
-    'default' : DevelopmentConfig
+    'development' : DevelopmentConfig,      # 开发环境
+    'linux': LinuxConfig,                   # 提供的 Linux 模板环境
+    'windows': WindowsConfig,               # 提供的 Windows模板环境
+    'testing' : TestingConfig,              # 测试环境
+    'default' : DevelopmentConfig           # 默认为开发环境
 }

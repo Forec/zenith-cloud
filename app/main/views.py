@@ -1,5 +1,5 @@
 # 作者：Forec
-# 最后修改日期：2016-12-12
+# 最后修改日期：2016-12-20
 # 邮箱：forec@bupt.edu.cn
 # 关于此文件：此文件包含了服务器除认证外的所有的界面入口，包括首页、云盘界面、
 #    文件操作、下载、聊天模块、管理员界面等。
@@ -1349,6 +1349,9 @@ def download_do(token):
 
     # 若要下载的不是目录且文件不为空
     elif not file.isdir:
+        # 增加文件下载记录
+        file.downloaded += 1
+        db.session.add(file)
         cfile = CFILE.query.get_or_404(file.cfileid)
         if not os.path.exists(current_app.\
                 config['ZENITH_FILE_STORE_PATH'] + str(cfile.uid)):
@@ -1411,6 +1414,9 @@ def download_do(token):
         # 在随机生成的目录下创建整个目录结构
         basePathLen = len(file.path)
         for _folder in subFolderList:
+            # 增加目录下载记录
+            _folder.downloaded += 1
+            db.session.add(_folder)
             dirName = (_folder.path + _folder.filename)[basePathLen:].\
                 replace('/', current_app.config['ZENITH_PATH_SEPERATOR'])
                 # 需根据服务器设置将 *nix 路径替换为服务器所在系统的路径分隔符
@@ -1421,6 +1427,9 @@ def download_do(token):
 
         # 已创建完成目录结构，将文件拷贝到指定位置并重命名
         for _file in subFileList:
+            # 增加文件下载记录
+            _file.downloaded += 1
+            db.session.add(_file)
             fileName = (_file.path + _file.filename)[basePathLen:].\
                 replace('/', current_app.config['ZENITH_PATH_SEPERATOR'])
             cfileName = _file.cfileid
@@ -2558,6 +2567,9 @@ def fork_check(token):
         baseLen = len(file.path + file.filename)
             # 与 copy 和 check 中相同
         for _file in filelist:
+            # 增加文件共享次数
+            _file.shared += 1
+            db.session.add(_file)
             if not _file.isdir and _file.cfileid > 0:
                 # 增加用户已使用的云盘容量大小
                 current_user.used += _file.cfile.size
@@ -2594,6 +2606,10 @@ def fork_check(token):
                 return redirect(url_for('main.file',
                                         id=file.uid,
                                         _external=True))
+
+    # 增加源文件共享次数
+    file.shared += 1
+    db.session.add(file)
 
     # 添加根文件/目录的记录
     newRootFile = File(ownerid=current_user.uid,
@@ -2935,6 +2951,7 @@ def set_private(id):
     file.private = True
     db.session.add(file)
     if file.isdir:
+        # 对目录下的全部共享文件重置共享密码
         underFiles = File.query.\
             filter("path like :p and ownerid=:d and private=0").\
             params(p=file.path+file.filename+'/%',
