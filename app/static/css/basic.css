@@ -109,9 +109,9 @@ div.comment-author {
     font-size: 90%;
     font-weight: bold;
 }
-div.comment-thumbnail {
+.comment-thumbnail {
     position: absolute;
-    width:40px;
+    width: 40px;
 }
 div.comment-content {
     font-size: 80%;

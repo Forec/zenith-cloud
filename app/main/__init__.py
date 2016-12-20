@@ -4,11 +4,12 @@
 # 关于此文件：初始化 main 蓝本
 
 from flask import Blueprint
-from . import views, errors
 from ..models import Permission
 
 # 注册蓝本
 main = Blueprint('main', __name__)
+
+from . import views, errors
 
 # 注册上下文权限管理
 @main.app_context_processor
