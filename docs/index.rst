@@ -1,23 +1,19 @@
-.. 顶点云 Web 服务器 documentation master file, created by
-   sphinx-quickstart on Wed Dec 21 13:47:25 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-顶点云 Web 服务器 开发者文档
+欢迎来到顶点云
 =============================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. image:: _static/logo_full.png
+   :alt: 顶点云：专为北邮人设计的云存储系统
+
+欢迎阅读顶点云服务器的开发者文档。本文档分为两部分：《 :ref:`zenith-web` 》和《 :ref:`zenith-app` 》。其中，Web 服务器使用 `Flask`_ 框架，应用程序服务器使用 `Golang`_ ，这二者不在本文档的范围之内，如有兴趣请移步：
+
+-	`Flask 文档 <http://flask.pocoo.org/docs/0.11/>`_
+-	`Go 语言文档 <https://golang.org/doc/>`_
+
+两部分文档均包含对应的部署说明和上手指南，我建议您按文档推荐的顺序阅读。
 
 
+.. _Golang: https://golang.org/
+.. _Flask: http://flask.pocoo.org/
 
-索引列表
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-框架
-==================
+.. include:: contents.rst.inc

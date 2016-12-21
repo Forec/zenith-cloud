@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>顶点云应用程序服务器 &#8212; 顶点云 Web 服务器  文档</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="next" title="部署顶点云应用程序服务器" href="app-installation.html" />
+    <link rel="prev" title="顶点云背景介绍" href="foreward.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="zenith-app">
+<span id="id1"></span><h1>顶点云应用程序服务器<a class="headerlink" href="#zenith-app" title="永久链接至标题">¶</a></h1>
+<p>此部分文档将主要介绍顶点云应用程序服务器的框架、模型和用户代理，文档分成几个部分，我推荐你按如下顺序阅读：
+《 <a class="reference internal" href="app-installation.html#app-installation"><span class="std std-ref">部署顶点云应用程序服务器</span></a> 》：部署顶点云应用程序服务器
+《 <a class="reference internal" href="app-config.html#app-config"><span class="std std-ref">全局设置</span></a> 》：全局设置
+《 <a class="reference internal" href="app-quickstart.html#app-quickstart"><span class="std std-ref">快速上手</span></a> 》：快速上手
+《 <a class="reference internal" href="app-protocal.html#app-protocal"><span class="std std-ref">协议设计</span></a> 》：协议设计
+《 <a class="reference internal" href="app-structual.html#app-structual"><span class="std std-ref">框架分析</span></a> 》：框架分析
+《 <a class="reference internal" href="app-models.html#app-models"><span class="std std-ref">模型介绍</span></a> 》：模型介绍
+《 <a class="reference internal" href="app-test.html#app-test"><span class="std std-ref">传输测试</span></a> 》：传输测试
+《 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> 》：用户代理
+《 <a class="reference internal" href="app-tutorial.html#app-tutorial"><span class="std std-ref">教程</span></a> 》：教程 - 添加自定义用户代理</p>
+<p>顶点云应用程序服务器使用 <a class="reference external" href="https://golang.org/">Golang</a> 编写，Go 语言的语法和特性不在本文档的范围内，如果你想了解 Go 语言请移步：</p>
+<ul class="simple">
+<li><a class="reference external" href="https://golang.org/doc/">Go 语言文档</a></li>
+</ul>
+<div class="section" id="id2">
+<h2>开发者指南<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>这部分文档比较松散，首先简单介绍部署和配置，之后将从框架、协议设计到具体细节说明顶点云应用程序服务器如何处理请求、转发请求、文件共享等。</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="app-installation.html">部署顶点云应用程序服务器</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-config.html">全局设置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-quickstart.html">快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-protocal.html">协议设计</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-structual.html">框架分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-models.html">模型介绍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-test.html">传输测试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-proxy.html">用户代理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-tutorial.html">教程</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API 参考<a class="headerlink" href="#api" title="永久链接至标题">¶</a></h2>
+<p>这部分文档详细说明某个函数、结构或方法。</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="app-api.html">应用程序 API 文档</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>其他材料<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>这部分文档包括：设计要点和变动记录</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="app-design.html">应用设计要点</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-log.html">顶点云应用服务器变动记录</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/zenith.png" alt="Logo"/>
+</a></p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">顶点云应用程序服务器</a><ul>
+<li><a class="reference internal" href="#id2">开发者指南</a></li>
+<li><a class="reference internal" href="#api">API 参考</a></li>
+<li><a class="reference internal" href="#id3">其他材料</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="foreward.html" title="上一章">顶点云背景介绍</a></li>
+      <li>Next: <a href="app-installation.html" title="下一章">部署顶点云应用程序服务器</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>本页</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/zenith-app.rst.txt"
+            rel="nofollow">显示源代码</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>快速搜索</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="转向" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Forec.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/zenith-app.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
