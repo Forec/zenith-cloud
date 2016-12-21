@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>全局设置 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>应用程序服务器全局设置 &#8212; 顶点云 Web 服务器  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -45,7 +45,114 @@
           <div class="body" role="main">
             
   <div class="section" id="app-config">
-<span id="id1"></span><h1>全局设置<a class="headerlink" href="#app-config" title="永久链接至标题">¶</a></h1>
+<span id="id1"></span><h1>应用程序服务器全局设置<a class="headerlink" href="#app-config" title="永久链接至标题">¶</a></h1>
+<p>在阅读以下内容前，请确保您已经按照 <a class="reference internal" href="app-installation.html#app-installation"><span class="std std-ref">部署顶点云应用程序服务器</span></a> 正确部署了应用程序服务器，并位于源码目录下（/path-to/zenith-cloud/app/）。</p>
+<p>您可以根据您的环境修改源码目录下的 <cite>config/config.go</cite> 文件以配置服务器。</p>
+<div class="section" id="id2">
+<h2>样例配置文件<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>您从 GitHub 仓库获取的源码中已经包含了一份默认的配置文件，忽略注释和函数部分后内容如下：</p>
+<div class="highlight-go"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kd">const</span> <span class="nx">STORE_PATH</span> <span class="p">=</span> <span class="s">&quot;G:\\Cloud\\&quot;</span>
+<span class="kd">const</span> <span class="nx">DOWNLOAD_PATH</span> <span class="p">=</span> <span class="s">&quot;G:\\Cloud\\&quot;</span>
+<span class="kd">const</span> <span class="nx">CLIENT_VERSION</span> <span class="p">=</span> <span class="s">&quot;Windows&quot;</span>
+<span class="kd">const</span> <span class="nx">AUTHEN_BUFSIZE</span> <span class="p">=</span> <span class="mi">1024</span>
+<span class="kd">const</span> <span class="nx">BUFLEN</span> <span class="p">=</span> <span class="mi">4096</span> <span class="o">*</span> <span class="mi">1024</span>
+<span class="kd">const</span> <span class="nx">MAXTRANSMITTER</span> <span class="p">=</span> <span class="mi">20</span>
+<span class="kd">const</span> <span class="nx">DATABASE_TYPE</span> <span class="p">=</span> <span class="s">&quot;sqlite3&quot;</span>
+<span class="kd">const</span> <span class="nx">DATABASE_PATH</span> <span class="p">=</span> <span class="s">&quot;work.db&quot;</span>
+<span class="kd">const</span> <span class="nx">START_USER_LIST</span> <span class="p">=</span> <span class="mi">10</span>
+<span class="kd">const</span> <span class="nx">TEST_USERNAME</span> <span class="p">=</span> <span class="s">&quot;forec@bupt.edu.cn&quot;</span>
+<span class="kd">const</span> <span class="nx">TEST_PASSWORD</span> <span class="p">=</span> <span class="s">&quot;TESTTHISPASSWORD&quot;</span>
+<span class="kd">const</span> <span class="nx">TEST_SAFELEVEL</span> <span class="p">=</span> <span class="mi">3</span>
+<span class="kd">const</span> <span class="nx">TEST_IP</span> <span class="p">=</span> <span class="s">&quot;127.0.0.1&quot;</span>
+<span class="kd">const</span> <span class="nx">TEST_PORT</span> <span class="p">=</span> <span class="mi">10087</span>
+<span class="kd">const</span> <span class="nx">SEPERATER</span> <span class="p">=</span> <span class="s">&quot;+&quot;</span>
+<span class="kd">const</span> <span class="nx">CHECK_LIVE_SEPERATE</span> <span class="p">=</span> <span class="mi">5</span>
+<span class="kd">const</span> <span class="nx">CHECK_LIVE_TAG</span> <span class="p">=</span> <span class="s">&quot;[check]&quot;</span>
+<span class="kd">const</span> <span class="nx">CHECK_MESSAGE_SEPERATE</span> <span class="p">=</span> <span class="mi">5</span>
+</pre></div>
+</td></tr></table></div>
+<p>样例配置文件每项均有对应注释，您也可以查看下面的 <a class="reference internal" href="#app-config-detailed"><span class="std std-ref">样例文件详细解释</span></a> 了解每一项的具体功能。</p>
+</div>
+<div class="section" id="app-config-detailed">
+<span id="id3"></span><h2>样例文件详细解释<a class="headerlink" href="#app-config-detailed" title="永久链接至标题">¶</a></h2>
+<p>配置文件中的每一项对应配置如下：</p>
+<ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">STORE_PATH</span></code> ：服务器中存储所有用户上传文件的路径。</li>
+<li><code class="docutils literal"><span class="pre">DOWNLOAD_PATH</span></code> ：在 <code class="docutils literal"><span class="pre">app/client</span></code> 目录中提供了一个测试客户端，此记录用于设置测试客户端从服务器下载文件的存储路径。</li>
+<li><code class="docutils literal"><span class="pre">CLIENT_VERSION</span></code> ：测试用客户端使用的操作系统。</li>
+<li><code class="docutils literal"><span class="pre">AUTHEN_BUFSIZE</span></code> ：服务器和客户端之间命令交互连接使用的缓冲区大小，如果你不了解此字段的含义，可以保留默认值。此字段详细的介绍请参考 <a class="reference internal" href="app-protocal.html#app-protocal-authen-bufsize"><span class="std std-ref">交互式命令缓冲区</span></a> 。</li>
+<li><code class="docutils literal"><span class="pre">BUFLEN</span></code> ：服务器和客户端之间传输长数据流时使用的缓冲区大小，在网络环境较差的情况下应降低该项的大小，在网络丢包率较低的情况下应增加该项的大小。如果你不了解此字段的含义，可以保留默认值。此字段的详细介绍请参考 <a class="reference internal" href="app-protocal.html#app-protocal-buflen"><span class="std std-ref">长数据流传输缓冲区</span></a> 。</li>
+<li><code class="docutils literal"><span class="pre">MAXTRANSMITTER</span></code> ：服务器为每个客户端允许分配的最大同时活动连接数量，增加此数值可以在用户尝试下载多个文件时提供并行能力。</li>
+<li><code class="docutils literal"><span class="pre">DATABASE_TYPE</span></code> ：服务器使用的数据库类型。</li>
+<li><code class="docutils literal"><span class="pre">DATABASE_PATH</span></code> ：服务器使用的数据库所在的路径，此路径可为绝对路径，也可为相对服务器可执行文件所在目录的相对路径。</li>
+<li><code class="docutils literal"><span class="pre">START_USER_LIST</span></code> ：服务器在启动后会维护一个活动的用户池，此项指定了服务器启动时分配的用户池大小，在加入新用户后无需分配新内存，除非用户池已满。</li>
+<li><code class="docutils literal"><span class="pre">TEST_USERNAME</span></code> ：客户端测试使用的用户名，你可以手动此用户加入数据库，或在服务器第一次启动时将此用户模型加入数据库。默认配置文件中的用户名、密码已经加入到仓库中的 <code class="docutils literal"><span class="pre">work.db</span></code> 数据库。</li>
+<li><code class="docutils literal"><span class="pre">TEST_PASSWORD</span></code> ：客户端测试使用的登陆密码。</li>
+<li><code class="docutils literal"><span class="pre">TEST_SAFELEVEL</span></code> ：测试客户端和服务器约定使用的安全等级，可设置为任意整数，小于等于 1 时被规整为 1，大于等于 3 时被规整为 3。1、2、3 等级分别对应在加密时使用 16、24、32字节的密钥。</li>
+<li><code class="docutils literal"><span class="pre">TEST_IP</span></code> ：测试服务器时开放的 IP 地址。</li>
+<li><code class="docutils literal"><span class="pre">TEST_PORT</span></code> ：测试服务器时开放的端口。</li>
+<li><code class="docutils literal"><span class="pre">SEPERATER</span></code> ：此项指定了服务器和客户端约定的命令格式使用的分隔符，默认情况下为 <code class="docutils literal"><span class="pre">+</span></code> 。如果你不了解命令格式，可以查看 <a class="reference internal" href="app-protocal.html#app-protocal-command"><span class="std std-ref">命令格式</span></a> 。</li>
+<li><code class="docutils literal"><span class="pre">CHECK_LIVE_SEPERATE</span></code> ：此项指定了服务器保活检测的执行间隔，默认为 5。服务器会每隔 <code class="docutils literal"><span class="pre">CHECK_LIVE_SEPERATE</span></code> 秒向所有用户发送一条特定的消息以检查用户是否仍然存活，如果某个用户无法接收到服务器发送的消息，则认为该用户意外中断连接，服务器会登出该用户。</li>
+<li><code class="docutils literal"><span class="pre">CHECK_LIVE_TAG</span></code> ：此项指定了服务器保活检测时发送的特定消息前缀，默认为 <code class="docutils literal"><span class="pre">[check]</span></code> 。</li>
+<li><code class="docutils literal"><span class="pre">CHECK_MESSAGE_SEPERATE</span></code> ：此项指定了服务器转发消息执行的间隔，默认为 5。服务器会每隔 <code class="docutils literal"><span class="pre">CHECK_MESSAGE_SEPERATE</span></code> 秒向每个用户转发其他用户发送给他的消息。如果你不明白此项的意义，请查看 <a class="reference internal" href="app-protocal.html#app-protocal-chat"><span class="std std-ref">用户通讯</span></a> 。</li>
+</ol>
+<p>例如，在使用 WiFi 连接的 Ubuntu 16.04 下部署服务器以供 Windows 客户端使用时，可参考的配置文件如下：</p>
+<div class="highlight-go"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kd">const</span> <span class="nx">STORE_PATH</span> <span class="p">=</span> <span class="s">&quot;/usr/local/cloud-store/&quot;</span>
+<span class="kd">const</span> <span class="nx">DOWNLOAD_PATH</span> <span class="p">=</span> <span class="s">&quot;/usr/local/cloud-download&quot;</span>
+<span class="kd">const</span> <span class="nx">CLIENT_VERSION</span> <span class="p">=</span> <span class="s">&quot;Windows&quot;</span>
+<span class="kd">const</span> <span class="nx">AUTHEN_BUFSIZE</span> <span class="p">=</span> <span class="mi">1024</span>
+<span class="kd">const</span> <span class="nx">BUFLEN</span> <span class="p">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>  <span class="c1">// 网络情况较差，减小缓冲区长度</span>
+<span class="kd">const</span> <span class="nx">MAXTRANSMITTER</span> <span class="p">=</span> <span class="mi">10</span>
+<span class="kd">const</span> <span class="nx">DATABASE_TYPE</span> <span class="p">=</span> <span class="s">&quot;sqlite3&quot;</span>
+<span class="kd">const</span> <span class="nx">DATABASE_PATH</span> <span class="p">=</span> <span class="s">&quot;/usr/local/cloud/cloud.db&quot;</span>
+<span class="kd">const</span> <span class="nx">START_USER_LIST</span> <span class="p">=</span> <span class="mi">10</span>
+<span class="kd">const</span> <span class="nx">TEST_USERNAME</span> <span class="p">=</span> <span class="s">&quot;test@test.com&quot;</span>
+<span class="kd">const</span> <span class="nx">TEST_PASSWORD</span> <span class="p">=</span> <span class="s">&quot;TEST&quot;</span>
+<span class="kd">const</span> <span class="nx">TEST_SAFELEVEL</span> <span class="p">=</span> <span class="mi">1</span>
+<span class="kd">const</span> <span class="nx">TEST_IP</span> <span class="p">=</span> <span class="s">&quot;you ip address on Internet&quot;</span> <span class="c1">// 开放在公网地址</span>
+<span class="kd">const</span> <span class="nx">TEST_PORT</span> <span class="p">=</span> <span class="mi">10087</span>
+<span class="kd">const</span> <span class="nx">SEPERATER</span> <span class="p">=</span> <span class="s">&quot;+&quot;</span>
+<span class="kd">const</span> <span class="nx">CHECK_LIVE_SEPERATE</span> <span class="p">=</span> <span class="mi">10</span>
+<span class="kd">const</span> <span class="nx">CHECK_LIVE_TAG</span> <span class="p">=</span> <span class="s">&quot;[check]&quot;</span>
+<span class="kd">const</span> <span class="nx">CHECK_MESSAGE_SEPERATE</span> <span class="p">=</span> <span class="mi">10</span>
+</pre></div>
+</td></tr></table></div>
+<p>接下来请您阅读 <a class="reference internal" href="app-quickstart.html#app-quickstart"><span class="std std-ref">快速上手</span></a> 。</p>
+</div>
 </div>
 
 
@@ -55,7 +162,16 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
   <img class="logo" src="_static/zenith.png" alt="Logo"/>
-</a></p><div class="relations">
+</a></p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">应用程序服务器全局设置</a><ul>
+<li><a class="reference internal" href="#id2">样例配置文件</a></li>
+<li><a class="reference internal" href="#app-config-detailed">样例文件详细解释</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -66,13 +182,6 @@
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>本页</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/app-config.rst.txt"
-            rel="nofollow">显示源代码</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>快速搜索</h3>
     <form class="search" action="search.html" method="get">

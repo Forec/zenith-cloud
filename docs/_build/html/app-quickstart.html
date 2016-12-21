@@ -28,7 +28,7 @@
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
     <link rel="next" title="协议设计" href="app-protocal.html" />
-    <link rel="prev" title="全局设置" href="app-config.html" />
+    <link rel="prev" title="应用程序服务器全局设置" href="app-config.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -46,6 +46,150 @@
             
   <div class="section" id="app-quickstart">
 <span id="id1"></span><h1>快速上手<a class="headerlink" href="#app-quickstart" title="永久链接至标题">¶</a></h1>
+<p>此部分文档将带领您在一个假想的纯净环境中部署、配置、扩展自定义功能并启动顶点云服务器。</p>
+<div class="section" id="id2">
+<h2>假想环境<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>有一天我意外获得了一台免费的 CVM，而我恰巧获得了一次得到顶点云源码的机会。这台云主机使用的操作系统为 CentOS 7.2，公网 IP 地址为 <code class="docutils literal"><span class="pre">123.123.123.123</span></code> ，已安装好 Golang 并配置了环境变量。下面的指令均通过 SSH 远程操作。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="nv">$GOPATH</span>
+git clone https://github.com/Forec/zenith-cloud.git
+<span class="nb">cd</span> zenith-cloud/app/
+</pre></div>
+</div>
+<p>我已经获得了顶点云应用程序服务器的源码，接下来安装第三方库。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>go get github.com/mattn/go-sqlite3
+</pre></div>
+</div>
+<p>很高兴 Golang 顺利地配置了第三方库。接下来测试一下代码是否能够在本地机器通过测试。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="nb">test</span>
+./runTest.sh
+</pre></div>
+</div>
+<p>非常顺利！测试脚本告诉我所有测试均已完成，顶点云应用程序各个基础模块能够在这台服务器上运转正常。</p>
+</div>
+<div class="section" id="id3">
+<h2>针对假想环境修改配置文件<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>鉴于顶点云提供的默认配置仅适用于 Forec 的史诗级笔记本，下面根据这台服务器的情况修改配置文件。编辑 <cite>config.go</cite> :</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> ../config
+nano config.go
+</pre></div>
+</div>
+<p>我根据如下考虑对配置文件做了一定修改：</p>
+<ul class="simple">
+<li>我想将用户上传的文件存储到 <code class="docutils literal"><span class="pre">/usr/local/cloud</span></code> ，因此我修改 <code class="docutils literal"><span class="pre">STORE_PATH</span> <span class="pre">=</span> <span class="pre">&quot;/usr/local/cloud&quot;</span></code></li>
+<li>我想让这台云主机上运行的服务器为 Linux 用户提供服务，因此修改 <code class="docutils literal"><span class="pre">CLIENT_VERSION</span> <span class="pre">=</span> <span class="pre">&quot;Linux&quot;</span></code></li>
+<li>我的云主机网络情况良好并且带宽很高，因此我觉得可以适当提高缓冲区的大小，修改 <code class="docutils literal"><span class="pre">AUTHEN_BUFSIZE</span> <span class="pre">=</span> <span class="pre">4096</span></code> ，修改 <code class="docutils literal"><span class="pre">BUFSIZE</span> <span class="pre">=</span> <span class="pre">3</span> <span class="pre">*</span> <span class="pre">4096</span> <span class="pre">*</span> <span class="pre">1024</span></code></li>
+<li>我觉得顶点云默认使用的 SQLITE 数据库很方便，因此我决定保留默认配置</li>
+<li>我的服务器这么强，因此我将每个用户允许的最大同时连接线程数设置为 50</li>
+<li>我觉得我的服务器可能会受到大家的热烈欢迎，因此我决定增加初始用户池大小，修改 <code class="docutils literal"><span class="pre">START_USER_LIST</span> <span class="pre">=</span> <span class="pre">100</span></code> ，我想应该足够了。</li>
+<li>我想让我的服务器更安全，因此我保留了默认配置中的最高安全等级</li>
+<li>我想让世界上任何一个角落均能访问我的顶点云服务器，因此我将测试 IP 地址修改为 <code class="docutils literal"><span class="pre">123.123.123.123</span></code></li>
+<li>我觉得剩下的配置没什么需要变动的了，不过每 5 秒转发一次消息似乎有些过慢了，因此我将 <code class="docutils literal"><span class="pre">CHECK_MESSAGE_SEPERATE</span></code> 修改为 2</li>
+</ul>
+<p>看起来配置文件没什么值得修改的了，我决定按下 <code class="docutils literal"><span class="pre">CTRL+X</span></code> 保存配置文件，顺便通过 <code class="docutils literal"><span class="pre">git</span> <span class="pre">diff</span></code> 检查了一下修改过的部分：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">const</span> <span class="nx">STORE_PATH</span> <span class="p">=</span> <span class="s">&quot;/usr/local/cloud&quot;</span>
+<span class="kd">const</span> <span class="nx">CLIENT_VERSION</span> <span class="p">=</span> <span class="s">&quot;Linux&quot;</span>
+<span class="kd">const</span> <span class="nx">AUTHEN_BUFSIZE</span> <span class="p">=</span> <span class="mi">4096</span>
+<span class="kd">const</span> <span class="nx">BUFLEN</span> <span class="p">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">4096</span> <span class="o">*</span> <span class="mi">1024</span>
+<span class="kd">const</span> <span class="nx">MAXTRANSMITTER</span> <span class="p">=</span> <span class="mi">50</span>
+<span class="kd">const</span> <span class="nx">START_USER_LIST</span> <span class="p">=</span> <span class="mi">100</span>
+<span class="kd">const</span> <span class="nx">TEST_SAFELEVEL</span> <span class="p">=</span> <span class="mi">3</span>
+<span class="kd">const</span> <span class="nx">TEST_IP</span> <span class="p">=</span> <span class="s">&quot;123.123.123.123&quot;</span>
+<span class="kd">const</span> <span class="nx">CHECK_MESSAGE_SEPERATE</span> <span class="p">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>启动顶点云应用程序服务器<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>看起来万事大吉了，我决定启动服务器看看究竟是否如此。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> ../cloud
+go build cloud.go
+./cloud
+</pre></div>
+</div>
+<p>似乎运行成功了？我决定配置一下测试客户端，看看是否能够正常使用。</p>
+</div>
+<div class="section" id="id5">
+<h2>运行测试客户端<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<p>启动一个新的 SSH 连接，进入配置文件所在的目录，编辑配置文件。</p>
+<p>配置文件中的默认用户测试密码实在是太长了，但是很无奈，为了方便不得不使用默认的数据库和测试用户。经过检查，我还需要设置测试客户端下载文件保存路径，因此我修改 <code class="docutils literal"><span class="pre">DOWNLOAD_PATH</span> <span class="pre">=</span> <span class="pre">&quot;/usr/local/cloud/download&quot;</span></code> 。</p>
+<p>看起来似乎配置好了，我决定运行测试客户端尝试一下。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> client
+go build client.go <span class="o">&amp;&amp;</span> ./client
+</pre></div>
+</div>
+<p>测试客户端提示我输入命令，看起来似乎运行正常。我决定做如下尝试。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>请输入命令：ls+0+/
+UID  PATH    FILE        CREATED TIME   SIZE   SHARED  MODE
+请输入命令：touch+test.txt+/home/+0
+xxxxxxxx
+请输入命令：put+1+13990+18459158D123788165BBB8C3F3DFDF91
+上传传输结束
+请输入命令：ls+1+/
+UID  PATH    FILE        CREATED TIME   SIZE   SHARED  MODE
+  <span class="m">1</span>  /home/  client.go   xxxxxxxxxxxx   <span class="m">13990</span>    <span class="m">0</span>     FILE
+请输入命令：get+1+?
+文件 test.txt 已被下载
+</pre></div>
+</div>
+<p>我真的很讨厌 Forec 的这一套指令，冗长而且难懂。不过毕竟这里只是一个测试用的客户端，没有图形界面的包装。在尝试了专门设计的 <a class="reference external" href="https://github.com/forec-org/cloud-storage-client">客户端</a> 后，我觉得效果还是可以接受的，不过这都是后话了。</p>
+<p>我阅读了 <a class="reference internal" href="app-protocal.html#app-protocal"><span class="std std-ref">协议设计</span></a> ，终于明白了上面指令的意义：</p>
+<ul class="simple">
+<li>第一条 <code class="docutils literal"><span class="pre">ls</span></code> 指令用于获取目录 <code class="docutils literal"><span class="pre">/</span></code> 下的资源列表，在开始时数据库中没有任何记录，所以只有返回的表头。两个 <code class="docutils literal"><span class="pre">+</span></code> 之间的数字 0 代表只查询 <code class="docutils literal"><span class="pre">/</span></code> 一级目录下的文件</li>
+<li>第二条 <code class="docutils literal"><span class="pre">touch</span></code> 指令创建了一个空文件，我创建了一个名为 <code class="docutils literal"><span class="pre">test.txt</span></code> 的空文件，后面的 <code class="docutils literal"><span class="pre">/home/</span></code> 代表我想将 <code class="docutils literal"><span class="pre">test.txt</span></code> 创建在我的云盘的 <code class="docutils literal"><span class="pre">/home/</span></code> 目录下。很高兴顶点云的服务器还算人性化，虽然我此前并没有创建过 <code class="docutils literal"><span class="pre">home</span></code> 目录，不过在执行完这条命令后，服务器为我同时创建了 <code class="docutils literal"><span class="pre">home</span></code> 目录和 <code class="docutils literal"><span class="pre">test.txt</span></code> 文件。最后一个数字 0 表示我创建的是一个文件而非目录。</li>
+<li>第三条 <code class="docutils literal"><span class="pre">put</span></code> 指令向服务器中的一个文件上传数据，我将测试客户端当前路径下的文件 <code class="docutils literal"><span class="pre">client.go</span></code> 随手上传了。数字 1 代表要上传文件资源的编号，因为我刚刚开始使用顶点云，数据库还是空的，添加的第一条记录必然对应编号 1。它的文件大小是 13990 字节，根据 Forec 的协议计算出的 MD5 值为 18459158D123788165BBB8C3F3DFDF91。</li>
+<li>第四条 <code class="docutils literal"><span class="pre">ls</span></code> 指令递归获取目录 <code class="docutils literal"><span class="pre">/</span></code> 下的资源。很高兴我看到了刚刚创建的文件，并且它的大小已经成了 13990 字节，路径也没有错误。</li>
+<li>最后一条 <code class="docutils literal"><span class="pre">get</span></code> 指令，我决定下载刚刚上传的文件，看看是否真的可行。这里的数字 1 仍然是我要下载的文件编号，问号处其实可以填写任意非空值，这个参数只有在我想下载别人的文件时服务器才会检查。很高兴服务器提醒我下载成功了。</li>
+</ul>
+<p>经过比对，顶点云服务器似乎基本的功能都执行正常。不过，我有更好的功能想添加。我通过 <code class="docutils literal"><span class="pre">CTRL+C</span></code> 结束掉了正在运行的服务器和测试客户端。</p>
+</div>
+<div class="section" id="app-quickstart-expand">
+<span id="id6"></span><h2>扩展自定义功能<a class="headerlink" href="#app-quickstart-expand" title="永久链接至标题">¶</a></h2>
+<p>不得不说 Forec 的设计实在是太简陋了，至少客户端应该能够看到自己的昵称！我想，添加一条指令以获取自己的用户名这个功能应该不那么困难。</p>
+<p>在阅读了 <a class="reference internal" href="app-structual.html#app-structual"><span class="std std-ref">框架分析</span></a> 后，我了解了整个顶点云应用程序服务器的结构，下面我准备添加这个简单的功能。</p>
+<p>进入 <code class="docutils literal"><span class="pre">cstruct</span></code> 并编辑 <code class="docutils literal"><span class="pre">cuser_operations.go</span></code> ：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> cstruct
+nano cuser_operations.go
+</pre></div>
+</div>
+<p>我在源码的 70 行附近发现了一个 <code class="docutils literal"><span class="pre">switch</span></code> 代码块，很明显这里将命令映射到了不同的处理函数上。我决定定义一个新的指令 <code class="docutils literal"><span class="pre">whatsmyname</span></code> 并在最后一个 <code class="docutils literal"><span class="pre">case</span></code> 和 <code class="docutils literal"><span class="pre">default</span></code> 之间添加一条映射关系，将它映射到我自定义的受理函数 <code class="docutils literal"><span class="pre">lookupname</span></code> 上：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="k">case</span> <span class="nb">len</span><span class="p">(</span><span class="nx">command</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">5</span> <span class="o">&amp;&amp;</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">ToUpper</span><span class="p">(</span><span class="nx">command</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span> <span class="o">==</span> <span class="s">&quot;CHMOD&quot;</span><span class="p">:</span>
+        <span class="c1">// 改变资源权限</span>
+        <span class="nx">u</span><span class="p">.</span><span class="nx">chmod</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="nx">command</span><span class="p">)</span>
+
+<span class="c1">// 此处添加自定义映射关系</span>
+<span class="k">case</span> <span class="nb">len</span><span class="p">(</span><span class="nx">command</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">11</span> <span class="o">&amp;&amp;</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">ToUpper</span><span class="p">(</span><span class="nx">command</span><span class="p">[:</span><span class="mi">11</span><span class="p">)</span> <span class="o">==</span> <span class="s">&quot;WHATSMYNAME&quot;</span><span class="p">:</span>
+        <span class="nx">u</span><span class="p">.</span><span class="nx">lookupname</span><span class="p">(</span><span class="nx">command</span><span class="p">)</span>
+
+<span class="k">default</span><span class="p">:</span>
+        <span class="c1">// 指令无法识别，返回错误信息</span>
+        <span class="nx">u</span><span class="p">.</span><span class="nx">listen</span><span class="p">.</span><span class="nx">SendBytes</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&quot;Invalid Command&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>添加了映射关系，我决定实现受理此命令的函数 <code class="docutils literal"><span class="pre">lookupname</span></code> ：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">cuser</span><span class="p">)</span> <span class="nx">lookupname</span><span class="p">(</span><span class="nx">command</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">command</span><span class="p">)</span> <span class="p">&lt;</span> <span class="mi">11</span> <span class="o">||</span>
+                <span class="nx">strings</span><span class="p">.</span><span class="nx">ToUpper</span><span class="p">(</span><span class="nx">command</span><span class="p">[:</span><span class="mi">11</span><span class="p">])</span> <span class="o">!=</span> <span class="s">&quot;WHATSMYNAME&quot;</span> <span class="o">||</span>
+                <span class="nx">u</span><span class="p">.</span><span class="nx">nickname</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">{</span>
+                <span class="c1">// 指令不合法或用户不存在昵称</span>
+                <span class="nx">u</span><span class="p">.</span><span class="nx">listen</span><span class="p">.</span><span class="nx">SendBytes</span><span class="p">(</span><span class="s">&quot;查询失败！&quot;</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">u</span><span class="p">.</span><span class="nx">listen</span><span class="p">.</span><span class="nx">SendBytes</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">nickname</span><span class="p">)</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>看起来已经没有需要改动的地方了。我将服务器重新编译了一次，并启动了测试客户端：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> ../cloud
+go build cloud.go <span class="o">&amp;&amp;</span> ./cloud <span class="p">&amp;</span>
+<span class="nb">cd</span> ../client
+go build client.go <span class="o">&amp;&amp;</span> ./client
+请输入命令：whatsnyname
+forec
+</pre></div>
+</div>
+<p>虽然我很不喜欢 Forec 这个名字，但是他毕竟只是个测试用户而已，至少这说明了我的功能扩展成功了。</p>
+<p>接下来请您阅读 <a class="reference internal" href="app-protocal.html#app-protocal"><span class="std std-ref">协议设计</span></a> 。</p>
+</div>
 </div>
 
 
@@ -55,24 +199,29 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
   <img class="logo" src="_static/zenith.png" alt="Logo"/>
-</a></p><div class="relations">
+</a></p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">快速上手</a><ul>
+<li><a class="reference internal" href="#id2">假想环境</a></li>
+<li><a class="reference internal" href="#id3">针对假想环境修改配置文件</a></li>
+<li><a class="reference internal" href="#id4">启动顶点云应用程序服务器</a></li>
+<li><a class="reference internal" href="#id5">运行测试客户端</a></li>
+<li><a class="reference internal" href="#app-quickstart-expand">扩展自定义功能</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-app.html">顶点云应用程序服务器</a><ul>
-      <li>Previous: <a href="app-config.html" title="上一章">全局设置</a></li>
+      <li>Previous: <a href="app-config.html" title="上一章">应用程序服务器全局设置</a></li>
       <li>Next: <a href="app-protocal.html" title="下一章">协议设计</a></li>
   </ul></li>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>本页</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/app-quickstart.rst.txt"
-            rel="nofollow">显示源代码</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>快速搜索</h3>
     <form class="search" action="search.html" method="get">

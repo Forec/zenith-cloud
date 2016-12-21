@@ -6,7 +6,7 @@
 .. toctree::
    :maxdepth: 2
 	
-   foreward
+   forewords
    zenith-app
    zenith-web
 

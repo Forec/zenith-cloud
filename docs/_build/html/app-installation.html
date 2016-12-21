@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
-    <link rel="next" title="全局设置" href="app-config.html" />
+    <link rel="next" title="应用程序服务器全局设置" href="app-config.html" />
     <link rel="prev" title="顶点云应用程序服务器" href="zenith-app.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -46,6 +46,28 @@
             
   <div class="section" id="app-installation">
 <span id="id1"></span><h1>部署顶点云应用程序服务器<a class="headerlink" href="#app-installation" title="永久链接至标题">¶</a></h1>
+<p>顶点云的应用程序服务器使用 Go 语言编写，部署前请确保您已安装 Golang，并向环境变量中正确添加了 GOROOT、GOPATH 等记录。我们推荐的 Go 语言版本为 Go 1.7.3。有关 Go 语言的环境配置不在本文档范围内，如果您尚不了解，请参阅以下相关链接：</p>
+<ul class="simple">
+<li><a class="reference external" href="https://golang.org/doc/install">安装 Golang</a></li>
+<li><a class="reference external" href="https://golang.org/doc/">Go 语言文档</a></li>
+</ul>
+<div class="section" id="id2">
+<h2>获取源码<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>顶点云的应用程序服务器源码托管在 <a class="reference external" href="https://github.com/Forec/zenith-cloud">GitHub</a> 上，您可以使用 Git 克隆仓库或直接通过 GitHub 下载源码的压缩包。假设您熟悉 Git，请通过以下命令获取源码。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>git clone https://github.com/Forec/zenith-cloud.git
+<span class="nb">cd</span> zenith-cloud/app/
+</pre></div>
+</div>
+<p>此时您应当已经进入顶点云的应用程序服务器源码目录。</p>
+</div>
+<div class="section" id="id3">
+<h2>安装第三方库<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>顶点云默认使用的数据库为 SQLITE3，使用了第三方的 go-sqlite3 库，请确保您已正确安装 Golang，并执行以下命令安装第三方库。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>go get github.com/mattn/go-sqlite3
+</pre></div>
+</div>
+<p>至此，顶点云应用程序已部署完成。顶点云可运行在任何主流体系结构计算机以及任何操作系统上。接下来请您阅读 <a class="reference internal" href="app-config.html#app-config"><span class="std std-ref">应用程序服务器全局设置</span></a> 以根据您的系统配置顶点云。</p>
+</div>
 </div>
 
 
@@ -55,24 +77,26 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
   <img class="logo" src="_static/zenith.png" alt="Logo"/>
-</a></p><div class="relations">
+</a></p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">部署顶点云应用程序服务器</a><ul>
+<li><a class="reference internal" href="#id2">获取源码</a></li>
+<li><a class="reference internal" href="#id3">安装第三方库</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-app.html">顶点云应用程序服务器</a><ul>
       <li>Previous: <a href="zenith-app.html" title="上一章">顶点云应用程序服务器</a></li>
-      <li>Next: <a href="app-config.html" title="下一章">全局设置</a></li>
+      <li>Next: <a href="app-config.html" title="下一章">应用程序服务器全局设置</a></li>
   </ul></li>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>本页</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/app-installation.rst.txt"
-            rel="nofollow">显示源代码</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>快速搜索</h3>
     <form class="search" action="search.html" method="get">
