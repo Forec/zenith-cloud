@@ -1,8 +1,6 @@
-# 顶点云在 Linux 环境下的安装脚本
+# 顶点云在 Linux 环境下的配置脚本
 
-git clone https://github.com/Forec/cloud-storage-webserver.git
-mv cloud-storage-webserver cloud
-cd cloud
+cd ..
 mkdir venv
 cd venv
 python3 -m venv .
@@ -13,4 +11,5 @@ pip3 install gunicorn --index-url https://pypi.douban.com/simple
 deactivate
 source venv/bin/activate
 python3 manager.py simple_init
-gunicorn -w 4 -b 127.0.0.1:5001 --worker-connections 100 wsgi:app
+deactivate
+echo 部署完成
