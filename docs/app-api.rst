@@ -336,6 +336,8 @@ DealWithRequests
    
    DealWithRequests(*sql.DB)
    
+此方法将在 :ref:`app-proxy` 中详细介绍。它是服务器处理用户请求的核心，能够方便的扩展功能。
+   
 .. _app-api-dealwithtransmission:
 
 DealWithTransmission
@@ -347,7 +349,7 @@ DealWithTransmission
 
    DealWithTransmission(*sql.DB, trans.Transmitable)
    
-   
+此方法将在 :ref:`app-proxy` 中详细介绍。它是服务器处理用户请求的核心，能够方便的扩展功能。
    
 .. _app-api-transmitter:
 
@@ -490,9 +492,7 @@ RecvToWriter
 
    func (t *transmitter) RecvToWriter(writer *bufio.Writer) bool
    
-此函数接受两个参数，第一个为可读结构，传输器从此参数中读取数据；第二个为待发送数据的长度。发送成功时此函数返回 ``True`` ，在发送过程中出现任何异常均会返回 ``False`` 。此函数发送方式与 *SendBytes* 类似，但若可读结构中的数据长度少于指定的数据长度（传入的第二个参数），则此函数将返回 ``False`` ，否则只读到指定长度位置便停止发送并返回。
-
-
+此函数接受一个可写结构，传输器从远程传输器读取数据，并且写入到可写结构中。接收成功时此函数返回 ``True`` ，在接收过程中出现任何异常均会返回 ``False`` 。此函数接收方式与 *RecvBytes* 类似。如果你尚不了解接收原理，请查阅 :ref:`app-protocal-transmitter` 。
 
 .. _app-api-server:
 
@@ -501,3 +501,50 @@ RecvToWriter
 
 此部分详细介绍 *server* 类方法的使用方式。
 
+*server* 类包含如下几个公有方法：
+
+* *InitDB* ：初始化数据库函数，在创建服务器实例后调用以修复不存在的表。
+* *CheckBroadCast* ：消息转发函数，此函数通常在一个独立的协程中执行，负责用户通讯。
+* *Run* ：启动函数，将服务器实例开放在指定 IP 地址和端口。
+* *Communicate* ：用户代理函数，每个在线用户均有一个对应的 *Communicate* 函数运行在独立协程中提供服务。
+* *Login* ：连接认证函数，负责新连接的认证和转发。
+
+公有方法
+>>>>>>>>>>>>>>
+
+.. _app-api-server-initdb:
+
+InitDB
+""""""""""""""""
+
+*InitDB* 函数位于 ``server/server.go`` 中，用于修复数据库中缺失的表。你可以在创建 *server* 类实例后 *s* 后调用 ``s.InitDB()`` 。
+
+.. _app-api-server-checkbroadcast:
+
+CheckBroadCast
+""""""""""""""""""
+
+*CheckBroadCast* 函数位于 ``server/server.go`` 中，用于转发用户通讯消息。你可以在初始化 *server* 类实例 *s* 后通过 ``go s.CheckBroadCast()`` 启动一个守护线程来执行转发逻辑 。
+
+.. _app-api-server-run:
+
+Run
+""""""""""""""""
+
+*Run* 函数位于 ``server/server.go`` 中，用于启动服务器。你可以在初始化 *server* 类实例 *s* ，并确保所有运行前逻辑均已调用完成的情况下调用 ``s.Run()`` 来启动服务器。此函数内部由 ``for`` 循环阻塞，如果此函数退出则整个服务器程序都将结束。
+
+.. _app-api-server-communicate:
+
+Communicate
+""""""""""""""""
+
+*Communicate* 函数位于 ``server/server.go`` 中，用于为每个用户提供服务。此函数在服务器的 *Run* 方法中调用，每当一个新的连接请求到来，服务器将启动一个新的协程执行 *Communicate* 函数，并处理用户请求。
+
+*Communicate* 会根据用户请求的类型决定将请求转交给 :ref:`app-proxy` ，或者创建一个新的用户代理。
+
+.. _app-api-server-login:
+
+Login
+""""""""""""""""
+
+*Login* 函数位于 ``server/server.go`` 中，用于认证用户请求的合法性。此函数在服务器的 *Communicate* 方法中调用，*Communicate* 根据 *Login* 的返回值决定如何处理用户请求。

@@ -234,6 +234,7 @@
 <div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">DealWithRequests</span><span class="p">(</span><span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>此方法将在 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> 中详细介绍。它是服务器处理用户请求的核心，能够方便的扩展功能。</p>
 </div>
 <div class="section" id="dealwithtransmission">
 <span id="app-api-dealwithtransmission"></span><h4>DealWithTransmission<a class="headerlink" href="#dealwithtransmission" title="永久链接至标题">¶</a></h4>
@@ -241,6 +242,7 @@
 <div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">DealWithTransmission</span><span class="p">(</span><span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>此方法将在 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> 中详细介绍。它是服务器处理用户请求的核心，能够方便的扩展功能。</p>
 </div>
 </div>
 </div>
@@ -341,13 +343,45 @@
 <div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">transmitter</span><span class="p">)</span> <span class="nx">RecvToWriter</span><span class="p">(</span><span class="nx">writer</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">bool</span>
 </pre></div>
 </div>
-<p>此函数接受两个参数，第一个为可读结构，传输器从此参数中读取数据；第二个为待发送数据的长度。发送成功时此函数返回 <code class="docutils literal"><span class="pre">True</span></code> ，在发送过程中出现任何异常均会返回 <code class="docutils literal"><span class="pre">False</span></code> 。此函数发送方式与 <em>SendBytes</em> 类似，但若可读结构中的数据长度少于指定的数据长度（传入的第二个参数），则此函数将返回 <code class="docutils literal"><span class="pre">False</span></code> ，否则只读到指定长度位置便停止发送并返回。</p>
+<p>此函数接受一个可写结构，传输器从远程传输器读取数据，并且写入到可写结构中。接收成功时此函数返回 <code class="docutils literal"><span class="pre">True</span></code> ，在接收过程中出现任何异常均会返回 <code class="docutils literal"><span class="pre">False</span></code> 。此函数接收方式与 <em>RecvBytes</em> 类似。如果你尚不了解接收原理，请查阅 <a class="reference internal" href="app-protocal.html#app-protocal-transmitter"><span class="std std-ref">传输器设计</span></a> 。</p>
 </div>
 </div>
 </div>
 <div class="section" id="app-api-server">
 <span id="id5"></span><h2>服务器类<a class="headerlink" href="#app-api-server" title="永久链接至标题">¶</a></h2>
 <p>此部分详细介绍 <em>server</em> 类方法的使用方式。</p>
+<p><em>server</em> 类包含如下几个公有方法：</p>
+<ul class="simple">
+<li><em>InitDB</em> ：初始化数据库函数，在创建服务器实例后调用以修复不存在的表。</li>
+<li><em>CheckBroadCast</em> ：消息转发函数，此函数通常在一个独立的协程中执行，负责用户通讯。</li>
+<li><em>Run</em> ：启动函数，将服务器实例开放在指定 IP 地址和端口。</li>
+<li><em>Communicate</em> ：用户代理函数，每个在线用户均有一个对应的 <em>Communicate</em> 函数运行在独立协程中提供服务。</li>
+<li><em>Login</em> ：连接认证函数，负责新连接的认证和转发。</li>
+</ul>
+<div class="section" id="id6">
+<h3>公有方法<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<div class="section" id="initdb">
+<span id="app-api-server-initdb"></span><h4>InitDB<a class="headerlink" href="#initdb" title="永久链接至标题">¶</a></h4>
+<p><em>InitDB</em> 函数位于 <code class="docutils literal"><span class="pre">server/server.go</span></code> 中，用于修复数据库中缺失的表。你可以在创建 <em>server</em> 类实例后 <em>s</em> 后调用 <code class="docutils literal"><span class="pre">s.InitDB()</span></code> 。</p>
+</div>
+<div class="section" id="checkbroadcast">
+<span id="app-api-server-checkbroadcast"></span><h4>CheckBroadCast<a class="headerlink" href="#checkbroadcast" title="永久链接至标题">¶</a></h4>
+<p><em>CheckBroadCast</em> 函数位于 <code class="docutils literal"><span class="pre">server/server.go</span></code> 中，用于转发用户通讯消息。你可以在初始化 <em>server</em> 类实例 <em>s</em> 后通过 <code class="docutils literal"><span class="pre">go</span> <span class="pre">s.CheckBroadCast()</span></code> 启动一个守护线程来执行转发逻辑 。</p>
+</div>
+<div class="section" id="run">
+<span id="app-api-server-run"></span><h4>Run<a class="headerlink" href="#run" title="永久链接至标题">¶</a></h4>
+<p><em>Run</em> 函数位于 <code class="docutils literal"><span class="pre">server/server.go</span></code> 中，用于启动服务器。你可以在初始化 <em>server</em> 类实例 <em>s</em> ，并确保所有运行前逻辑均已调用完成的情况下调用 <code class="docutils literal"><span class="pre">s.Run()</span></code> 来启动服务器。此函数内部由 <code class="docutils literal"><span class="pre">for</span></code> 循环阻塞，如果此函数退出则整个服务器程序都将结束。</p>
+</div>
+<div class="section" id="communicate">
+<span id="app-api-server-communicate"></span><h4>Communicate<a class="headerlink" href="#communicate" title="永久链接至标题">¶</a></h4>
+<p><em>Communicate</em> 函数位于 <code class="docutils literal"><span class="pre">server/server.go</span></code> 中，用于为每个用户提供服务。此函数在服务器的 <em>Run</em> 方法中调用，每当一个新的连接请求到来，服务器将启动一个新的协程执行 <em>Communicate</em> 函数，并处理用户请求。</p>
+<p><em>Communicate</em> 会根据用户请求的类型决定将请求转交给 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> ，或者创建一个新的用户代理。</p>
+</div>
+<div class="section" id="login">
+<span id="app-api-server-login"></span><h4>Login<a class="headerlink" href="#login" title="永久链接至标题">¶</a></h4>
+<p><em>Login</em> 函数位于 <code class="docutils literal"><span class="pre">server/server.go</span></code> 中，用于认证用户请求的合法性。此函数在服务器的 <em>Communicate</em> 方法中调用，<em>Communicate</em> 根据 <em>Login</em> 的返回值决定如何处理用户请求。</p>
+</div>
+</div>
 </div>
 </div>
 
@@ -420,7 +454,17 @@
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#app-api-server">服务器类</a></li>
+<li><a class="reference internal" href="#app-api-server">服务器类</a><ul>
+<li><a class="reference internal" href="#id6">公有方法</a><ul>
+<li><a class="reference internal" href="#initdb">InitDB</a></li>
+<li><a class="reference internal" href="#checkbroadcast">CheckBroadCast</a></li>
+<li><a class="reference internal" href="#run">Run</a></li>
+<li><a class="reference internal" href="#communicate">Communicate</a></li>
+<li><a class="reference internal" href="#login">Login</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
