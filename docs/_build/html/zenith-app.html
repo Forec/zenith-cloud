@@ -51,9 +51,9 @@
 <li><a class="reference internal" href="app-installation.html#app-installation"><span class="std std-ref">部署顶点云应用程序服务器</span></a></li>
 <li><a class="reference internal" href="app-config.html#app-config"><span class="std std-ref">应用程序服务器全局设置</span></a></li>
 <li><a class="reference internal" href="app-quickstart.html#app-quickstart"><span class="std std-ref">快速上手</span></a></li>
+<li><a class="reference internal" href="app-models.html#app-models"><span class="std std-ref">模型介绍</span></a></li>
 <li><a class="reference internal" href="app-protocal.html#app-protocal"><span class="std std-ref">协议设计</span></a></li>
 <li><a class="reference internal" href="app-structual.html#app-structual"><span class="std std-ref">框架分析</span></a></li>
-<li><a class="reference internal" href="app-models.html#app-models"><span class="std std-ref">模型介绍</span></a></li>
 <li><a class="reference internal" href="app-test.html#app-test"><span class="std std-ref">传输测试</span></a></li>
 <li><a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a></li>
 <li><a class="reference internal" href="app-tutorial.html#app-tutorial"><span class="std std-ref">教程 - 添加自定义用户代理</span></a></li>
@@ -85,17 +85,25 @@
 <li class="toctree-l2"><a class="reference internal" href="app-quickstart.html#app-quickstart-expand">扩展自定义功能</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="app-models.html">模型介绍</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="app-models.html#app-models-database">数据库</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-models.html#app-models-class">内置自定义类</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="app-protocal.html">协议设计</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-authentication-procedure">认证流程</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-message">协议消息格式</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-cipher">加密</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#md5">MD5 计算</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-command">命令格式</a></li>
-<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-authen-bufsize">交互式命令缓冲区</a></li>
-<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-buflen">长数据流传输缓冲区</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-interact">交互式命令</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-longorder">文件传输命令</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-transmitter">传输器设计</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-chat">用户通讯</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-protocal.html#app-protocal-listen">被动监听连接</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="app-structual.html">框架分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="app-models.html">模型介绍</a></li>
 <li class="toctree-l1"><a class="reference internal" href="app-test.html">传输测试</a></li>
 <li class="toctree-l1"><a class="reference internal" href="app-proxy.html">用户代理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="app-tutorial.html">教程 - 添加自定义用户代理</a></li>
@@ -107,7 +115,13 @@
 <p>这部分文档详细说明某个函数、结构或方法。</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="app-api.html">应用程序 API 文档</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app-api.html">应用程序 API 文档</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="app-api.html#app-api-cipher">数字处理模块</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-api.html#user">User 接口</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-api.html#app-api-transmitter">传输器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app-api.html#app-api-server">服务器类</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -128,9 +142,13 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
-  <img class="logo" src="_static/zenith.png" alt="Logo"/>
+        <div class="sphinxsidebarwrapper"><p style="text-align:left;margin:5px 10px 5px 10px"><a href="index.html">
+  <img style="text-align:center;width:105px" src="_static/zenith.png" alt="Logo"/>
 </a></p>
+
+<p>
+  <a href="index.html">回到主页</a>
+</p>
   <h3><a href="index.html">內容目录</a></h3>
   <ul>
 <li><a class="reference internal" href="#">顶点云应用程序服务器</a><ul>

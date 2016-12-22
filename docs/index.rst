@@ -10,7 +10,7 @@
 -	`Flask 文档 <http://flask.pocoo.org/docs/0.11/>`_
 -	`Go 语言文档 <https://golang.org/doc/>`_
 
-两部分文档均包含对应的部署说明和上手指南，我建议您按文档推荐的顺序阅读。
+《 :ref:`zenith-web` 》和《 :ref:`zenith-app` 》均包含对应的部署说明和上手指南，我建议您按文档推荐的顺序阅读。
 
 
 .. _Golang: https://golang.org/

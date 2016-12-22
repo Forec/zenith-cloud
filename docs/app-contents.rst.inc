@@ -9,9 +9,9 @@
    app-installation
    app-config
    app-quickstart
+   app-models
    app-protocal
    app-structual
-   app-models
    app-test
    app-proxy
    app-tutorial

@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
-    <link rel="next" title="协议设计" href="app-protocal.html" />
+    <link rel="next" title="模型介绍" href="app-models.html" />
     <link rel="prev" title="应用程序服务器全局设置" href="app-config.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -146,7 +146,7 @@ UID  PATH    FILE        CREATED TIME   SIZE   SHARED  MODE
 <span id="id6"></span><h2>扩展自定义功能<a class="headerlink" href="#app-quickstart-expand" title="永久链接至标题">¶</a></h2>
 <p>不得不说 Forec 的设计实在是太简陋了，至少客户端应该能够看到自己的昵称！我想，添加一条指令以获取自己的用户名这个功能应该不那么困难。</p>
 <p>在阅读了 <a class="reference internal" href="app-structual.html#app-structual"><span class="std std-ref">框架分析</span></a> 后，我了解了整个顶点云应用程序服务器的结构，下面我准备添加这个简单的功能。</p>
-<p>进入 <code class="docutils literal"><span class="pre">cstruct</span></code> 并编辑 <code class="docutils literal"><span class="pre">cuser_operations.go</span></code> ：</p>
+<p>进入 <code class="docutils literal"><span class="pre">cstruct</span></code> 目录并编辑 <code class="docutils literal"><span class="pre">cuser_operations.go</span></code> ：</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> cstruct
 nano cuser_operations.go
 </pre></div>
@@ -197,9 +197,13 @@ forec
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
-  <img class="logo" src="_static/zenith.png" alt="Logo"/>
+        <div class="sphinxsidebarwrapper"><p style="text-align:left;margin:5px 10px 5px 10px"><a href="index.html">
+  <img style="text-align:center;width:105px" src="_static/zenith.png" alt="Logo"/>
 </a></p>
+
+<p>
+  <a href="index.html">回到主页</a>
+</p>
   <h3><a href="index.html">內容目录</a></h3>
   <ul>
 <li><a class="reference internal" href="#">快速上手</a><ul>
@@ -217,7 +221,7 @@ forec
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-app.html">顶点云应用程序服务器</a><ul>
       <li>Previous: <a href="app-config.html" title="上一章">应用程序服务器全局设置</a></li>
-      <li>Next: <a href="app-protocal.html" title="下一章">协议设计</a></li>
+      <li>Next: <a href="app-models.html" title="下一章">模型介绍</a></li>
   </ul></li>
   </ul></li>
 </ul>

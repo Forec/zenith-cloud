@@ -8,9 +8,9 @@
 - :ref:`app-installation`
 - :ref:`app-config`
 - :ref:`app-quickstart`
+- :ref:`app-models`
 - :ref:`app-protocal`
 - :ref:`app-structual`
-- :ref:`app-models`
 - :ref:`app-test`
 - :ref:`app-proxy`
 - :ref:`app-tutorial`

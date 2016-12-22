@@ -131,7 +131,7 @@
 
 在阅读了 :ref:`app-structual` 后，我了解了整个顶点云应用程序服务器的结构，下面我准备添加这个简单的功能。
 
-进入 ``cstruct`` 并编辑 ``cuser_operations.go`` ：
+进入 ``cstruct`` 目录并编辑 ``cuser_operations.go`` ：
 
 .. code-block:: shell
 	

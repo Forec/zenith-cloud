@@ -46,6 +46,309 @@
             
   <div class="section" id="api">
 <span id="app-api"></span><h1>应用程序 API 文档<a class="headerlink" href="#api" title="永久链接至标题">¶</a></h1>
+<div class="section" id="app-api-cipher">
+<span id="id1"></span><h2>数字处理模块<a class="headerlink" href="#app-api-cipher" title="永久链接至标题">¶</a></h2>
+<p>此部分详细介绍数字处理模块中几个 API 的使用方式。此模块主要分为 <em>AES</em> 、 <em>base64</em> 、 <em>int2bytes</em> 、 <em>md5</em> 以及 <em>token</em> 几部分。</p>
+<div class="section" id="aes-cfb">
+<span id="app-api-aes"></span><h3>AES CFB 模块<a class="headerlink" href="#aes-cfb" title="永久链接至标题">¶</a></h3>
+<p>此部分涉及 AES CFB 对称加密的三个公有函数：</p>
+<ul class="simple">
+<li><em>NewAesBlock</em> ：AES 块的工厂方法，根据密钥生成一个新的 AES 加/解密模块。</li>
+<li><em>AesEncode</em> ：使用作为参数的 AES 块加密一段明文。</li>
+<li><em>AesDecode</em> ：使用作为参数的 AES 块和明文长度解密一段密文。</li>
+</ul>
+<div class="section" id="newaesblock">
+<span id="app-api-aes-factory"></span><h4>NewAesBlock<a class="headerlink" href="#newaesblock" title="永久链接至标题">¶</a></h4>
+<p><em>NewAesBlock</em> 用于构造新的 AES 模块，它位于文件 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中，其函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">NewAesBlock</span><span class="p">(</span><span class="nx">key</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="nx">cipher</span><span class="p">.</span><span class="nx">Block</span>
+</pre></div>
+</div>
+<p>作为参数的 <code class="docutils literal"><span class="pre">key</span></code> 为一串字节，作为生成模块加/解密的密钥。此函数会返回一个满足 <code class="docutils literal"><span class="pre">cipher.Block</span></code> 接口的新 AES 模块。</p>
+</div>
+<div class="section" id="aesencode">
+<span id="app-api-aes-encode"></span><h4>AesEncode<a class="headerlink" href="#aesencode" title="永久链接至标题">¶</a></h4>
+<p><em>AesEncode</em> 用于对一串明文加密，它位于文件 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中，其函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">AesEncode</span><span class="p">(</span><span class="nx">plaintext</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">block</span> <span class="nx">cipher</span><span class="p">.</span><span class="nx">Block</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span>
+</pre></div>
+</div>
+<p>该函数接受两个参数，第一个是待加密的明文字节流，第二个是一个 AES 模块。该函数会以字节切片的形式返回加密的结果。</p>
+</div>
+<div class="section" id="aesdecode">
+<span id="app-api-aes-decode"></span><h4>AesDecode<a class="headerlink" href="#aesdecode" title="永久链接至标题">¶</a></h4>
+<p><em>AesDecode</em> 用于对一串加密的字节解密，它位于文件 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中，其函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">AesDecode</span><span class="p">(</span><span class="nx">cipherText</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">plainLen</span> <span class="kt">int64</span><span class="p">,</span> <span class="nx">block</span> <span class="nx">cipher</span><span class="p">.</span><span class="nx">Block</span><span class="p">)</span> <span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>该函数接受 3 个参数，第一个参数为待解密的字节流，第二个为解密后的明文长度，第三个为一个 AES 模块。如果该 AES 模块成功解密，则返回结果的第一部分为明文，第二部分为 <code class="docutils literal"><span class="pre">nil</span></code> ，否则任何错误都将通过返回结果的第二部分传回高层函数。高层函数应当判断函数调用结果中是否包含错误以便及时恢复。</p>
+</div>
+</div>
+<div class="section" id="base64">
+<span id="app-api-base64"></span><h3>Base64 模块<a class="headerlink" href="#base64" title="永久链接至标题">¶</a></h3>
+<p>此部分涉及 Base64 编码/解码的两个公有函数：</p>
+<ul class="simple">
+<li><em>Base64Encode</em> ：使用 base64 对字节流编码</li>
+<li><em>Base64Decode</em> ：使用 base64 对字节流解码</li>
+</ul>
+<div class="section" id="base64encode">
+<span id="app-api-base64-encode"></span><h4>Base64Encode<a class="headerlink" href="#base64encode" title="永久链接至标题">¶</a></h4>
+<p><em>Base64Encode</em> 可对一段明文使用 base64 编码，它位于 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中，其函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">Base64Encode</span><span class="p">(</span><span class="nx">plaintext</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span>
+</pre></div>
+</div>
+<p>该函数接受 1 个参数，该参数为待编码的字节流。该函数将参数编码后的结果以字节切片的形式返回。</p>
+</div>
+<div class="section" id="base64decode">
+<span id="app-api-base64-decode"></span><h4>Base64Decode<a class="headerlink" href="#base64decode" title="永久链接至标题">¶</a></h4>
+<p><em>Base64Decode</em> 可对一段使用 base64 编码的字节解码。如果传入的待解码字节流不符合 base64 编码格式，则函数返回值中会携带错误。它位于文件 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中，其函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">Base64Decode</span><span class="p">(</span><span class="nx">ciphertext</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>该函数接受 1 个参数，该参数为待解码的字节流。该函数将参数解码后的结果以字节切片的形式返回，如果解码失败则会携带错误。高层函数应当检查此函数的返回值中是否包含错误信息。</p>
+</div>
+</div>
+<div class="section" id="int64">
+<span id="app-api-int2bytes"></span><h3>Int64 与字节转化<a class="headerlink" href="#int64" title="永久链接至标题">¶</a></h3>
+<p>此部分涉及 <code class="docutils literal"><span class="pre">Int64</span></code> 类型和字节数组的转换，包含两个公有函数：</p>
+<ul class="simple">
+<li><em>Int64ToBytes</em>  ：将一个 <code class="docutils literal"><span class="pre">Int64</span></code> 类型的数据按大端序转化为 8 个字节。</li>
+<li><em>BytesToInt64</em>  ：将 8 个字节按大端序转化为一个 <code class="docutils literal"><span class="pre">Int64</span></code> 类型的数据。</li>
+</ul>
+<div class="section" id="int64tobytes">
+<span id="app-api-int64tobytes"></span><h4>Int64ToBytes<a class="headerlink" href="#int64tobytes" title="永久链接至标题">¶</a></h4>
+<p><em>Int64ToBytes</em> 位于文件 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中，其函数声明为：</p>
+<p>该函数接受 1 个参数，该参数为待转换的 <code class="docutils literal"><span class="pre">Int64</span></code> 格式数据，函数将转换后的 8 个字节以字节切片的形式返回。</p>
+</div>
+<div class="section" id="bytestoint64">
+<span id="app-api-bytestoint64"></span><h4>BytesToInt64<a class="headerlink" href="#bytestoint64" title="永久链接至标题">¶</a></h4>
+<p><em>BytesToInt64</em> 位于文件 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中，其函数声明为：</p>
+<p>该函数接受 1 个参数，该参数为待转换的字节切片，函数会截取该切片的前 8 个字节，将转换后的 <code class="docutils literal"><span class="pre">Int64</span></code> 格式返回。</p>
+</div>
+</div>
+<div class="section" id="md5-token">
+<span id="app-api-md5-token"></span><h3>MD5 和 token<a class="headerlink" href="#md5-token" title="永久链接至标题">¶</a></h3>
+<p>此部分涉及 MD5 值和 token 的生成。包含 5 个公有函数，均位于文件 <code class="docutils literal"><span class="pre">authenticate/authenticate.go</span></code> 中：</p>
+<ul class="simple">
+<li><em>GetRandomString</em> ：根据给定长度随机生成字符串。</li>
+<li><em>MD5</em> ：计算传入参数的 MD5 值。</li>
+<li><em>CalcMD5ForReader</em> ：计算传入可读结构的 MD5 值。</li>
+<li><em>IsMD5</em> ：判断某个字符串是否为十六进制的 MD5 格式。</li>
+<li><em>GenerateToken</em> ：根据给定的安全等及生成 token。</li>
+</ul>
+<div class="section" id="getrandomstring">
+<span id="app-api-getrandomstring"></span><h4>GetRandomString<a class="headerlink" href="#getrandomstring" title="永久链接至标题">¶</a></h4>
+<p><em>GetRandomString</em> 的函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">GetRandomString</span><span class="p">(</span><span class="nx">length</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">string</span>
+</pre></div>
+</div>
+<p>此函数接受一个整型数据作为生成随机字符串的长度，并返回生成的随机字符串。随机字符串包含的字符可为数字或字母（区分大小写）。若传入参数小于 0 则返回的字符串长度为 0。</p>
+</div>
+<div class="section" id="md5">
+<span id="app-api-md5"></span><h4>MD5<a class="headerlink" href="#md5" title="永久链接至标题">¶</a></h4>
+<p><em>MD5</em> 的函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">MD5</span><span class="p">(</span><span class="nx">text</span> <span class="kt">string</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span>
+</pre></div>
+</div>
+<p>此函数接受一个字符串并计算其 MD5 值，以 MD5 值的 16 进制形式返回，16 进制中的字母为大写。可以直接使用 <code class="docutils literal"><span class="pre">string</span></code> 强制转换此函数的返回值，此时即可得到字符串表示的 16 进制 MD5 值。</p>
+</div>
+<div class="section" id="calcmd5forreader">
+<span id="app-api-calcmd5forreader"></span><h4>CalcMD5ForReader<a class="headerlink" href="#calcmd5forreader" title="永久链接至标题">¶</a></h4>
+<p><em>CalcMD5ForReader</em> 的函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">CalcMD5ForReader</span><span class="p">(</span><span class="nx">reader</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Reader</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span>
+</pre></div>
+</div>
+<p>此函数接受一个可读结构作为参数，对其包含的全部数据分块计算 MD5 值。分块方法可参考 <a class="reference internal" href="app-protocal.html#app-protocal-md5"><span class="std std-ref">MD5 计算</span></a> 。函数返回值与 <a class="reference internal" href="#app-api-md5"><span class="std std-ref">MD5</span></a> 返回值类型相同。</p>
+</div>
+<div class="section" id="ismd5">
+<span id="app-api-ismd5"></span><h4>IsMD5<a class="headerlink" href="#ismd5" title="永久链接至标题">¶</a></h4>
+<p><em>IsMD5</em> 的函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">IsMD5</span><span class="p">(</span><span class="nx">text</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+<p>此函数接受一个字符串作为参数，检查其是否符合大写的 16 进制 32 位 MD5 格式，若符合则返回 <code class="docutils literal"><span class="pre">True</span></code> ，否则返回 <code class="docutils literal"><span class="pre">False</span></code> 。</p>
+</div>
+<div class="section" id="generatetoken">
+<span id="app-api-generatetoken"></span><h4>GenerateToken<a class="headerlink" href="#generatetoken" title="永久链接至标题">¶</a></h4>
+<p><em>GenerateToken</em> 的函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">GenerateToken</span><span class="p">(</span><span class="nx">level</span> <span class="kt">uint8</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span>
+</pre></div>
+</div>
+<p>此函数接受一个 <code class="docutils literal"><span class="pre">uint8</span></code> 类型作为参数，按 <a class="reference internal" href="app-config.html#app-config-detailed"><span class="std std-ref">样例文件详细解释</span></a> 中介绍的 <code class="docutils literal"><span class="pre">TEST_SAFELEVEL</span></code> 项生成对应长度的 token 。大于 3 和小于 1 的参数均会被规整到 1 ～ 3。参数为 1 时返回 16 字节长度的 token，参数为 2 时返回 24 字节长度的 token，参数为 3 时返回 32 字节长度的 token。</p>
+</div>
+</div>
+</div>
+<div class="section" id="user">
+<span id="app-api-cuser"></span><h2>User 接口<a class="headerlink" href="#user" title="永久链接至标题">¶</a></h2>
+<p><em>User</em> 是针对 <em>cuser</em> 类设计的接口，其定义如下：</p>
+<div class="section" id="newcuser">
+<span id="app-api-cuser-factory"></span><h3>NewCUser<a class="headerlink" href="#newcuser" title="永久链接至标题">¶</a></h3>
+<p><em>NewCUser</em> 是 <em>cuser</em> 类的工厂方法，其声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">NewCUser</span><span class="p">(</span><span class="nx">username</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">uid</span> <span class="kt">int64</span><span class="p">,</span> <span class="nx">curpath</span> <span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="nx">cuser</span>
+</pre></div>
+</div>
+<p>你需要传入新建用户的用户名、用户编号以及用户当前路径（此参数传入 <code class="docutils literal"><span class="pre">/</span></code> 即可，在顶点云的默认配置中，此参数未启用）。例如：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">u</span> <span class="o">:=</span> <span class="nx">NewCUser</span><span class="p">(</span><span class="s">&quot;Forec&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;/&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>公有方法<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h3>
+<p>这里只介绍除元素获取和设置的其他方法。</p>
+<div class="section" id="setlistener">
+<span id="app-api-setlistener"></span><h4>SetListener<a class="headerlink" href="#setlistener" title="永久链接至标题">¶</a></h4>
+<p><em>SetListener</em> 用于为用户设置交互式传输器，通常在服务器认证首次登录用户时使用，返回值为 <code class="docutils literal"><span class="pre">True</span></code> 。该函数位于文件 <code class="docutils literal"><span class="pre">cstruct/cuser.go</span></code> 中，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">SetListener</span><span class="p">(</span><span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setinfos">
+<span id="app-api-setinfos"></span><h4>SetInfos<a class="headerlink" href="#setinfos" title="永久链接至标题">¶</a></h4>
+<p><em>SetInfos</em> 用于为用户设置被动监听传输器，在用户第一个长数据流连接到来时调用，返回值为 <code class="docutils literal"><span class="pre">True</span></code> 。该函数位于文件 <code class="docutils literal"><span class="pre">cstruct/cuser.go</span></code> 中，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">SetInfos</span><span class="p">(</span><span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="addtransmit">
+<span id="app-api-addtransmit"></span><h4>AddTransmit<a class="headerlink" href="#addtransmit" title="永久链接至标题">¶</a></h4>
+<p><em>AddTransmit</em> 用于向用户活动工作池中添加一个新的传输器，添加成功则返回 <code class="docutils literal"><span class="pre">True</span></code> ，若工作池中的活动连接数目已经达到了 <code class="docutils literal"><span class="pre">MAXTRANSMITTER</span></code> 则返回 <code class="docutils literal"><span class="pre">False</span></code> 。该函数位于文件 <code class="docutils literal"><span class="pre">cstruct/cuser.go</span></code> 中，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">AddTransmit</span><span class="p">(</span><span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="removetransmit">
+<span id="app-api-removetransmit"></span><h4>RemoveTransmit<a class="headerlink" href="#removetransmit" title="永久链接至标题">¶</a></h4>
+<p><em>RemoveTransmit</em> 用于从用户活动工作池中移除一个指定的传输器，通常在用户活动连接工作执行完成后由用户代理调用，若未找到指定的传输器返回 <code class="docutils literal"><span class="pre">False</span></code> ，否则返回 <code class="docutils literal"><span class="pre">True</span></code> 。该函数位于文件 <code class="docutils literal"><span class="pre">cstruct/cuser.go</span></code> 中，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">RemoveTransmit</span><span class="p">(</span><span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="logout">
+<span id="app-api-logout"></span><h4>Logout<a class="headerlink" href="#logout" title="永久链接至标题">¶</a></h4>
+<p><em>Logout</em> 用于登出当前用户，销毁当前用户在内存中的记录，销毁交互式传输器以及其他任何属于该用户的活动/非活动的传输器。该函数位于文件 <code class="docutils literal"><span class="pre">cstruct/cuser.go</span></code> 中，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">Logout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dealwithrequests">
+<span id="app-api-dealwithrequests"></span><h4>DealWithRequests<a class="headerlink" href="#dealwithrequests" title="永久链接至标题">¶</a></h4>
+<p><em>DealWithRequests</em> 函数负责索引并转交远程用户发送的交互式命令，将交互式命令转发给各对应执行函数。在用户在线期间，该函数始终存活，在 <em>DealWithRequests</em> 函数结束后，服务器将自动执行用户登出操作。传入参数为服务器维护的数据库句柄。该函数位于文件 <code class="docutils literal"><span class="pre">cstruct/cuser_operations.go</span></code> 中，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">DealWithRequests</span><span class="p">(</span><span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dealwithtransmission">
+<span id="app-api-dealwithtransmission"></span><h4>DealWithTransmission<a class="headerlink" href="#dealwithtransmission" title="永久链接至标题">¶</a></h4>
+<p><em>DealWithTransmission</em> 函数负责索引并转交远程用户发送的文件传输命令，将文件传输命令转发给各对应执行函数。在某个传输执行期间，该函数始终存活。在 <em>DealWithTransmission</em> 函数结束后，用户代理会自动移除作为函数参数的传输器。传入参数为服务器维护的数据库句柄和本次传输使用的 <a class="reference internal" href="#app-api-transmitter"><span class="std std-ref">传输器</span></a> 。该函数位于文件 <code class="docutils literal"><span class="pre">cstruct/cuser_transmissions.go</span></code> 中，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">DealWithTransmission</span><span class="p">(</span><span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="app-api-transmitter">
+<span id="id3"></span><h2>传输器<a class="headerlink" href="#app-api-transmitter" title="永久链接至标题">¶</a></h2>
+<p>此部分详细介绍 <a class="reference internal" href="app-models.html#app-models-transmitter"><span class="std std-ref">传输器</span></a> 提供方法的使用方式。传输器无法直接使用结构生成，只可以通过工厂方法 <a class="reference internal" href="#app-api-transmitter-factory"><span class="std std-ref">NewTransmitter</span></a> 生成。传输器提供了一个对外的公有接口 <a class="reference internal" href="#app-api-transmitable"><span class="std std-ref">Transmitable</span></a> 。</p>
+<div class="section" id="transmitable">
+<span id="app-api-transmitable"></span><h3>Transmitable<a class="headerlink" href="#transmitable" title="永久链接至标题">¶</a></h3>
+<p><em>Transmitable</em> 是 <a class="reference internal" href="app-models.html#app-models-transmitter"><span class="std std-ref">传输器</span></a> 的公共接口，其定义如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">type</span> <span class="nx">Transmitable</span> <span class="kd">interface</span> <span class="p">{</span>
+        <span class="nx">GetConn</span><span class="p">()</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span>                        <span class="c1">// 获取 Socket 连接</span>
+        <span class="nx">GetBuf</span><span class="p">()</span> <span class="p">[]</span><span class="kt">byte</span>                           <span class="c1">// 获取缓冲区指针</span>
+        <span class="nx">GetBuflen</span><span class="p">()</span> <span class="kt">int64</span>                         <span class="c1">// 获取缓冲区长度</span>
+        <span class="nx">GetBlock</span><span class="p">()</span> <span class="nx">cipher</span><span class="p">.</span><span class="nx">Block</span>                   <span class="c1">// 获取加密模块</span>
+        <span class="nx">SetBuflen</span><span class="p">(</span><span class="kt">int64</span><span class="p">)</span> <span class="kt">bool</span>                     <span class="c1">// 设置缓冲区长度</span>
+        <span class="nx">SendBytes</span><span class="p">([]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">bool</span>                    <span class="c1">// 按协议格式发送字节流，可维持边界</span>
+        <span class="nx">SendFromReader</span><span class="p">(</span><span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span> <span class="kt">int64</span><span class="p">)</span> <span class="kt">bool</span> <span class="c1">// 从可读结构发送字节流</span>
+        <span class="nx">RecvUntil</span><span class="p">(</span><span class="kt">int64</span><span class="p">,</span> <span class="kt">int64</span><span class="p">,</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="p">(</span><span class="kt">int64</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+        <span class="c1">// 接收数据直到达到设定数量</span>
+        <span class="nx">RecvBytes</span><span class="p">()</span> <span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>      <span class="c1">// 按协议格式接收字节流，维持边界</span>
+        <span class="nx">RecvToWriter</span><span class="p">(</span><span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">bool</span> <span class="c1">// 按协议格式接收字节流并写入可写结构</span>
+        <span class="nx">Destroy</span><span class="p">()</span>                        <span class="c1">// 销毁此传输接口</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="newtransmitter">
+<span id="app-api-transmitter-factory"></span><h3>NewTransmitter<a class="headerlink" href="#newtransmitter" title="永久链接至标题">¶</a></h3>
+<p><em>NewTransmitter</em> 是 <a class="reference internal" href="app-models.html#app-models-transmitter"><span class="std std-ref">传输器</span></a> 的工厂方法，其函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">NewTransmitter</span><span class="p">(</span><span class="nx">tconn</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="nx">tbuflen</span> <span class="kt">int64</span><span class="p">,</span> <span class="nx">token</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="o">*</span><span class="nx">transmitter</span>
+</pre></div>
+</div>
+<p>你需要传入一个 Socket 连接、传输器使用的缓冲区大小以及此传输器加密模块使用的密钥来生成一个新的传输器。例如，当前用户新加入一个连接 <code class="docutils literal"><span class="pre">conn`</span> <span class="pre">，需要使用</span> <span class="pre">1024</span> <span class="pre">字节缓冲区，密钥使用</span> <span class="pre">``12345678901234567890123456789012</span></code> ，则通过以下代码创建传输器：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">t</span> <span class="o">:=</span> <span class="nx">NewTransmitter</span><span class="p">(</span><span class="nx">conn</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="s">&quot;12345678901234567890123456789012&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>公有方法<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h3>
+<p>传输器模块是整个顶点云最核心的模块之一，它提供了如下几个非常重要的公有方法：</p>
+<ul class="simple">
+<li><em>GetConn</em> ：获取传输器封装的 Socket 连接</li>
+<li><em>GetBuf</em> ：获取传输器内部的缓冲区指针</li>
+<li><em>GetBuflen</em> ：获取传输器内部的缓冲区长度</li>
+<li><em>GetBlock</em> ：获取传输器内部的加密模块</li>
+<li><em>SetBuflen</em> ：设置传输器使用的缓冲区长度</li>
+<li><em>SendBytes</em> ：使用此传输器按协议格式发送字节流，可维持边界</li>
+<li><em>SendFromReader</em> ：使用此传输器从可读结构发送字节流</li>
+<li><em>RecvUntil</em> ：使用此传输器接收数据直到达到设定数量</li>
+<li><em>RecvBytes</em> ：使用此传输器按协议格式接收字节流，维持边界</li>
+<li><em>RecvToWriter</em> ：使用此传输器按协议格式接收字节流并写入可写结构</li>
+<li><em>Destroy</em> ：销毁此传输器</li>
+</ul>
+<p>下面主要介绍 <em>SendBytes</em> 、 <em>SendFromReader</em> 、 <em>RecvUntil</em> 、 <em>RecvBytes</em> 、 <em>RecvToWriter</em> 以及 <em>Destroy</em> 方法。</p>
+<p>在阅读之前，请确保您了解传输器的基本原理，否则请先阅读 <a class="reference internal" href="app-protocal.html#app-protocal-transmitter"><span class="std std-ref">传输器设计</span></a> 。</p>
+<div class="section" id="sendbytes">
+<span id="app-api-sendbytes"></span><h4>SendBytes<a class="headerlink" href="#sendbytes" title="永久链接至标题">¶</a></h4>
+<p><em>SendBytes</em> 函数发送一串字节流交与远程传输器，其声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">transmitter</span><span class="p">)</span> <span class="nx">SendBytes</span><span class="p">(</span><span class="nx">toSend</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+<p>发送成功时此函数返回 <code class="docutils literal"><span class="pre">True</span></code> ，在发送过程中出现任何异常均会返回 <code class="docutils literal"><span class="pre">False</span></code> 。因为 AES CFB 算法加密后生成的密文长度较明文长度更长，但通常在明文长度的 2 倍以下。因此 <em>SendBytes</em> 函数在发送过程中会拆分待发送的字节数组，保证发出的每个包内的明文长度不超过传输器缓冲区的 1/3，因此加密后的长度不会超过缓冲区长度。</p>
+</div>
+<div class="section" id="sendfromreader">
+<span id="app-api-sendfromreader"></span><h4>SendFromReader<a class="headerlink" href="#sendfromreader" title="永久链接至标题">¶</a></h4>
+<p><em>SendFromReader</em> 函数从一个可读结构中读取指定长度的数据交与远程传输器，其声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">transmitter</span><span class="p">)</span> <span class="nx">SendFromReader</span><span class="p">(</span><span class="nx">reader</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span> <span class="nx">totalLength</span> <span class="kt">int64</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+<p>此函数接受两个参数，第一个为可读结构，传输器从此参数中读取数据；第二个为待发送数据的长度。发送成功时此函数返回 <code class="docutils literal"><span class="pre">True</span></code> ，在发送过程中出现任何异常均会返回 <code class="docutils literal"><span class="pre">False</span></code> 。此函数发送方式与 <em>SendBytes</em> 类似，但若可读结构中的数据长度少于指定的数据长度（传入的第二个参数），则此函数将返回 <code class="docutils literal"><span class="pre">False</span></code> ，否则只读到指定长度位置便停止发送并返回。</p>
+</div>
+<div class="section" id="recvuntil">
+<span id="app-api-recvuntil"></span><h4>RecvUntil<a class="headerlink" href="#recvuntil" title="永久链接至标题">¶</a></h4>
+<p><em>RecvBytes</em> 函数从远程传输器接收满指定长度的数据，其声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">transmitter</span><span class="p">)</span> <span class="nx">RecvUntil</span><span class="p">(</span><span class="nx">until</span> <span class="kt">int64</span><span class="p">,</span> <span class="nx">init</span> <span class="kt">int64</span><span class="p">,</span> <span class="nx">chR</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="p">(</span><span class="kt">int64</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>此函数传入参数较多，下面详细介绍各个参数含义：</p>
+<ul class="simple">
+<li><em>until</em> ：缓冲区中接收到的数据长度超过（含） <em>until</em> 时退出此函数</li>
+<li><em>init</em> ：缓冲区当前已经接收到的数据长度</li>
+<li><em>chR</em> ：接收速率</li>
+</ul>
+<p>此函数返回值包含一个 <code class="docutils literal"><span class="pre">Int64</span></code> 类型数据和可能出现的错误。若接收成功则返回值的 <code class="docutils literal"><span class="pre">Int64</span></code> 数据表示当前传输器缓冲区中存储的数据长度，否则返回值中包含错误。如果远程传输器迟迟没有发送数据，此函数会阻塞。</p>
+<p>此函数通常在 <a class="reference internal" href="#app-api-recvbytes"><span class="std std-ref">RecvBytes</span></a> 和 <a class="reference internal" href="#app-api-recvtowriter"><span class="std std-ref">RecvToWriter</span></a> 中调用，用于分别接收包头以及每个包体。如果你对此函数的意义不是很了解，请查阅 <a class="reference internal" href="app-protocal.html#app-protocal-transmitter"><span class="std std-ref">传输器设计</span></a> 。</p>
+</div>
+<div class="section" id="recvbytes">
+<span id="app-api-recvbytes"></span><h4>RecvBytes<a class="headerlink" href="#recvbytes" title="永久链接至标题">¶</a></h4>
+<p><em>RecvBytes</em> 函数从远程传输器接收符合一个消息边界的字节流，其声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">transmitter</span><span class="p">)</span> <span class="nx">RecvBytes</span><span class="p">()</span> <span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>接收成功时此函数返回接收到的字节数组和 <code class="docutils literal"><span class="pre">nil</span></code> ，若在发送过程中出现任何异常，则返回值中将包含错误 。</p>
+</div>
+<div class="section" id="recvtowriter">
+<span id="app-api-recvtowriter"></span><h4>RecvToWriter<a class="headerlink" href="#recvtowriter" title="永久链接至标题">¶</a></h4>
+<p><em>RecvToWriter</em> 函数从远程传输器接收一定长度的数据并写入一个可读结构，其函数声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">transmitter</span><span class="p">)</span> <span class="nx">RecvToWriter</span><span class="p">(</span><span class="nx">writer</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">bool</span>
+</pre></div>
+</div>
+<p>此函数接受两个参数，第一个为可读结构，传输器从此参数中读取数据；第二个为待发送数据的长度。发送成功时此函数返回 <code class="docutils literal"><span class="pre">True</span></code> ，在发送过程中出现任何异常均会返回 <code class="docutils literal"><span class="pre">False</span></code> 。此函数发送方式与 <em>SendBytes</em> 类似，但若可读结构中的数据长度少于指定的数据长度（传入的第二个参数），则此函数将返回 <code class="docutils literal"><span class="pre">False</span></code> ，否则只读到指定长度位置便停止发送并返回。</p>
+</div>
+</div>
+</div>
+<div class="section" id="app-api-server">
+<span id="id5"></span><h2>服务器类<a class="headerlink" href="#app-api-server" title="永久链接至标题">¶</a></h2>
+<p>此部分详细介绍 <em>server</em> 类方法的使用方式。</p>
+</div>
 </div>
 
 
@@ -53,9 +356,75 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
-  <img class="logo" src="_static/zenith.png" alt="Logo"/>
-</a></p><div class="relations">
+        <div class="sphinxsidebarwrapper"><p style="text-align:left;margin:5px 10px 5px 10px"><a href="index.html">
+  <img style="text-align:center;width:105px" src="_static/zenith.png" alt="Logo"/>
+</a></p>
+
+<p>
+  <a href="index.html">回到主页</a>
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">应用程序 API 文档</a><ul>
+<li><a class="reference internal" href="#app-api-cipher">数字处理模块</a><ul>
+<li><a class="reference internal" href="#aes-cfb">AES CFB 模块</a><ul>
+<li><a class="reference internal" href="#newaesblock">NewAesBlock</a></li>
+<li><a class="reference internal" href="#aesencode">AesEncode</a></li>
+<li><a class="reference internal" href="#aesdecode">AesDecode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#base64">Base64 模块</a><ul>
+<li><a class="reference internal" href="#base64encode">Base64Encode</a></li>
+<li><a class="reference internal" href="#base64decode">Base64Decode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#int64">Int64 与字节转化</a><ul>
+<li><a class="reference internal" href="#int64tobytes">Int64ToBytes</a></li>
+<li><a class="reference internal" href="#bytestoint64">BytesToInt64</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#md5-token">MD5 和 token</a><ul>
+<li><a class="reference internal" href="#getrandomstring">GetRandomString</a></li>
+<li><a class="reference internal" href="#md5">MD5</a></li>
+<li><a class="reference internal" href="#calcmd5forreader">CalcMD5ForReader</a></li>
+<li><a class="reference internal" href="#ismd5">IsMD5</a></li>
+<li><a class="reference internal" href="#generatetoken">GenerateToken</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#user">User 接口</a><ul>
+<li><a class="reference internal" href="#newcuser">NewCUser</a></li>
+<li><a class="reference internal" href="#id2">公有方法</a><ul>
+<li><a class="reference internal" href="#setlistener">SetListener</a></li>
+<li><a class="reference internal" href="#setinfos">SetInfos</a></li>
+<li><a class="reference internal" href="#addtransmit">AddTransmit</a></li>
+<li><a class="reference internal" href="#removetransmit">RemoveTransmit</a></li>
+<li><a class="reference internal" href="#logout">Logout</a></li>
+<li><a class="reference internal" href="#dealwithrequests">DealWithRequests</a></li>
+<li><a class="reference internal" href="#dealwithtransmission">DealWithTransmission</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#app-api-transmitter">传输器</a><ul>
+<li><a class="reference internal" href="#transmitable">Transmitable</a></li>
+<li><a class="reference internal" href="#newtransmitter">NewTransmitter</a></li>
+<li><a class="reference internal" href="#id4">公有方法</a><ul>
+<li><a class="reference internal" href="#sendbytes">SendBytes</a></li>
+<li><a class="reference internal" href="#sendfromreader">SendFromReader</a></li>
+<li><a class="reference internal" href="#recvuntil">RecvUntil</a></li>
+<li><a class="reference internal" href="#recvbytes">RecvBytes</a></li>
+<li><a class="reference internal" href="#recvtowriter">RecvToWriter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#app-api-server">服务器类</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>

@@ -27,8 +27,8 @@
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
-    <link rel="next" title="传输测试" href="app-test.html" />
-    <link rel="prev" title="框架分析" href="app-structual.html" />
+    <link rel="next" title="协议设计" href="app-protocal.html" />
+    <link rel="prev" title="快速上手" href="app-quickstart.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -46,6 +46,376 @@
             
   <div class="section" id="app-models">
 <span id="id1"></span><h1>模型介绍<a class="headerlink" href="#app-models" title="永久链接至标题">¶</a></h1>
+<p>此部分文档主要介绍顶点云应用程序服务器使用的数据库格式和模型。</p>
+<div class="section" id="app-models-database">
+<span id="id2"></span><h2>数据库<a class="headerlink" href="#app-models-database" title="永久链接至标题">¶</a></h2>
+<p>顶点云默认配置使用 SQLITE ，您可以修改配置文件以选择适合您机器的数据库。顶点云的源码目录中提供了一个默认的 <code class="docutils literal"><span class="pre">work.db</span></code> 数据库文件，如果您选择使用默认配置，该文件足以满足您的需求。</p>
+<p>顶点云的数据库包含 5 张表：</p>
+<ul class="simple">
+<li><em>cuser</em> ：用户模型表</li>
+<li><em>ufile</em> ：用户资源记录表</li>
+<li><em>cfile</em> ：服务器存储实体文件记录表</li>
+<li><em>cmessages</em> ：用户聊天消息记录表</li>
+<li><em>coperations</em> ：用户操作记录表，此表默认未使用，仅作扩充用</li>
+</ul>
+<div class="section" id="cuser">
+<span id="app-models-database-cuser"></span><h3>表 cuser<a class="headerlink" href="#cuser" title="永久链接至标题">¶</a></h3>
+<p>此表用于存储用户信息，表格式如下：</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="14%" />
+<col width="16%" />
+<col width="15%" />
+<col width="12%" />
+<col width="14%" />
+<col width="14%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>uid</td>
+<td>email</td>
+<td>password_hash</td>
+<td>created</td>
+<td>confirmed</td>
+<td>nickname</td>
+<td>avatar_hash</td>
+</tr>
+<tr class="row-even"><td>INTEGER
+PRIMARY
+KEY
+AUTOINCREMENT</td>
+<td>VARCHAR(64)</td>
+<td>VARCHAR(32)</td>
+<td>DATE</td>
+<td>BOOLEAN</td>
+<td>VARCHAR(64)</td>
+<td>VARCHAR(32)</td>
+</tr>
+<tr class="row-odd"><td>用户编号</td>
+<td>用户邮箱</td>
+<td>用户密钥 md5</td>
+<td>用户创建日期</td>
+<td>是否激活</td>
+<td>用户昵称</td>
+<td>头像链接</td>
+</tr>
+<tr class="row-even"><td>about_me</td>
+<td>last_seen</td>
+<td>member_since</td>
+<td>score</td>
+<td>role_id</td>
+<td>used</td>
+<td>maxm</td>
+</tr>
+<tr class="row-odd"><td>VARCHAR(256)</td>
+<td>DATE</td>
+<td>DATE</td>
+<td>INTEGER</td>
+<td>INTEGER</td>
+<td>INTEGER</td>
+<td>INTEGER</td>
+</tr>
+<tr class="row-even"><td>用户介绍</td>
+<td>上次登录日期</td>
+<td>用户注册时间</td>
+<td>用户积分</td>
+<td>用户角色</td>
+<td>已使用容量</td>
+<td>帐号最大容量</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ufile">
+<span id="app-models-database-ufile"></span><h3>表 ufile<a class="headerlink" href="#ufile" title="永久链接至标题">¶</a></h3>
+<p>此表用于存储用户资源信息，表格式如下：</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="15%" />
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="12%" />
+<col width="12%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>uid</td>
+<td>ownerid</td>
+<td>cfileid</td>
+<td>path</td>
+<td>perlink</td>
+<td>created</td>
+<td>shared</td>
+</tr>
+<tr class="row-even"><td>INTEGER
+PRIMARY
+KEY
+AUTOINCREMENT</td>
+<td>INTEGER</td>
+<td>INTEGER</td>
+<td>VARCHAR(256)</td>
+<td>VARCHAR(128)</td>
+<td>DATE</td>
+<td>INTEGER</td>
+</tr>
+<tr class="row-odd"><td>资源编号</td>
+<td>资源所有者编号</td>
+<td>引用实体文件编号</td>
+<td>资源路径</td>
+<td>资源外链</td>
+<td>创建时间</td>
+<td>资源分享数</td>
+</tr>
+<tr class="row-even"><td>downloaded</td>
+<td>filename</td>
+<td>private</td>
+<td>linkpass</td>
+<td>isdir</td>
+<td colspan="2">description</td>
+</tr>
+<tr class="row-odd"><td>INTEGER</td>
+<td>VARCHAR(128)</td>
+<td>BOOLEAN</td>
+<td>VARCHAR(4)</td>
+<td>BOOLEAN</td>
+<td colspan="2">VARCHAR(256)</td>
+</tr>
+<tr class="row-even"><td>资源下载数量</td>
+<td>资源名称</td>
+<td>资源是否为私有</td>
+<td>文件提取码</td>
+<td>是否为目录</td>
+<td colspan="2">资源描述</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="cfile">
+<span id="app-models-database-cfile"></span><h3>表 cfile<a class="headerlink" href="#cfile" title="永久链接至标题">¶</a></h3>
+<p>此表用于存储服务器上实体文件记录，表格式如下：</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="20%" />
+<col width="23%" />
+<col width="18%" />
+<col width="18%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>uid</td>
+<td>md5</td>
+<td>size</td>
+<td>ref</td>
+<td>created</td>
+</tr>
+<tr class="row-even"><td>INTEGER
+PRIMARY
+KEY
+AUTOINCREMENT</td>
+<td>VARCHAR(32)</td>
+<td>INTEGER</td>
+<td>INTEGER</td>
+<td>DATE</td>
+</tr>
+<tr class="row-odd"><td>实体文件编号</td>
+<td>文件的 md5 值</td>
+<td>文件大小</td>
+<td>文件被引用数量</td>
+<td>创建时间</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="cmessage">
+<span id="app-models-database-cmessages"></span><h3>表 cmessage<a class="headerlink" href="#cmessage" title="永久链接至标题">¶</a></h3>
+<p>此表用于存储用户之间互相发送的消息记录，表格式如下：</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="20%" />
+<col width="22%" />
+<col width="21%" />
+<col width="17%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>mesid</td>
+<td>targetid</td>
+<td>sendid</td>
+<td>message</td>
+<td>created</td>
+</tr>
+<tr class="row-even"><td>INTEGER
+PRIMARY
+KEY
+AUTOINCREMENT</td>
+<td>INTEGER</td>
+<td>INTEGER</td>
+<td>VARCHAR(512)</td>
+<td>DATE</td>
+</tr>
+<tr class="row-odd"><td colspan="2">消息编号       | 消息接收者编号</td>
+<td>消息发送者编号</td>
+<td>消息内容</td>
+<td>创建时间</td>
+</tr>
+<tr class="row-even"><td>sended</td>
+<td>viewed</td>
+<td>send_delete</td>
+<td>recv_delete</td>
+<td rowspan="3">&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>BOOLEAN</td>
+<td>BOOLEAN</td>
+<td>BOOLEAN</td>
+<td>BOOLEAN</td>
+</tr>
+<tr class="row-even"><td>消息是否已发送</td>
+<td>接收者是否已读</td>
+<td>发送方是否已删除</td>
+<td>接收方是否已删除</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="coperations">
+<span id="app-models-database-coperations"></span><h3>表 coperations<a class="headerlink" href="#coperations" title="永久链接至标题">¶</a></h3>
+<p>此表用于存储用户删除操作记录。默认的顶点云未使用此表，该表仅在扩展提供找回用户已删除文件的功能时启用。表格式如下：</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="16%" />
+<col width="18%" />
+<col width="18%" />
+<col width="17%" />
+<col width="13%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>oprid</td>
+<td>deletedUFileId</td>
+<td>deletedUFileName</td>
+<td>deletedUFilePath</td>
+<td>relatedCFileId</td>
+<td>time</td>
+</tr>
+<tr class="row-even"><td>INTEGER
+PRIMARY
+KEY
+AUTOINCREMENT</td>
+<td>INTEGER</td>
+<td>VARCHAR(128)</td>
+<td>VARCHAR(256)</td>
+<td>INTEGER</td>
+<td>DATE</td>
+</tr>
+<tr class="row-odd"><td>操作记录编号</td>
+<td>删除资源编号</td>
+<td colspan="2">删除资源名称      | 删除资源路径</td>
+<td>引用实体文件编号</td>
+<td>操作时间</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="app-models-class">
+<span id="id3"></span><h2>内置自定义类<a class="headerlink" href="#app-models-class" title="永久链接至标题">¶</a></h2>
+<p>此部分文档主要介绍顶点云应用程序服务器封装的几个自定义类（虽然 Go 语言不是 OOP 语言，但其结构提和 OOP 中的类相似，因此此处用 <em>类</em> 代替 <em>结构</em> ），包括：</p>
+<ul class="simple">
+<li><em>server</em> ：服务器类</li>
+<li><em>client</em> ：测试客户端类</li>
+<li><em>cuser</em> ：用户代理类</li>
+<li><em>ufile</em> ：资源类（自定义资源结构，默认使用数据库查询代替此类型，仅为拓展功能设计）</li>
+<li><em>cfile</em> ：文件实体类（自定义资源结构，默认使用数据库查询代替此类型，仅为拓展功能设计）</li>
+<li><em>transmitter</em> ：传输器</li>
+</ul>
+<p>下面将主要介绍 <em>server</em> 、 <em>cuser</em> 以及 <em>transmitter</em> 。</p>
+<div class="section" id="server">
+<span id="app-models-server"></span><h3>server<a class="headerlink" href="#server" title="永久链接至标题">¶</a></h3>
+<p><em>server</em> 封装了一个可执行的服务器实例类，结构元素定义如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">type</span> <span class="nx">Server</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">listener</span>      <span class="nx">net</span><span class="p">.</span><span class="nx">Listener</span> <span class="c1">// 请求监听线程</span>
+        <span class="nx">loginUserList</span> <span class="p">[]</span><span class="nx">cs</span><span class="p">.</span><span class="nx">User</span>    <span class="c1">// 已登陆用户列表</span>
+        <span class="nx">db</span>            <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span>      <span class="c1">// 数据库句柄</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>server</em> 类具有以下几个主要方法，API 的详细介绍请查看 <a class="reference internal" href="app-api.html#app-api-server"><span class="std std-ref">服务器类</span></a> ：</p>
+<ul class="simple">
+<li><em>InitDB</em> ：初始化数据库函数，在创建服务器实例后调用以修复不存在的表。</li>
+<li><em>CheckBroadCast</em> ：消息转发函数，此函数通常在一个独立的协程中执行，负责用户通讯。</li>
+<li><em>Run</em> ：启动函数，将服务器实例开放在指定 IP 地址和端口。</li>
+<li><em>Communicate</em> ：用户代理函数，每个在线用户均有一个对应的 <em>Communicate</em> 函数运行在独立协程中提供服务。</li>
+<li><em>Login</em> ：连接认证函数，负责新连接的认证和转发。</li>
+</ul>
+</div>
+<div class="section" id="app-models-cuser">
+<span id="id4"></span><h3>cuser<a class="headerlink" href="#app-models-cuser" title="永久链接至标题">¶</a></h3>
+<p><em>cuser</em> 封装了用户代理类，每个 <em>cuser</em> 实例负责处理服务器转发的请求并按业务逻辑处理用户各类命令，同时也维护了用户的一部分资料。</p>
+<p><em>cuser</em> 类的结构元素定义如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">type</span> <span class="nx">cuser</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">id</span>          <span class="kt">int64</span>                <span class="c1">// 用户编号</span>
+        <span class="nx">used</span>        <span class="kt">int64</span>                <span class="c1">// 用户已使用的云盘容量</span>
+        <span class="nx">maxm</span>        <span class="kt">int64</span>                <span class="c1">// 用户可使用的最大云盘容量</span>
+        <span class="nx">listen</span>      <span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span>   <span class="c1">// 与客户端交互命令的连接</span>
+        <span class="nx">infos</span>       <span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span>   <span class="c1">// 向客户端推送消息的连接</span>
+        <span class="nx">username</span>    <span class="kt">string</span>               <span class="c1">// 用户邮箱</span>
+        <span class="nx">nickname</span>    <span class="kt">string</span>               <span class="c1">// 用户昵称</span>
+        <span class="nx">token</span>       <span class="kt">string</span>               <span class="c1">// 用户本次在线使用的 token</span>
+        <span class="nx">curpath</span>     <span class="kt">string</span>               <span class="c1">// 用户当前所在的虚拟路径</span>
+        <span class="nx">avatar_hash</span> <span class="kt">string</span>               <span class="c1">// 用户头像链接</span>
+        <span class="nx">pass_hash</span>   <span class="kt">string</span>               <span class="c1">// 用户密码哈希值</span>
+        <span class="nx">worklist</span>    <span class="p">[]</span><span class="nx">trans</span><span class="p">.</span><span class="nx">Transmitable</span> <span class="c1">// 用户当前活动连接池</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>cuser</em> 类只能通过工厂方法构造，其工厂方法为 <a class="reference internal" href="app-api.html#app-api-cuser-factory"><span class="std std-ref">NewCUser</span></a> ，其开放的接口为 <a class="reference internal" href="app-api.html#app-api-cuser"><span class="std std-ref">User 接口</span></a> 。</p>
+<p><em>cuser</em> 类具有如下几个主要方法，API 的详细介绍请查看 <a class="reference internal" href="app-api.html#app-api-cuser"><span class="std std-ref">User 接口</span></a> 。</p>
+<ul class="simple">
+<li><em>SetListener</em> ：设置用户命令交互线程</li>
+<li><em>SetInfos</em> ：设置用户被动监听线程</li>
+<li><em>AddTransmit</em> ：添加一个活动连接到工作池</li>
+<li><em>RemoveTransmit</em> ：移除当前用户某个活动连接</li>
+<li><em>DealWithRequests</em> ：处理用户命令交互请求</li>
+<li><em>DealWithTransmission</em> ：处理用户长数据流传输请求</li>
+<li><em>Logout</em> ：登出当前用户</li>
+</ul>
+</div>
+<div class="section" id="app-models-transmitter">
+<span id="id5"></span><h3>传输器<a class="headerlink" href="#app-models-transmitter" title="永久链接至标题">¶</a></h3>
+<p><em>transmitter</em> 封装了顶点云的传输过程，每个 <em>transmitter</em> 实例负责维护一个活动的 Socket 连接，并以顶点云的协议格式化消息、维持消息边界。</p>
+<p><em>transmitter</em> 类的结构元素定义如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">type</span> <span class="nx">transmitter</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">conn</span>    <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span>     <span class="c1">// Socket 连接</span>
+        <span class="nx">block</span>   <span class="nx">cipher</span><span class="p">.</span><span class="nx">Block</span> <span class="c1">// 加密模块</span>
+        <span class="nx">buf</span>     <span class="p">[]</span><span class="kt">byte</span>       <span class="c1">// 缓冲区指针</span>
+        <span class="nx">recvLen</span> <span class="kt">int64</span>        <span class="c1">// 当前缓冲区内缓存数据长度</span>
+        <span class="nx">buflen</span>  <span class="kt">int64</span>        <span class="c1">// 缓冲区总长度</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>transmitter</em> 类只能通过工厂方法构造，其工厂方法为 <a class="reference internal" href="app-api.html#app-api-transmitter-factory"><span class="std std-ref">NewTransmitter</span></a> ，其开放的接口为 <a class="reference internal" href="app-api.html#app-api-transmitable"><span class="std std-ref">Transmitable</span></a> 。</p>
+<p><em>transmitter</em> 类具有如下几个主要方法，API 的详细介绍请查看 <a class="reference internal" href="app-api.html#app-api-transmitter"><span class="std std-ref">传输器</span></a> 。</p>
+<ul class="simple">
+<li><em>GetConn</em> ：获取传输器封装的 Socket 连接</li>
+<li><em>GetBuf</em> ：获取传输器内部的缓冲区指针</li>
+<li><em>GetBuflen</em> ：获取传输器内部的缓冲区长度</li>
+<li><em>GetBlock</em> ：获取传输器内部的加密模块</li>
+<li><em>SetBuflen</em> ：设置传输器使用的缓冲区长度</li>
+<li><em>SendBytes</em> ：使用此传输器按协议格式发送字节流，可维持边界</li>
+<li><em>SendFromReader</em> ：使用此传输器从可读结构发送字节流</li>
+<li><em>RecvUntil</em> ：使用此传输器接收数据直到达到设定数量</li>
+<li><em>RecvBytes</em> ：使用此传输器按协议格式接收字节流，维持边界</li>
+<li><em>RecvToWriter</em> ：使用此传输器按协议格式接收字节流并写入可写结构</li>
+<li><em>Destroy</em> ：销毁此传输器</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h3>可扩展自定义类<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<p><em>ufile</em> 和 <em>cfile</em> 类可在扩展功能时使用，这两个类默认只提供了基本的元素设置、获取方法，以及相关的列表操作。如果您需要使用到这两个类，请在 <code class="docutils literal"><span class="pre">cstruct/ufile.go</span></code> 和 <code class="docutils literal"><span class="pre">cstruct/cfile.go</span></code> 中添加自定义方法。</p>
+<p>接下来请您阅读 <a class="reference internal" href="app-protocal.html#app-protocal"><span class="std std-ref">协议设计</span></a> 。</p>
+</div>
+</div>
 </div>
 
 
@@ -53,15 +423,41 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
-  <img class="logo" src="_static/zenith.png" alt="Logo"/>
-</a></p><div class="relations">
+        <div class="sphinxsidebarwrapper"><p style="text-align:left;margin:5px 10px 5px 10px"><a href="index.html">
+  <img style="text-align:center;width:105px" src="_static/zenith.png" alt="Logo"/>
+</a></p>
+
+<p>
+  <a href="index.html">回到主页</a>
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">模型介绍</a><ul>
+<li><a class="reference internal" href="#app-models-database">数据库</a><ul>
+<li><a class="reference internal" href="#cuser">表 cuser</a></li>
+<li><a class="reference internal" href="#ufile">表 ufile</a></li>
+<li><a class="reference internal" href="#cfile">表 cfile</a></li>
+<li><a class="reference internal" href="#cmessage">表 cmessage</a></li>
+<li><a class="reference internal" href="#coperations">表 coperations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#app-models-class">内置自定义类</a><ul>
+<li><a class="reference internal" href="#server">server</a></li>
+<li><a class="reference internal" href="#app-models-cuser">cuser</a></li>
+<li><a class="reference internal" href="#app-models-transmitter">传输器</a></li>
+<li><a class="reference internal" href="#id6">可扩展自定义类</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-app.html">顶点云应用程序服务器</a><ul>
-      <li>Previous: <a href="app-structual.html" title="上一章">框架分析</a></li>
-      <li>Next: <a href="app-test.html" title="下一章">传输测试</a></li>
+      <li>Previous: <a href="app-quickstart.html" title="上一章">快速上手</a></li>
+      <li>Next: <a href="app-protocal.html" title="下一章">协议设计</a></li>
   </ul></li>
   </ul></li>
 </ul>
