@@ -7,8 +7,11 @@ python:
  - 3.5.0
 go_import_path: ./app
 install: 
- - pip install -r web/requirements.txt
+ - mkdir venv
+ - python3 -m venv venv/
+ - source venv/bin/activate
+ - venv/bin/pip3 install -r web/requirements.txt
  - go get github.com/mattn/go-sqlite3
 script:
  - go run app/cloud/cloud.go &
- - python3 web/manage.py runserver &
+ - venv/bin/python3 web/manage.py runserver &
