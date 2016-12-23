@@ -48,4 +48,4 @@
 
 接下来请您阅读 :ref:`app-test` 。
 
-.. |uml| image:: _static/uml.png
+.. |uml| image:: _static/app-uml.png

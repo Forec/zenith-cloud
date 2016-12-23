@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Web 服务器设计要点 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>Web 服务器设计要点 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -28,7 +28,7 @@
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
     <link rel="next" title="顶点云 Web 服务器变动记录" href="web-log.html" />
-    <link rel="prev" title="视图函数说明" href="web-viewfunction.html" />
+    <link rel="prev" title="Web 服务器测试" href="web-test.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -46,6 +46,14 @@
             
   <div class="section" id="web">
 <span id="web-design"></span><h1>Web 服务器设计要点<a class="headerlink" href="#web" title="永久链接至标题">¶</a></h1>
+<p>顶点云 Web 服务器的设计主要复用了应用程序服务器的设计。</p>
+<p>我们建议，如果您想使用顶点云 Web 服务器的代码做一些自定义开发工作，最好能够维护如下几条准则，这是我们根据编写过程中遇到过的问题总结出的经验：</p>
+<ol class="arabic simple">
+<li>先设计蓝本，以及蓝本的职责，再决定蓝本提供的视图函数。</li>
+<li>视图函数应尽量避免重复代码，应尽量将共同的代码部分抽象，如使用一个表驱动函数池。在设计顶点云 Web 服务器时，我没有很好的组织代码，因此无论是应用程序服务器还是 Web 服务器，均出现了一处 bug 多处修改的困境。</li>
+<li>将需要根据环境改变的变量写入到配置文件中，如果是扩展功能的配置项，应创建新的子类并包含此项。用户可以选择多重继承来实现扩展功能的组合。</li>
+</ol>
+<p>感谢您的阅读！到这里顶点云的 Web 服务器文档就结束了，您可以阅读 <a class="reference internal" href="web-log.html#web-log"><span class="std std-ref">顶点云 Web 服务器变动记录</span></a> 以了解顶点云 Web 服务器开发过程的变动历史，或者阅读 <a class="reference internal" href="zenith-app.html#zenith-app"><span class="std std-ref">顶点云应用程序服务器</span></a> 以了解顶点云应用程序服务器的相关信息。</p>
 </div>
 
 
@@ -64,7 +72,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-web.html">顶点云 Web 服务器</a><ul>
-      <li>Previous: <a href="web-viewfunction.html" title="上一章">视图函数说明</a></li>
+      <li>Previous: <a href="web-test.html" title="上一章">Web 服务器测试</a></li>
       <li>Next: <a href="web-log.html" title="下一章">顶点云 Web 服务器变动记录</a></li>
   </ul></li>
   </ul></li>

@@ -46,7 +46,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = '顶点云 Web 服务器'
+project = '顶点云'
 copyright = '2016, Forec'
 author = 'Forec'
 
@@ -151,7 +151,7 @@ else:
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Web.tex', '顶点云 Web 服务器 Documentation',
+    (master_doc, 'Web.tex', '顶点云 开发者文档',
      'Forec', 'manual'),
 ]
 
@@ -161,7 +161,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'web', '顶点云 Web 服务器 Documentation',
+    (master_doc, 'web', '顶点云 开发者文档',
      [author], 1)
 ]
 
@@ -172,7 +172,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Web', '顶点云 Web 服务器 Documentation',
+    (master_doc, 'Web', '顶点云 开发者文档',
      author, 'Web', 'One line description of project.',
      'Miscellaneous'),
 ]

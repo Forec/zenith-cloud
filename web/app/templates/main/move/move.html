@@ -15,7 +15,7 @@
             </div>
 
             <div style="text-align:right">
-                {% if current_user.can(Permission.WRITE_ARTICLES) %}
+                {% if current_user.can(Permission.PUBLIC_FILES) %}
                     <a href="{{ url_for('main.move_check', token = current_user.generate_move_token(_file.uid, _path,expiration=3600), _external=True) }}">
                         <button type="button" class="btn btn-success">确认移动</button>
                     </a>

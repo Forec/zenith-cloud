@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>蓝本介绍 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>蓝本介绍 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
-    <link rel="next" title="Web 服务器测试" href="web-test.html" />
+    <link rel="next" title="模型介绍" href="web-models.html" />
     <link rel="prev" title="框架分析" href="web-structual.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -46,6 +46,60 @@
             
   <div class="section" id="web-blueprint">
 <span id="id1"></span><h1>蓝本介绍<a class="headerlink" href="#web-blueprint" title="永久链接至标题">¶</a></h1>
+<p>此部分文档主要介绍顶点云 Web 服务器中的两个蓝本： <cite>main</cite> 以及 <cite>auth</cite> ，以及如何创建新的自定义蓝本。</p>
+<div class="section" id="auth">
+<span id="web-blueprint-auth"></span><h2>Auth 蓝本<a class="headerlink" href="#auth" title="永久链接至标题">¶</a></h2>
+<p>此蓝本主要用于授权用户，如注册、登录、重置密码等。蓝本位于 <cite>web/app/auth</cite> 目录下，结构为：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>- auth
+  - __init__.py
+  - forms.py
+  - views.py
+</pre></div>
+</div>
+<p>上面三个文件中， <cite>__init__.py</cite> 用于初始化蓝本 Auth，<cite>forms.py</cite> 定义了 Auth 蓝本视图函数需要使用的表单类，<cite>views.py</cite> 具体处理转发给 Auth 蓝本的请求。</p>
+<p>下面简单介绍 <cite>forms.py</cite> 中提供的表单，对于 <cite>views.py</cite> 中的视图函数，请查阅 <a class="reference internal" href="web-viewfunction.html#web-viewfunction-auth"><span class="std std-ref">Auth 蓝本视图函数</span></a> 。</p>
+<p><cite>forms.py</cite> 提供了如下表单：</p>
+<ul class="simple">
+<li><cite>LoginForm</cite> ：用户登录界面填写的表单</li>
+<li><cite>RegistrationForm</cite> ：用户注册界面填写的表单，顶点云默认关闭了注册接口，你需要参考 <a class="reference internal" href="web-quickstart.html#web-quickstart-expand"><span class="std std-ref">扩展自定义功能</span></a> 来开启此接口</li>
+<li><cite>ChangePasswordForm</cite> ：用户修改密码时填写的表单</li>
+<li><cite>ChangeEmailForm</cite> ：用户修改邮箱时填写的表单</li>
+<li><cite>PasswordResetForm</cite> ：用户重置密码时填写的表单</li>
+<li><cite>PasswordResetRequestForm</cite> ：用户申请重置密码时填写的表单</li>
+</ul>
+</div>
+<div class="section" id="main">
+<span id="web-blueprint-main"></span><h2>Main 蓝本<a class="headerlink" href="#main" title="永久链接至标题">¶</a></h2>
+<p>此蓝本主要用于处理用户服务请求。蓝本位于 <cite>web/app/main</cite> 目录下，结构为：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>- main
+  - __init__.py
+  - forms.py
+  - views.py
+  - errors.py
+</pre></div>
+</div>
+<p>上面三个文件中， <cite>__init__.py</cite> 用于初始化蓝本 Main，<cite>forms.py</cite> 定义了 Main 蓝本视图函数需要使用的表单类，<cite>views.py</cite> 具体处理转发给 Main 蓝本的请求，<cite>errors.py</cite> 处理用户遇到的错误并使用服务器模板渲染错误界面。</p>
+<p>下面简单介绍 <cite>forms.py</cite> 中提供的表单，对于 <cite>views.py</cite> 中的视图函数，请查阅 <a class="reference internal" href="web-viewfunction.html#web-viewfunction-main"><span class="std std-ref">Main 蓝本视图函数</span></a> 。</p>
+<p><cite>forms.py</cite> 提供了如下表单：</p>
+<ul class="simple">
+<li><cite>EditProfileForm</cite> ：用户编辑个人资料界面填写的表单</li>
+<li><cite>EditProfileAdminForm</cite> ：管理员编辑其他用户个人资料界面填写的表单</li>
+<li><cite>UploadForm</cite> ：用户上传文件时填写的表单</li>
+<li><cite>CommentForm</cite> ：用户评论文件时填写的表单</li>
+<li><cite>SearchForm</cite> ：用户搜索文件时填写的表单</li>
+<li><cite>FileDeleteConfirmForm</cite> ：用户确认删除文件时填写的表单</li>
+<li><cite>ChatForm</cite> ：用户聊天界面的对话框</li>
+<li><cite>SetShareForm</cite> ：用户设置文件共享和提取码时填写的表单</li>
+<li><cite>ConfirmShareForm</cite> ：用户对其他用户的共享文件执行 Fork、下载等操作前填写提取码的表单</li>
+<li><cite>NewFolderForm</cite> ：用户创建新文件夹时填写的表单</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2>自定义蓝本<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>关于蓝本的概念不属于本文档讨论范围，如果您尚不了解，可以参考 <a class="reference external" href="http://flask.pocoo.org/docs/0.12/search/?q=blueprint">Flask 文档中关于蓝本的部分</a> 。</p>
+<p>对于顶点云，如果您需要添加自定义蓝本，请在目录 <cite>web/app</cite> 下创建新的蓝本目录并添加您的自定义路由。</p>
+<p>接下来请您阅读 <a class="reference internal" href="web-models.html#web-models"><span class="std std-ref">模型介绍</span></a> 。</p>
+</div>
 </div>
 
 
@@ -59,13 +113,23 @@
 
 <p>
   <a href="index.html">回到主页</a>
-</p><div class="relations">
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">蓝本介绍</a><ul>
+<li><a class="reference internal" href="#auth">Auth 蓝本</a></li>
+<li><a class="reference internal" href="#main">Main 蓝本</a></li>
+<li><a class="reference internal" href="#id2">自定义蓝本</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-web.html">顶点云 Web 服务器</a><ul>
       <li>Previous: <a href="web-structual.html" title="上一章">框架分析</a></li>
-      <li>Next: <a href="web-test.html" title="下一章">Web 服务器测试</a></li>
+      <li>Next: <a href="web-models.html" title="下一章">模型介绍</a></li>
   </ul></li>
   </ul></li>
 </ul>

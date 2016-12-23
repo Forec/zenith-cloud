@@ -21,7 +21,7 @@
             </div>
 
             <div style="text-align:right">
-                {% if current_user.can(Permission.WRITE_ARTICLES) %}
+                {% if current_user.can(Permission.PUBLIC_FILES) %}
                     <a href="{{ url_for('main.fork_check', token = current_user.generate_fork_token(_file.uid, _path, _pass, expiration=3600), _external=True) }}">
                         <button type="button" class="btn btn-success">确认 Fork</button>
                     </a>

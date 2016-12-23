@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>欢迎来到顶点云 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>欢迎来到顶点云 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -46,12 +46,13 @@
   <div class="section" id="id1">
 <h1>欢迎来到顶点云<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h1>
 <img alt="顶点云：专为北邮人设计的云存储系统" class="align-right" src="_images/logo_full.png" />
-<p>欢迎阅读顶点云服务器的开发者文档。本文档分为两部分：《 <a class="reference internal" href="zenith-web.html#zenith-web"><span class="std std-ref">顶点云 Web 服务器</span></a> 》和《 <a class="reference internal" href="zenith-app.html#zenith-app"><span class="std std-ref">顶点云应用程序服务器</span></a> 》。其中，Web 服务器使用 <a class="reference external" href="http://flask.pocoo.org/">Flask</a> 框架，应用程序服务器使用 <a class="reference external" href="https://golang.org/">Golang</a> ，这二者不在本文档的范围之内，如有兴趣请移步：</p>
+<p>欢迎阅读顶点云服务器的开发者文档。本文档分为两部分：《 <a class="reference internal" href="zenith-app.html#zenith-app"><span class="std std-ref">顶点云应用程序服务器</span></a> 》和《 <a class="reference internal" href="zenith-web.html#zenith-web"><span class="std std-ref">顶点云 Web 服务器</span></a> 》。其中，Web 服务器使用 <a class="reference external" href="http://flask.pocoo.org/">Flask</a> 框架，应用程序服务器使用 <a class="reference external" href="https://golang.org/">Golang</a> ，这二者不在本文档的范围之内，如有兴趣请移步：</p>
 <ul class="simple">
 <li><a class="reference external" href="http://flask.pocoo.org/docs/0.11/">Flask 文档</a></li>
 <li><a class="reference external" href="https://golang.org/doc/">Go 语言文档</a></li>
 </ul>
-<p>《 <a class="reference internal" href="zenith-web.html#zenith-web"><span class="std std-ref">顶点云 Web 服务器</span></a> 》和《 <a class="reference internal" href="zenith-app.html#zenith-app"><span class="std std-ref">顶点云应用程序服务器</span></a> 》均包含对应的部署说明和快速上手指南，我建议您按文档推荐的顺序阅读。</p>
+<p>《 <a class="reference internal" href="zenith-app.html#zenith-app"><span class="std std-ref">顶点云应用程序服务器</span></a> 》和《 <a class="reference internal" href="zenith-web.html#zenith-web"><span class="std std-ref">顶点云 Web 服务器</span></a> 》均包含对应的部署说明和快速上手指南，我建议您按文档推荐的顺序阅读。</p>
+<p>下面简要介绍二者的关系：在提出设计顶点云时就已考虑到设计两个服务器的需求，因此二者相互兼容，可同时运行在一台主机，同时为应用程序客户端和 Web 用户提供服务。顶点云的应用程序服务器早于 Web 服务器开发，开发历时约一个月，Web 服务器根据应用程序服务器复现以提供浏览器支持，耗时约两周。如果您想了解更多顶点云的背景，欢迎阅读 <a class="reference internal" href="forewords.html#forewords"><span class="std std-ref">前言</span></a> 。</p>
 <div class="section" id="id3">
 <h2>用户指南<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
 <p>此部分先介绍了顶点云的背景，之后划分为应用程序服务器和 Web 服务器，二者均有各自对应的配置、上手指南。</p>
@@ -65,14 +66,46 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="zenith-app.html">顶点云应用程序服务器</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="zenith-app.html#id2">开发者指南</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zenith-app.html#api">API 参考</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zenith-app.html#id3">其他材料</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zenith-app.html#id2">开发者指南</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app-installation.html">部署顶点云应用程序服务器</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-config.html">应用程序服务器全局设置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-quickstart.html">快速上手</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-models.html">模型介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-protocal.html">协议设计</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-structual.html">框架分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-test.html">测试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-proxy.html">用户代理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-tutorials.html">教程</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="zenith-app.html#api">API 参考</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app-api.html">应用程序 API 文档</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="zenith-app.html#id3">其他材料</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app-design.html">应用设计要点</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app-log.html">顶点云应用服务器变动记录</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="zenith-web.html">顶点云 Web 服务器</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="zenith-web.html#id2">开发者指南</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zenith-web.html#id3">其他材料</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zenith-web.html#id2">开发者指南</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="web-installation.html">部署顶点云 Web 服务器</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-config.html">Web 服务器全局配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-quickstart.html">快速上手</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-structual.html">框架分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-blueprint.html">蓝本介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-models.html">模型介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-viewfunction.html">视图函数说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-test.html">Web 服务器测试</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="zenith-web.html#id3">其他材料</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="web-design.html">Web 服务器设计要点</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web-log.html">顶点云 Web 服务器变动记录</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

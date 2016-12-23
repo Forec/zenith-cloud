@@ -735,14 +735,14 @@ class Role(db.Model):
             'Uncheck_user': (0x00, True),
             'User': (Permission.FOLLOW |
                      Permission.COMMENT |
-                     Permission.WRITE_ARTICLES, False),
+                     Permission.PUBLIC_FILES, False),
             'Moderator_comments': (Permission.FOLLOW |
                           Permission.COMMENT |
-                          Permission.WRITE_ARTICLES |
+                          Permission.PUBLIC_FILES |
                           Permission.MODERATE_COMMENTS, False),
             'Moderator_tasks':(
                 Permission.COMMENT |
-                Permission.WRITE_ARTICLES |
+                Permission.PUBLIC_FILES |
                 Permission.MODERATE_FILES, False
             ),
             'Administrator': (0xff, False)

@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>模型介绍 &#8212; 顶点云  文档</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="next" title="视图函数说明" href="web-viewfunction.html" />
+    <link rel="prev" title="蓝本介绍" href="web-blueprint.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="web-models">
+<span id="id1"></span><h1>模型介绍<a class="headerlink" href="#web-models" title="永久链接至标题">¶</a></h1>
+<p>此部分文档主要介绍顶点云 Web 服务器使用的数据库格式和模型。</p>
+<div class="section" id="web-models-database">
+<span id="id2"></span><h2>数据库<a class="headerlink" href="#web-models-database" title="永久链接至标题">¶</a></h2>
+<p>顶点云 Web 服务器使用的数据库与 <a class="reference internal" href="zenith-app.html#zenith-app"><span class="std std-ref">顶点云应用程序服务器</span></a> 使用的数据库兼容。您可以直接阅读 <a class="reference internal" href="app-models.html#app-models-database"><span class="std std-ref">数据库</span></a> 来查看数据库格式。</p>
+</div>
+<div class="section" id="web-models-class">
+<span id="id3"></span><h2>内置自定义类<a class="headerlink" href="#web-models-class" title="永久链接至标题">¶</a></h2>
+<p>此部分文档主要介绍顶点云 Web 服务器定义的几个模型。用户模型的定义均位于 <cite>web/app/models.py</cite> 中，包括：</p>
+<ul class="simple">
+<li><cite>User</cite> ：用户类</li>
+<li><cite>Message</cite> ：用户聊天消息类，与 <a class="reference internal" href="app-models.html#app-models-database-cmessages"><span class="std std-ref">表 cmessage</span></a> 保持一致</li>
+<li><cite>Follow</cite> ：第三方表，用于存储用户之间的多对多关注关系</li>
+<li><cite>Permission</cite> ：用户权限模型</li>
+<li><cite>Role</cite> ：用户身份模型</li>
+<li><cite>CFILE</cite> ：实体文件模型，与 <a class="reference internal" href="app-models.html#app-models-database-cfile"><span class="std std-ref">表 cfile</span></a> 保持一致</li>
+<li><cite>File</cite> ：用户资源记录模型，与 <a class="reference internal" href="app-models.html#app-models-database-ufile"><span class="std std-ref">表 ufile</span></a> 保持一致</li>
+<li><cite>Comment</cite> ：用户评论类</li>
+<li><cite>Pagination</cite> ：自定义文件分页模型，用于在列表过长时分页显示，该模型允许从列表构造分页器，可替代 SQLAlchemy 提供的 <cite>Pagination</cite> 类</li>
+<li><cite>AnonymousUser</cite> ：匿名用户模型，提供给 <cite>flask_login</cite> 作为未登录用户实例</li>
+</ul>
+<p>下面将简单介绍每个模型提供的方法。</p>
+<div class="section" id="web-models-user">
+<span id="id4"></span><h3>用户类<a class="headerlink" href="#web-models-user" title="永久链接至标题">¶</a></h3>
+<p><cite>User</cite> 模型同时继承了 <cite>UserMixin</cite> 和 SQLAlchemy 数据库模型，它具有如下元素：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># 用户 id</span>
+<span class="n">uid</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">email</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c1"># 用户密码的加盐哈希值</span>
+<span class="n">password_hash</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">32</span><span class="p">))</span>
+<span class="c1"># 用户创建时间</span>
+<span class="n">created</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">)</span>
+<span class="c1"># 用户是否已激活邮箱</span>
+<span class="n">confirmed</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Boolean</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+<span class="c1"># 用户昵称</span>
+<span class="n">nickname</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+<span class="c1"># 用户头像链接</span>
+<span class="n">avatar_hash</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">32</span><span class="p">))</span>
+<span class="c1"># 用户个人介绍</span>
+<span class="n">about_me</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Text</span><span class="p">)</span>
+<span class="c1"># 与 created 相同，adapter</span>
+<span class="n">member_since</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">,</span>
+                         <span class="n">default</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">)</span>
+<span class="c1"># 上次登录时间</span>
+<span class="n">last_seen</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">,</span>
+                      <span class="n">default</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">)</span>
+<span class="c1"># 用户积分</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
+<span class="c1"># 用户角色 id（管理员/审核员/普通用户等）</span>
+<span class="n">role_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;roles.id&#39;</span><span class="p">))</span>
+<span class="c1"># 用户拥有的文件，外链 File 表</span>
+<span class="n">files</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;File&#39;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;owner&#39;</span><span class="p">,</span> <span class="n">lazy</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">)</span>
+<span class="c1"># 用户发布的评论，外链 Comment 表</span>
+<span class="n">comments</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;Comment&#39;</span><span class="p">,</span><span class="n">backref</span><span class="o">=</span><span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">)</span>
+<span class="c1"># 此用户关注的人，外链 Follow 表</span>
+<span class="n">followed</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;Follow&#39;</span><span class="p">,</span>
+                           <span class="c1"># 指定外键</span>
+                           <span class="n">foreign_keys</span><span class="o">=</span> <span class="p">[</span><span class="n">Follow</span><span class="o">.</span><span class="n">follower_id</span><span class="p">],</span>
+                           <span class="c1"># 回调变量</span>
+                           <span class="n">backref</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span><span class="s1">&#39;follower&#39;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s1">&#39;joined&#39;</span><span class="p">),</span>
+                           <span class="n">lazy</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">,</span>
+                           <span class="c1"># 当用户删除时连带删除全部记录</span>
+                           <span class="n">cascade</span><span class="o">=</span><span class="s1">&#39;all, delete-orphan&#39;</span><span class="p">)</span>
+<span class="c1"># 此用户的关注者，外链 Follow 表</span>
+<span class="n">followers</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;Follow&#39;</span><span class="p">,</span>
+                           <span class="n">foreign_keys</span><span class="o">=</span> <span class="p">[</span><span class="n">Follow</span><span class="o">.</span><span class="n">followed_id</span><span class="p">],</span>
+                           <span class="n">backref</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span><span class="s1">&#39;followed&#39;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s1">&#39;joined&#39;</span><span class="p">),</span>
+                           <span class="n">lazy</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">,</span>
+                           <span class="n">cascade</span><span class="o">=</span><span class="s1">&#39;all, delete-orphan&#39;</span><span class="p">)</span>
+<span class="c1"># 用户发送过的消息</span>
+<span class="n">sendMessages</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;Message&#39;</span><span class="p">,</span>
+                               <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;sender&#39;</span><span class="p">,</span>
+                               <span class="n">lazy</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span>
+                               <span class="n">foreign_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="o">.</span><span class="n">sendid</span><span class="p">])</span>
+<span class="c1"># 用户接收到的消息</span>
+<span class="n">recvMessages</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;Message&#39;</span><span class="p">,</span>
+                               <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;receiver&#39;</span><span class="p">,</span>
+                               <span class="n">lazy</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span>
+                               <span class="n">foreign_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="o">.</span><span class="n">targetid</span><span class="p">])</span>
+<span class="c1"># 用户已使用的网盘空间，单位为字节</span>
+<span class="n">used</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># 用户最大网盘空间，单位为字节，默认 256 MB</span>
+<span class="n">maxm</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">256</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><cite>User</cite> 类具有如下方法：</p>
+<ul class="simple">
+<li><cite>get_id</cite> ：获取用户 id</li>
+<li><cite>verify_password</cite> ：验证密码是否正确</li>
+<li><cite>generate_confirmation_token</cite> ：生成用户邮箱验证 token</li>
+<li><cite>generate_email_change_token</cite> ：生成修改邮箱 token</li>
+<li><cite>generate_reset_token</cite> ：生成重置密码 token</li>
+<li><cite>generate_delete_token</cite> ：生成删除文件 token</li>
+<li><cite>reset_password</cite> ：用户验证重置密码的 token</li>
+<li><cite>confirm</cite> ：用户验证邮箱激活的 token</li>
+<li><cite>change_email</cite> ：用户验证修改邮箱的 token</li>
+<li><cite>delete_file</cite> ：用户验证删除文件的 token</li>
+<li><cite>generate_copy_token</cite> ：生成文件复制操作的 token</li>
+<li><cite>copy_token_verify</cite> ：验证用户文件复制的 token</li>
+<li><cite>generate_move_token</cite> ：生成用户文件移动的 token</li>
+<li><cite>move_token_verify</cite> ：验证用户文件移动的 token</li>
+<li><cite>generate_fork_token</cite> ：生成用户 Fork 文件 token</li>
+<li><cite>fork_token_verify</cite> ：校验用户 Fork 文件 token 的合法性</li>
+<li><cite>generate_download_token</cite> ：生成用户下载的 token</li>
+<li><cite>download_token_verify</cite> ：验证用户下载 token 的合法性</li>
+<li><cite>generate_view_token</cite> ：生成共享文件查看 token</li>
+<li><cite>view_token_verify</cite> ：验证查看其他用户文件的 token 合法性</li>
+<li><cite>gravatar</cite> ：获取用户头像链接，若存在自定义头像则返回自定义头像链接，否则从 gravatar 获取</li>
+<li><cite>can</cite> ：用户是否具有某项权限</li>
+<li><cite>is_administrator</cite> ：用户是否为管理员</li>
+<li><cite>ping</cite> ：更新用户最近登录时间</li>
+<li><cite>follow</cite> ：关注某个用户</li>
+<li><cite>unfollow</cite> ：取消关注某个用户</li>
+<li><cite>is_following</cite> ：是否已关注某个用户</li>
+<li><cite>is_followed_by</cite> ：是否被某用户关注</li>
+<li><cite>followed_files</cite> ：用户关注的人发布的共享文件</li>
+<li><cite>generate_fake</cite> ：生成随机用户</li>
+</ul>
+<p>可以看出，<cite>User</cite> 类的多数方法都用于处理需要鉴别用户身份的请求，包括生成 token 、验证 token 以及在验证通过后执行相应的处理。以删除资源为例， <a class="reference internal" href="web-blueprint.html#web-blueprint-main"><span class="std std-ref">Main 蓝本</span></a> 中的 <cite>delete_do</cite> 视图函数将请求转发给当前用户，由当前用户验证 token 并执行删除操作，删除操作定义在方法 <cite>delete_file</cite> 中。</p>
+<p>详细方法的参数请查看 <cite>web/app/models.py</cite> ，代码中给出了详细的注释。</p>
+</div>
+<div class="section" id="cfile">
+<span id="web-models-cfile"></span><h3>实体文件 CFILE 类<a class="headerlink" href="#cfile" title="永久链接至标题">¶</a></h3>
+<p><cite>CFILE</cite> 类和 <a class="reference internal" href="app-models.html#app-models-database-cfile"><span class="std std-ref">表 cfile</span></a> 保持一致，同时提供了如下 3 个方法：</p>
+<ul class="simple">
+<li><cite>md5FromFile(filepath)</cite> ：计算指定路径的文件的 MD5 值，计算方法与 <a class="reference internal" href="app-protocal.html#app-protocal-md5"><span class="std std-ref">MD5 计算</span></a> 相同。</li>
+<li><cite>makeFile(filepath, size)</cite> ：在指定路径创建一个指定大小的随机内容的文件。</li>
+<li><cite>generate_fake(count)</cite> ：在 <cite>config.py</cite> 中指定的 <cite>ZENITH_FILE_STORE_PATH</cite> 下生成指定数量个随机文件。</li>
+</ul>
+</div>
+<div class="section" id="web-models-permission">
+<span id="id5"></span><h3>权限<a class="headerlink" href="#web-models-permission" title="永久链接至标题">¶</a></h3>
+<p><cite>Permission</cite> 类指定了如下几种权限：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">FOLLOW</span> <span class="o">=</span> <span class="mh">0x01</span>  <span class="c1"># 关注其他用户</span>
+<span class="n">COMMENT</span> <span class="o">=</span> <span class="mh">0x02</span>  <span class="c1"># 评论文件</span>
+<span class="n">PUBLIC_FILES</span> <span class="o">=</span> <span class="mh">0x04</span>  <span class="c1"># 发布文件</span>
+<span class="n">MODERATE_COMMENTS</span> <span class="o">=</span> <span class="mh">0x08</span>  <span class="c1"># 管理评论</span>
+<span class="n">MODERATE_FILES</span> <span class="o">=</span> <span class="mh">0x10</span>  <span class="c1"># 管理文件</span>
+<span class="n">ADMINISTER</span> <span class="o">=</span> <span class="mh">0x80</span>  <span class="c1"># 管理员</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#web-models-role"><span class="std std-ref">身份</span></a> 中的 <cite>permissions</cite> 元素代表该身份具有的权限，将 <cite>permissions</cite> 与指定权限做与操作，若结果为 1 则代表该身份具有指定权限。</p>
+</div>
+<div class="section" id="web-models-role">
+<span id="id6"></span><h3>身份<a class="headerlink" href="#web-models-role" title="永久链接至标题">¶</a></h3>
+<p><cite>Role</cite> 类定义了用户的不同身份，顶点云默认提供的身份和对应权限有：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">roles</span> <span class="o">=</span> <span class="p">{</span>
+ <span class="s1">&#39;Uncheck_user&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mh">0x00</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+ <span class="s1">&#39;User&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">Permission</span><span class="o">.</span><span class="n">FOLLOW</span> <span class="o">|</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">COMMENT</span> <span class="o">|</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">WRITE_ARTICLES</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+ <span class="s1">&#39;Moderator_comments&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">Permission</span><span class="o">.</span><span class="n">FOLLOW</span> <span class="o">|</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">COMMENT</span> <span class="o">|</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">WRITE_ARTICLES</span> <span class="o">|</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">MODERATE_COMMENTS</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+ <span class="s1">&#39;Moderator_tasks&#39;</span><span class="p">:(</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">COMMENT</span> <span class="o">|</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">WRITE_ARTICLES</span> <span class="o">|</span>
+          <span class="n">Permission</span><span class="o">.</span><span class="n">MODERATE_FILES</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+ <span class="s1">&#39;Administrator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mh">0xff</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><cite>Moderator_tasks</cite> 作为可扩展身份，默认的顶点云暂时没有启用。默认顶点云支持 <cite>Uncheck_user</cite> （邮箱未认证的用户）、<cite>User</cite> （普通用户）、<cite>Moderator_comments</cite> （评论管理员）以及 <cite>Administrator</cite> （超级管理员）。</p>
+<p>接下来请您阅读 <a class="reference internal" href="web-viewfunction.html#web-viewfunction"><span class="std std-ref">视图函数说明</span></a> 。</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p style="text-align:left;margin:5px 10px 5px 10px"><a href="index.html">
+  <img style="text-align:center;width:105px" src="_static/zenith.png" alt="Logo"/>
+</a></p>
+
+<p>
+  <a href="index.html">回到主页</a>
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">模型介绍</a><ul>
+<li><a class="reference internal" href="#web-models-database">数据库</a></li>
+<li><a class="reference internal" href="#web-models-class">内置自定义类</a><ul>
+<li><a class="reference internal" href="#web-models-user">用户类</a></li>
+<li><a class="reference internal" href="#cfile">实体文件 CFILE 类</a></li>
+<li><a class="reference internal" href="#web-models-permission">权限</a></li>
+<li><a class="reference internal" href="#web-models-role">身份</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="zenith-web.html">顶点云 Web 服务器</a><ul>
+      <li>Previous: <a href="web-blueprint.html" title="上一章">蓝本介绍</a></li>
+      <li>Next: <a href="web-viewfunction.html" title="下一章">视图函数说明</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>快速搜索</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="转向" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Forec.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/web-models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -175,7 +175,7 @@ func (s *Server) Login(t trans.Transmitable) (cs.User, int) {
 	var err error
 	recvL, err = t.RecvUntil(int64(24), recvL, chRate)
 	if err != nil {
-		fmt.Println("1 error:", err.Error())
+		fmt.Println("用户登录过程异常，错误原因：", err.Error())
 		return nil, -1
 	}
 	// 前 8 字节为明文总长度，中间 8 字节为密文总长度， 后 8 字节为明文用户名长度
@@ -195,25 +195,22 @@ func (s *Server) Login(t trans.Transmitable) (cs.User, int) {
 		fmt.Println("decode error:", err.Error())
 		return nil, -1
 	}
-	fmt.Println(string(nameApass[:nmLength]), string(nameApass[nmLength:]))
+	fmt.Println("新登录的用户名：", string(nameApass[:nmLength]))
+	fmt.Println("此用户传输的密文部分：", string(nameApass[nmLength:]))
 
 	username := string(nameApass[:nmLength])
 	pc := cs.UserIndexByName(s.loginUserList, string(nameApass[:nmLength]))
 
 	// 该连接由已登陆用户建立
 	if pc != nil {
-		fmt.Println("userfined, ", pc.GetUsername())
-		fmt.Println("pc token is ", pc.GetToken())
+		fmt.Println("该用户已登陆，用户名为: ", pc.GetUsername())
 
-		if string(nameApass[nmLength:]) == pc.GetPassHash() {
+		if strings.ToUpper(string(nameApass[nmLength:])) == pc.GetPassHash() {
 			// 若新登录用户的密码部分为用户的密钥哈希值，则认为该连接为登录连接
 			// 需提醒原用户异地登陆并登出原用户、登录新用户
 			s.BroadCast(pc, "您的账号在另一台机器上登录，如果不是您本人所为，请尽快修改密码！")
 			pc.Logout()
-			pc.SetListener(t)
-			return pc, 0 // 模式 0 代表登陆成功
-		}
-		if pc.GetToken() != string(nameApass[nmLength:]) {
+		} else if pc.GetToken() != string(nameApass[nmLength:]) {
 			// 此连接为传输线程，但验证的 token 不符
 			fmt.Println("无法通过 token 验证，远程主机不合法")
 			return nil, -1
@@ -269,7 +266,7 @@ func (s *Server) Login(t trans.Transmitable) (cs.User, int) {
 	}
 
 	// 检索用户头像链接，可能失败
-	row = s.db.QueryRow(fmt.Sprintf("SELECT used, maxm, nickname FROM cuser where uid=%d", uid))
+	row = s.db.QueryRow(fmt.Sprintf("SELECT avatar_hash FROM cuser where uid=%d", uid))
 	if err != nil {
 		avatar_hash = ""
 	} else {

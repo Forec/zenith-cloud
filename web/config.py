@@ -62,7 +62,13 @@ class DevelopmentConfig(Config):            # 开发者环境配置
 
 class TestingConfig(Config):                # 测试环境配置
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'work.db')
+    WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'temp/test.db')
+    ZENITH_PATH_SEPERATOR = '/'
+    ZENITH_FILE_STORE_PATH = 'temp/store/'
+    ZENITH_TEMPFILE_STORE_PATH = ZENITH_FILE_STORE_PATH + \
+                                 'TEMP' + ZENITH_PATH_SEPERATOR
+    ZENITH_SERVER_ADDRESS = '127.0.0.1'
 
 class WindowsConfig(Config):
     ZENITH_PATH_SEPERATOR = '\\'    # 服务器所属文件系统的目录分隔符，Windows为\\，*nix 为//

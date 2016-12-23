@@ -1478,7 +1478,7 @@ def download_do(token):
         return response
 
 # --------------------------------------------------------------------
-# upload_do 为用户上传文件界面提供入口
+# upload 为用户上传文件界面提供入口
 @main.route('/upload_do/', methods=['GET', 'POST'])
 @login_required
 def upload():
@@ -2149,7 +2149,7 @@ def move():
     if file is None or file.owner != current_user:
         abort(403)
 
-    # 当要拷贝到的路径不为根目录时，检查该路径对于当前用户是否合法（该用户
+    # 当要移动到的路径不为根目录时，检查该路径对于当前用户是否合法（该用户
     #     是否已创建该目录）
     if path != '/':
         if len(path.split('/')) < 3 or path[-1] != '/':
@@ -2332,9 +2332,9 @@ def fork(id):
     if file is not None and file.owner == current_user:
         flash('您无法 Fork 自己的文件或目录')
         if file.isdir:
-            return redirect('main.cloud', path=file.path)
+            return redirect(url_for('main.cloud', path=file.path))
         else:
-            return redirect('main.file', id=file.uid)
+            return redirect(url_for('main.file', id=file.uid))
     if file is None or file.private == True:
         abort(403)
     if file.linkpass is None or \
@@ -2400,9 +2400,9 @@ def fork_do():
     if file is not None and file.owner == current_user:
         flash('您无法 Fork 自己的文件或目录')
         if file.isdir:
-            return redirect('main.cloud', path=file.path)
+            return redirect(url_for('main.cloud', path=file.path))
         else:
-            return redirect('main.file', id=file.uid)
+            return redirect(url_for('main.file', id=file.uid))
     if file is None or \
         file.private == True or \
         file.linkpass != _pass:
@@ -2462,8 +2462,8 @@ def fork_do():
 
 # -----------------------------------------------------------------------------
 # fork_check 是验证用户 Fork 操作的入口，当前用户根据传入的 token 验证合法性并向数据库
-# 执行写入操作。若用户要 Fork 的是目录，则 fork_check 会将待移动目录下所有关联文件一起
-# 移动
+# 执行写入操作。若用户要 Fork 的是目录，则 fork_check 会将待 Fork 目录下所有关联文件一起
+# Fork
 @main.route('/fork_check/<token>', methods=['GET'])
 @login_required
 def fork_check(token):
@@ -2488,9 +2488,9 @@ def fork_check(token):
         # 检查是否当前用户已为资源所有者
         flash('您无法 Fork 自己的文件或目录')
         if file.isdir:
-            return redirect('main.cloud', path=file.path)
+            return redirect(url_for('main.cloud', path=file.path))
         else:
-            return redirect('main.file', id=file.uid)
+            return redirect(url_for('main.file', id=file.uid))
 
     # 当要 Fork 到的路径不为根目录时，检查该路径对于当前用户是否合法（该用户
     #     是否已创建该目录）

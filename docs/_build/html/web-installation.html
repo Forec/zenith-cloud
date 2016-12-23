@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>部署顶点云 Web 服务器 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>部署顶点云 Web 服务器 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -46,6 +46,56 @@
             
   <div class="section" id="web">
 <span id="web-installation"></span><h1>部署顶点云 Web 服务器<a class="headerlink" href="#web" title="永久链接至标题">¶</a></h1>
+<p>顶点云的 Web 服务器使用 Python3 编写，基于 Flask 框架，在部署前请确保您已经安装 Python3、Pip、Pyvenv 等，并已正确设置环境变量。我们推荐的 Python3 版本为 Python 3.5.0。有关 Python3 和 Flask 的介绍不在本文档范围内，如果您尚不了解，请参阅以下相关链接：</p>
+<ul class="simple">
+<li><a class="reference external" href="https://docs.python.org/3/tutorial/index.html">Python3 快速上手指南</a></li>
+<li><a class="reference external" href="https://pip.pypa.io/en/stable/installing/">Pip 安装指南</a></li>
+<li><a class="reference external" href="https://docs.python.org/3/library/venv.html">Pyvenv 使用指南</a></li>
+<li><a class="reference external" href="http://flask.pocoo.org/docs/0.12/">Flask 文档</a></li>
+</ul>
+<div class="section" id="id1">
+<h2>获取源码<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>顶点云的 Web 服务器源码托管在 <a class="reference external" href="https://github.com/Forec/zenith-cloud">GitHub</a> 上，您可以使用 Git 克隆仓库或直接通过 GitHub 下载源码的压缩包。假设您熟悉 Git，请通过以下命令获取源码。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>git clone https://github.com/Forec/zenith-cloud.git
+<span class="nb">cd</span> zenith-cloud/web/
+</pre></div>
+</div>
+<p>此时您应当已经进入顶点云 Web 服务器源码目录。</p>
+</div>
+<div class="section" id="id2">
+<h2>安装第三方支持<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>顶点云 Web 服务器使用到的所有第三方库均包含在需求文件 <code class="docutils literal"><span class="pre">web/requirements.txt</span></code> 中，您有两种方式部署。</p>
+<div class="section" id="id3">
+<h3>一键部署脚本<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h3>
+<p>顶点云 Web 服务器为 Linux 提供了一键部署脚本，它位于 <code class="docutils literal"><span class="pre">web/settings</span></code> 下。您可以运行以下命令。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> settings
+./setup.sh
+</pre></div>
+</div>
+<p>如果您使用 Windows 系统，请参考下方的手动配置，或者如果您使用 Git Command，可以在 Git 的 Bash 命令行中运行 <cite>setup.sh</cite> 。</p>
+<p>如果您的 Python 环境工作正常并且网络畅通，您应该可以看到终端中没有提示任何信息并且显示 <em>部署完成</em> 字样。</p>
+</div>
+<div class="section" id="id4">
+<h3>手动部署<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h3>
+<p>您可以选择手动部署顶点云 Web 服务器，流程如下：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>mkdir venv
+python3 -m venv venv/
+<span class="nb">source</span> venv/bin/activate                // Windows 系统此步骤为 venv/Scripts/activate.bat
+pip3 install -r requirements.txt --index-url https://pypi.douban.com/simple
+pip3 install gunicorn --index-url https://pypi.douban.com/simple
+python3 manager.py simple_init
+deactivate
+</pre></div>
+</div>
+<p>如果您的 Python 环境工作正常并且网络畅通，此时顶点云的 Web 服务器应当已经部署完毕。</p>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>运行测试<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<p>顶点云的 Web 服务器提供了一部分单元测试，您可以运行单元测试以确保环境配置正常。</p>
+<p>进入 <cite>web</cite> 目录，运行 <cite>python3 manage.py test</cite> 。若测试结果显示通过则顶点云 Web 服务器部署成功。</p>
+<p>顶点云的 Web 服务器可运行在任何主流体系结构计算机以及任何操作系统上。接下来请您阅读 <a class="reference internal" href="web-config.html#web-config"><span class="std std-ref">Web 服务器全局配置</span></a> 以根据您的系统配置顶点云 Web 服务器。</p>
+</div>
 </div>
 
 
@@ -59,7 +109,21 @@
 
 <p>
   <a href="index.html">回到主页</a>
-</p><div class="relations">
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">部署顶点云 Web 服务器</a><ul>
+<li><a class="reference internal" href="#id1">获取源码</a></li>
+<li><a class="reference internal" href="#id2">安装第三方支持</a><ul>
+<li><a class="reference internal" href="#id3">一键部署脚本</a></li>
+<li><a class="reference internal" href="#id4">手动部署</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">运行测试</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>

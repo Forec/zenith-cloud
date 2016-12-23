@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>应用程序服务器全局设置 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>应用程序服务器全局设置 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -51,24 +51,7 @@
 <div class="section" id="id2">
 <h2>样例配置文件<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
 <p>您从 GitHub 仓库获取的源码中已经包含了一份默认的配置文件，忽略注释和函数部分后内容如下：</p>
-<div class="highlight-go"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kd">const</span> <span class="nx">STORE_PATH</span> <span class="p">=</span> <span class="s">&quot;G:\\Cloud\\&quot;</span>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">const</span> <span class="nx">STORE_PATH</span> <span class="p">=</span> <span class="s">&quot;G:\\Cloud\\&quot;</span>
 <span class="kd">const</span> <span class="nx">DOWNLOAD_PATH</span> <span class="p">=</span> <span class="s">&quot;G:\\Cloud\\&quot;</span>
 <span class="kd">const</span> <span class="nx">CLIENT_VERSION</span> <span class="p">=</span> <span class="s">&quot;Windows&quot;</span>
 <span class="kd">const</span> <span class="nx">AUTHEN_BUFSIZE</span> <span class="p">=</span> <span class="mi">1024</span>
@@ -87,7 +70,7 @@
 <span class="kd">const</span> <span class="nx">CHECK_LIVE_TAG</span> <span class="p">=</span> <span class="s">&quot;[check]&quot;</span>
 <span class="kd">const</span> <span class="nx">CHECK_MESSAGE_SEPERATE</span> <span class="p">=</span> <span class="mi">5</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 <p>样例配置文件每项均有对应注释，您也可以查看下面的 <a class="reference internal" href="#app-config-detailed"><span class="std std-ref">样例文件详细解释</span></a> 了解每一项的具体功能。</p>
 </div>
 <div class="section" id="app-config-detailed">
@@ -114,24 +97,7 @@
 <li><code class="docutils literal"><span class="pre">CHECK_MESSAGE_SEPERATE</span></code> ：此项指定了服务器转发消息执行的间隔，默认为 5。服务器会每隔 <code class="docutils literal"><span class="pre">CHECK_MESSAGE_SEPERATE</span></code> 秒向每个用户转发其他用户发送给他的消息。如果你不明白此项的意义，请查看 <a class="reference internal" href="app-protocal.html#app-protocal-chat"><span class="std std-ref">用户通讯</span></a> 。</li>
 </ol>
 <p>例如，在使用 WiFi 连接的 Ubuntu 16.04 下部署服务器以供 Windows 客户端使用时，可参考的配置文件如下：</p>
-<div class="highlight-go"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kd">const</span> <span class="nx">STORE_PATH</span> <span class="p">=</span> <span class="s">&quot;/usr/local/cloud-store/&quot;</span>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">const</span> <span class="nx">STORE_PATH</span> <span class="p">=</span> <span class="s">&quot;/usr/local/cloud-store/&quot;</span>
 <span class="kd">const</span> <span class="nx">DOWNLOAD_PATH</span> <span class="p">=</span> <span class="s">&quot;/usr/local/cloud-download&quot;</span>
 <span class="kd">const</span> <span class="nx">CLIENT_VERSION</span> <span class="p">=</span> <span class="s">&quot;Windows&quot;</span>
 <span class="kd">const</span> <span class="nx">AUTHEN_BUFSIZE</span> <span class="p">=</span> <span class="mi">1024</span>
@@ -150,7 +116,7 @@
 <span class="kd">const</span> <span class="nx">CHECK_LIVE_TAG</span> <span class="p">=</span> <span class="s">&quot;[check]&quot;</span>
 <span class="kd">const</span> <span class="nx">CHECK_MESSAGE_SEPERATE</span> <span class="p">=</span> <span class="mi">10</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 <p>接下来请您阅读 <a class="reference internal" href="app-quickstart.html#app-quickstart"><span class="std std-ref">快速上手</span></a> 。</p>
 </div>
 </div>

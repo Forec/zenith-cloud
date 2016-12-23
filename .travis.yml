@@ -1,6 +1,13 @@
-language: python
+language: 
+ - python
+ - go
 python:
  - 3.5.0
-install: "pip install -r requirements.txt"
+go:
+ - 1.7.3
+install: 
+ - pip install -r requirements.txt
+ - go get github.com/mattn/go-sqlite3
 script:
+ - go run ./cloud/cloud.go &
  - python3 manage.py runserver &

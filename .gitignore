@@ -1,6 +1,7 @@
-cloud-storage-venv
+venv
 __pycache__
 .idea
 *.db
 *.*~
 *.pyc
+temp

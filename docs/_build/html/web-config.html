@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Web 服务器全局配置 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>Web 服务器全局配置 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -46,6 +46,141 @@
             
   <div class="section" id="web">
 <span id="web-config"></span><h1>Web 服务器全局配置<a class="headerlink" href="#web" title="永久链接至标题">¶</a></h1>
+<p>在阅读以下内容前，请确保您已经按照 <a class="reference internal" href="web-installation.html#web-installation"><span class="std std-ref">部署顶点云 Web 服务器</span></a> 正确部署了顶点云 Web 服务器，并位于源码目录下（/path-to/zenith-cloud/web/）。</p>
+<p>您可以根据您的环境修改源码目录下的 <cite>config.py</cite> 文件以配置服务器。</p>
+<div class="section" id="id1">
+<h2>样例配置文件<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>您从 GitHub 仓库获取的源码中已经包含了一份默认的配置文件，这份配置文件中提供了一个基类 <cite>Config</cite> ，去掉注释后它的内容如下：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+ <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span> <span class="ow">or</span> \
+              <span class="s1">&#39;9d0e91f3372224b3ec7afec2&#39;</span> \
+              <span class="s1">&#39;4313e745efcf00ba4a5b767b&#39;</span> \
+              <span class="s1">&#39;35b17834d5f26efac197fd69&#39;</span> \
+              <span class="s1">&#39;d881dd92e629dbfdc2f1fbf6&#39;</span>
+ <span class="n">SQLALCHEMY_COMMIT_ON_TEARDOWN</span> <span class="o">=</span> <span class="bp">True</span>
+ <span class="n">SQLALCHEMY_TRACK_MODIFICATIONS</span> <span class="o">=</span> <span class="bp">True</span>
+ <span class="n">ZENITH_MAIL_SUBJECT_PREFIX</span> <span class="o">=</span> <span class="s1">&#39;[顶点云]&#39;</span>
+ <span class="n">ZENITH_MAIL_SENDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ZENITH_MAIL_SENDER&#39;</span><span class="p">)</span> <span class="ow">or</span> \
+                      <span class="s1">&#39;cloud-storage@forec.cn&#39;</span>
+ <span class="n">ZENITH_FILES_PER_PAGE</span> <span class="o">=</span> <span class="mi">10</span>
+ <span class="n">ZENITH_FOLLOWERS_PER_PAGE</span> <span class="o">=</span> <span class="mi">10</span>
+ <span class="n">ZENITH_COMMENTS_PER_PAGE</span> <span class="o">=</span> <span class="mi">10</span>
+ <span class="n">PROFILE_ZENITH_FILES_PER_PAGE</span> <span class="o">=</span> <span class="mi">6</span>
+ <span class="n">ZENITH_MESSAGES_PER_PAGE</span> <span class="o">=</span> <span class="mi">10</span>
+ <span class="n">ZENITH_TEMPFOLDER_LENGTH</span> <span class="o">=</span> <span class="mi">12</span>
+ <span class="n">ZENITH_PATH_SEPERATOR</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span>
+ <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">=</span> <span class="s1">&#39;G:</span><span class="se">\\</span><span class="s1">Cloud</span><span class="se">\\</span><span class="s1">&#39;</span>
+ <span class="n">ZENITH_TEMPFILE_STORE_PATH</span> <span class="o">=</span> <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">+</span> \
+                          <span class="s1">&#39;TEMP&#39;</span> <span class="o">+</span> <span class="n">ZENITH_PATH_SEPERATOR</span>
+ <span class="n">ZENITH_FOLDER_ZIP_SUFFIX</span> <span class="o">=</span> <span class="s1">&#39;zenith&#39;</span>
+ <span class="n">ZENITH_INVALID_INFFIX</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;//&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;%&#39;</span><span class="p">,</span> <span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;$&#39;</span><span class="p">,</span> <span class="s1">&#39;!&#39;</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">]</span>
+ <span class="n">EMAIL_ADMIN</span> <span class="o">=</span><span class="s1">&#39;forec@bupt.edu.cn&#39;</span>
+ <span class="n">ZENITH_RANDOM_PATH_ELEMENTS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;6&#39;</span><span class="p">,</span> <span class="s1">&#39;7&#39;</span><span class="p">,</span> <span class="s1">&#39;8&#39;</span><span class="p">,</span> <span class="s1">&#39;9&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;F&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">]</span>
+ <span class="n">ZENITH_VALID_THUMBNAIL</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.ico&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpeg&#39;</span><span class="p">]</span>
+ <span class="n">ZENITH_VALID_THUMBNAIL_SIZE</span> <span class="o">=</span> <span class="mi">512</span> <span class="o">*</span> <span class="mi">1024</span>
+</pre></div>
+</div>
+<p>样例配置文件中，每项均有对应注释，您也可以查看下面的 <a class="reference internal" href="#web-config-detailed"><span class="std std-ref">样例文件详细解释</span></a> 了解每一项的具体功能。</p>
+</div>
+<div class="section" id="web-config-detailed">
+<span id="id2"></span><h2>样例文件详细解释<a class="headerlink" href="#web-config-detailed" title="永久链接至标题">¶</a></h2>
+<p>配置文件中 <cite>Config</cite> 类的每一项对应配置如下：</p>
+<ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">SECRET_KEY</span></code> ：用于服务器生成 token 使用的密钥，不可泄露，应当设置在服务器部署系统的环境变量中</li>
+<li><code class="docutils literal"><span class="pre">SQLALCHEMY_COMMIT_ON_TEARDOWN</span></code> ：为 <code class="docutils literal"><span class="pre">True</span></code> 时服务器终止运行时向数据库提交变动</li>
+<li><code class="docutils literal"><span class="pre">SQLALCHEMY_TRACK_MODIFICATIONS</span></code> ：为 <code class="docutils literal"><span class="pre">True</span></code> 时数据库将追踪服务器对数据的改动</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_MAIL_SUBJECT_PREFIX</span></code> ：服务器向用户发送的验证邮件的主题前缀</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_MAIL_SENDER</span></code> ：服务器向用户发送验证邮件使用的邮箱</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_FILES_PER_PAGE</span></code> ：Index 页面每页显示的文件数量</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_FOLLOWERS_PER_PAGE</span></code> ：关注着界面每页显示的用户数量</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_COMMENTS_PER_PAGE</span></code> ：文件详细页面每页显示的评论数量</li>
+<li><code class="docutils literal"><span class="pre">PROFILE_ZENITH_FILES_PER_PAGE</span></code> ：用户资料页每页显示的文件数量</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_MESSAGES_PER_PAGE</span></code> ：用户消息页面每页显示的消息数量</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_TEMPFOLDER_LENGTH</span></code> ：服务器在临时存储文件时生成的随机目录名长度</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_PATH_SEPERATOR</span></code> ：服务器所属文件系统的目录分隔符，Windows为 <em>* ，Linux 为 */</em></li>
+<li><code class="docutils literal"><span class="pre">ZENITH_FILE_STORE_PATH</span></code> ：服务器用于存储用户文件的路径</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_TEMPFILE_STORE_PATH</span></code> ：服务器生成的随机目录的根路径，默认为文件存储路径下的 TMEP 文件夹</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_FOLDER_ZIP_SUFFIX</span></code> ：用户上传目录压缩包时使用的后缀，使用此后缀的文件会被视作一个目录</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_INVALID_INFFIX</span></code> ：此列表中的字符不能出现在用户文件名中，否则视为不合法</li>
+<li><code class="docutils literal"><span class="pre">EMAIL_ADMIN</span></code> ：管理员账户使用的邮箱</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_RANDOM_PATH_ELEMENTS</span></code> ：服务器生成的随机路径包含的元素</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_VALID_THUMBNAIL</span></code> ：服务器允许用户上传的头像后缀名</li>
+<li><code class="docutils literal"><span class="pre">ZENITH_VALID_THUMBNAIL_SIZE</span></code> ：服务器允许用户上传的最大头像大小</li>
+</ol>
+<p><cite>Config</cite> 类仅仅是配置类的基类，你需要扩展此类才可完成配置。在 <cite>config.py</cite> 文件中，存在一些默认的 <cite>Config</cite> 子类，如 <cite>LinuxConfig</cite> 、 <cite>WindowsConfig</cite> 。</p>
+<p>下面简单介绍 <cite>LinuxConfig</cite> 并以一个环境为例讲解如何配置。</p>
+<p><cite>LinuxConfig</cite> 类的内容如下，它是我（ <a class="reference external" href="http://forec.cn">Forec</a> ）在我的云主机部署 Web 服务器时使用的配置类：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LinuxConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+ <span class="n">ZENITH_PATH_SEPERATOR</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>    <span class="c1"># 服务器所属文件系统的目录分隔符</span>
+ <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/root/work/cloud/Cloud/&#39;</span>  <span class="c1"># 服务器存储用户文件的路径</span>
+ <span class="n">ZENITH_TEMPFILE_STORE_PATH</span> <span class="o">=</span> <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">+</span> \
+                              <span class="s1">&#39;TEMP&#39;</span> <span class="o">+</span> <span class="n">ZENITH_PATH_SEPERATOR</span>
+ <span class="n">ZENITH_SERVER_ADDRESS</span> <span class="o">=</span> <span class="s1">&#39;cloud.forec.cn&#39;</span> <span class="c1"># 服务器部署的域名/IP地址</span>
+ <span class="n">SERVER_NAME</span> <span class="o">=</span> <span class="n">ZENITH_SERVER_ADDRESS</span>
+ <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s1">&#39;sqlite:///&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="s1">&#39;work.db&#39;</span><span class="p">)</span>
+ <span class="n">MAIL_SERVER</span> <span class="o">=</span> <span class="s1">&#39;smtp.exmail.qq.com&#39;</span>
+ <span class="n">MAIL_PORT</span> <span class="o">=</span> <span class="mi">25</span> <span class="c1"># SSL is 465</span>
+ <span class="n">MAIL_USE_TLS</span> <span class="o">=</span> <span class="bp">True</span>
+ <span class="n">MAIL_USERNAME</span> <span class="o">=</span> <span class="s2">&quot;cloud-storage@forec.cn&quot;</span>
+ <span class="n">MAIL_PASSWORD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MAIL_PASSWORD&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>可以看出， <cite>LinuxConfig</cite> 类重写了 <cite>Config</cite> 类的几项，同时添加了几个新的选项。新选项介绍如下：</p>
+<ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">ZENITH_SERVER_ADDRESS</span></code> ：服务器部署使用的域名/IP地址</li>
+<li><code class="docutils literal"><span class="pre">SERVER_NAME</span></code> ：Flask 中的 <em>url_for</em> 函数使用的服务器名，通常保持和 <em>SERVER_NAME</em> 一致</li>
+<li><code class="docutils literal"><span class="pre">SQLALCHEMY_DATABASE_URI</span></code> ：服务器使用的数据库所在的路径</li>
+<li><code class="docutils literal"><span class="pre">MAIL_SERVER</span></code> ：服务器发送邮件使用的邮箱服务器</li>
+<li><code class="docutils literal"><span class="pre">MAIL_PORT</span></code> ：服务器使用 stmp 协议的端口号，通常为 25。使用 SSL 时设置为 465 但这取决于 <em>MAIL_SERVER</em> 是否支持 SSL</li>
+<li><code class="docutils literal"><span class="pre">MAIL_USE_TLS</span></code> ：是否启用安全连接发送邮件，通常设置为 <code class="docutils literal"><span class="pre">True</span></code></li>
+<li><code class="docutils literal"><span class="pre">MAIL_USERNAME</span></code> ：服务器发送邮件使用的邮箱帐号，通常和 <em>ZENITH_MAIL_SENDER</em> 保持一致</li>
+<li><code class="docutils literal"><span class="pre">MAIL_PASSWORD</span></code> ：服务器发送邮件使用的邮箱帐号的密码，通常保存在环境变量中</li>
+</ol>
+<p id="web-config-example">下面通过一个实例环境解释如何配置。</p>
+<p>例如，在安装 Ubuntu 16.04 的主机上部署 Web 服务器，可参考的配置文件如下（使用扩展类）：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+ <span class="n">ZENITH_PATH_SEPERATOR</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
+ <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/home/cloud/&#39;</span>  <span class="c1"># 将用户上传文件存储在 /home/cloud 中</span>
+ <span class="n">ZENITH_TEMPFILE_STORE_PATH</span> <span class="o">=</span> <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">+</span> \
+                              <span class="s1">&#39;TEMP&#39;</span> <span class="o">+</span> <span class="n">ZENITH_PATH_SEPERATOR</span>
+ <span class="n">ZENITH_SERVER_ADDRESS</span> <span class="o">=</span> <span class="s1">&#39;myaddress.my.io&#39;</span> <span class="c1"># 自定义的域名，你需要先购买此域名并且映射到部署主机上</span>
+ <span class="n">SERVER_NAME</span> <span class="o">=</span> <span class="n">ZENITH_SERVER_ADDRESS</span>
+ <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s1">&#39;/usr/local/cloud/mydb.db&#39;</span>
+     <span class="c1"># 设置数据库为 /usr/local/cloud/mydb.db</span>
+ <span class="n">MAIL_SERVER</span> <span class="o">=</span> <span class="s1">&#39;smtp.163.com&#39;</span>        <span class="c1"># 使用 163 邮箱</span>
+ <span class="n">MAIL_PORT</span> <span class="o">=</span> <span class="mi">25</span>
+ <span class="n">MAIL_USE_TLS</span> <span class="o">=</span> <span class="bp">True</span>
+ <span class="n">MAIL_USERNAME</span> <span class="o">=</span> <span class="s2">&quot;mycloud@163.com&quot;</span>
+ <span class="n">MAIL_PASSWORD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MAIL_PASSWORD&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;123456&#39;</span>
+     <span class="c1"># 在环境变量中添加密码，若环境变量未找到对应值则使用 123456</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="web-config-add">
+<span id="id3"></span><h2>添加自定义配置类到表<a class="headerlink" href="#web-config-add" title="永久链接至标题">¶</a></h2>
+<p>在已经定义了自定义配置类后，你需要将自定义配置类添加到表驱动中以使 <a class="reference internal" href="web-structual.html#web-app-factory"><span class="std std-ref">工厂方法</span></a> 能根据我的配置类生成服务器实例。</p>
+<p>在 <cite>config.py</cite> 中，有一个名为 <cite>config</cite> 的字典如下：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+ <span class="s1">&#39;development&#39;</span> <span class="p">:</span> <span class="n">DevelopmentConfig</span><span class="p">,</span>      <span class="c1"># 开发环境</span>
+ <span class="s1">&#39;linux&#39;</span><span class="p">:</span> <span class="n">LinuxConfig</span><span class="p">,</span>                   <span class="c1"># 提供的 Linux 模板环境</span>
+ <span class="s1">&#39;windows&#39;</span><span class="p">:</span> <span class="n">WindowsConfig</span><span class="p">,</span>               <span class="c1"># 提供的 Windows模板环境</span>
+ <span class="s1">&#39;testing&#39;</span> <span class="p">:</span> <span class="n">TestingConfig</span><span class="p">,</span>              <span class="c1"># 测试环境</span>
+ <span class="s1">&#39;default&#39;</span> <span class="p">:</span> <span class="n">DevelopmentConfig</span>           <span class="c1"># 默认为开发环境</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+<p>你需要添加自己的自定义配置类到此表中，如添加 <code class="docutils literal"><span class="pre">'myconfig':</span> <span class="pre">MyConfig</span></code> 。之后，修改 <cite>manage.py</cite> 中的第 13 行 <code class="docutils literal"><span class="pre">app</span> <span class="pre">=</span> <span class="pre">create_app('default')</span></code> 为 <code class="docutils literal"><span class="pre">app</span> <span class="pre">=</span> <span class="pre">create_app('myconfig')</span></code> 即可。</p>
+<p>接下来请您阅读 <a class="reference internal" href="web-quickstart.html#web-quickstart"><span class="std std-ref">快速上手</span></a> 。</p>
+</div>
 </div>
 
 
@@ -59,7 +194,17 @@
 
 <p>
   <a href="index.html">回到主页</a>
-</p><div class="relations">
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Web 服务器全局配置</a><ul>
+<li><a class="reference internal" href="#id1">样例配置文件</a></li>
+<li><a class="reference internal" href="#web-config-detailed">样例文件详细解释</a></li>
+<li><a class="reference internal" href="#web-config-add">添加自定义配置类到表</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>

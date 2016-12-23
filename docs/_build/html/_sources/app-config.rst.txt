@@ -13,7 +13,6 @@
 您从 GitHub 仓库获取的源码中已经包含了一份默认的配置文件，忽略注释和函数部分后内容如下：
 
 .. code-block:: go
-   :linenos:
    
    const STORE_PATH = "G:\\Cloud\\"
    const DOWNLOAD_PATH = "G:\\Cloud\\"
@@ -82,7 +81,6 @@
 例如，在使用 WiFi 连接的 Ubuntu 16.04 下部署服务器以供 Windows 客户端使用时，可参考的配置文件如下：
 
 .. code-block:: go
-   :linenos:
    
    const STORE_PATH = "/usr/local/cloud-store/"
    const DOWNLOAD_PATH = "/usr/local/cloud-download"

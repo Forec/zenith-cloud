@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>快速上手 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>快速上手 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -46,6 +46,174 @@
             
   <div class="section" id="web-quickstart">
 <span id="id1"></span><h1>快速上手<a class="headerlink" href="#web-quickstart" title="永久链接至标题">¶</a></h1>
+<p>此部分文档将带领您在一个假想的纯净环境中部署、配置、扩展自定义功能并启动顶点云 Web 服务器。</p>
+<div class="section" id="id2">
+<h2>假想环境<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>有一天我意外获得了一台免费的 CVM，而我恰巧获得了一次得到顶点云 Web 服务器源码的机会。这台云主机使用的操作系统为 CentOS 7.2，公网 IP 地址为 <code class="docutils literal"><span class="pre">123.123.123.123</span></code> ，已安装好 Python3、Pip以及 Pyvenv 并配置了环境变量。下面的指令均通过 SSH 远程操作。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>git clone https://github.com/Forec/zenith-cloud.git
+<span class="nb">cd</span> zenith-cloud/web/
+</pre></div>
+</div>
+<p>我已经获得了顶点云应用程序服务器的源码，接下来使用一键配置脚本部署环境。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> settings
+./setup.sh
+</pre></div>
+</div>
+<p>很高兴看到配置脚本通知我部署完成。接下来测试一下代码是否能够在本地机器通过测试。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> ..
+<span class="nb">source</span> venv/bin/activate  <span class="c1"># Windows 下请执行 venv/Scripts/activate.bat</span>
+python manage.py <span class="nb">test</span>
+</pre></div>
+</div>
+<p>非常顺利！测试脚本告诉我所有测试均已完成，顶点云 Web 服务器各个基础模块能够在这台服务器上运转正常。</p>
+</div>
+<div class="section" id="id3">
+<h2>针对假想环境修改配置文件<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>鉴于顶点云提供的默认配置仅适用于 Forec 的史诗级笔记本，下面根据这台服务器的情况修改配置文件。编辑 <cite>config.py</cite> :</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>nano config.py
+</pre></div>
+</div>
+<p>我拷贝了一份 <code class="docutils literal"><span class="pre">LinuxConfig</span></code> 并重命名该子类为 <code class="docutils literal"><span class="pre">MyConfig</span></code> ，然后根据如下考虑对 <code class="docutils literal"><span class="pre">MyConfig</span></code> 做了一定修改：</p>
+<ul class="simple">
+<li>我想将用户上传的文件存储到 <code class="docutils literal"><span class="pre">/usr/local/cloud</span></code> ，因此我修改 <code class="docutils literal"><span class="pre">ZENITH_FILE_STORE_PATH</span> <span class="pre">=</span> <span class="pre">&quot;/usr/local/cloud&quot;</span></code></li>
+<li>我觉得顶点云默认使用的 SQLITE 数据库很方便，并且放置在源码根目录下也没什么问题，因此我决定保留默认配置中的 <code class="docutils literal"><span class="pre">SQLALCHEMY_DATABASE_URI</span></code></li>
+<li>我想让世界上任何一个角落均能访问我的顶点云服务器，因此我修改 <code class="docutils literal"><span class="pre">ZENITH_SERVER_ADDRESS</span> <span class="pre">=</span> <span class="pre">'123.123.123.123'</span></code></li>
+<li>我要让顶点云 Web 服务器用我的邮箱发送认证邮件。我的邮箱是 <a class="reference external" href="mailto:mymail&#37;&#52;&#48;gmail&#46;com">mymail<span>&#64;</span>gmail<span>&#46;</span>com</a>，因此我修改如下部分：</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">MAIL_SERVER</span> <span class="pre">=</span> <span class="pre">'smtp.gmail.com'</span></code></li>
+<li><code class="docutils literal"><span class="pre">MAIL_PORT</span> <span class="pre">=</span> <span class="pre">25</span></code></li>
+<li><code class="docutils literal"><span class="pre">MAIL_USE_TLS</span> <span class="pre">=</span> <span class="pre">True</span></code></li>
+<li><code class="docutils literal"><span class="pre">MAIL_USERNAME</span> <span class="pre">=</span> <span class="pre">&quot;mymail&#64;gmail.com&quot;</span></code></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>我觉得邮箱的密码还是不要放在代码中比较好，因此我向环境变量添加了 <code class="docutils literal"><span class="pre">MAIL_PASSWORD</span></code> 值并保留了 <code class="docutils literal"><span class="pre">MAIL_PASSWORD</span></code> 的设置</li>
+</ul>
+<p>看起来配置文件没什么值得修改的了，我决定按下 <code class="docutils literal"><span class="pre">CTRL+X</span></code> 保存配置文件，顺便检查一下新定义的配置类：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+ <span class="n">ZENITH_PATH_SEPERATOR</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
+ <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/usr/local/cloud&#39;</span>
+ <span class="n">ZENITH_TEMPFILE_STORE_PATH</span> <span class="o">=</span> <span class="n">ZENITH_FILE_STORE_PATH</span> <span class="o">+</span> \
+                              <span class="s1">&#39;TEMP&#39;</span> <span class="o">+</span> <span class="n">ZENITH_PATH_SEPERATOR</span>
+ <span class="n">ZENITH_SERVER_ADDRESS</span> <span class="o">=</span> <span class="s1">&#39;123.123.123.123&#39;</span> <span class="c1"># 服务器部署的域名/IP地址</span>
+ <span class="n">SERVER_NAME</span> <span class="o">=</span> <span class="n">ZENITH_SERVER_ADDRESS</span>
+ <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s1">&#39;sqlite:///&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="s1">&#39;work.db&#39;</span><span class="p">)</span>
+ <span class="n">MAIL_SERVER</span> <span class="o">=</span> <span class="s1">&#39;smtp.gmail.com&#39;</span>
+ <span class="n">MAIL_PORT</span> <span class="o">=</span> <span class="mi">25</span> <span class="c1"># SSL is 465</span>
+ <span class="n">MAIL_USE_TLS</span> <span class="o">=</span> <span class="bp">True</span>
+ <span class="n">MAIL_USERNAME</span> <span class="o">=</span> <span class="s2">&quot;mymail@gmail.com&quot;</span>
+ <span class="n">MAIL_PASSWORD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MAIL_PASSWORD&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>添加自定义类到表驱动<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>我决定按照 <a class="reference internal" href="web-config.html#web-config-add"><span class="std std-ref">添加自定义配置类到表</span></a> 中的说法将我的自定义配置类添加到表驱动中。</p>
+<p>向 <cite>config.py</cite> 的 <cite>config</cite> 字典中添加 <code class="docutils literal"><span class="pre">'myconfig':</span> <span class="pre">MyConfig</span></code> 后如下：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+ <span class="s1">&#39;development&#39;</span> <span class="p">:</span> <span class="n">DevelopmentConfig</span><span class="p">,</span>      <span class="c1"># 开发环境</span>
+ <span class="s1">&#39;linux&#39;</span><span class="p">:</span> <span class="n">LinuxConfig</span><span class="p">,</span>                   <span class="c1"># 提供的 Linux 模板环境</span>
+ <span class="s1">&#39;windows&#39;</span><span class="p">:</span> <span class="n">WindowsConfig</span><span class="p">,</span>               <span class="c1"># 提供的 Windows模板环境</span>
+ <span class="s1">&#39;testing&#39;</span> <span class="p">:</span> <span class="n">TestingConfig</span><span class="p">,</span>              <span class="c1"># 测试环境</span>
+ <span class="s1">&#39;default&#39;</span> <span class="p">:</span> <span class="n">DevelopmentConfig</span><span class="p">,</span>          <span class="c1"># 默认为开发环境</span>
+ <span class="s1">&#39;myconfig&#39;</span> <span class="p">:</span> <span class="n">MyConfig</span>                                       <span class="c1"># 自定义添加的配置类</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+<p>之后修改 <cite>manage.py</cite> 的第 13 行为：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">(</span><span class="s1">&#39;myconfig&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="web-quickstart-runserver">
+<span id="id5"></span><h2>启动服务器<a class="headerlink" href="#web-quickstart-runserver" title="永久链接至标题">¶</a></h2>
+<p>顶点云 Web 服务器可通过两种方式启动。我们推荐使用 <cite>settings</cite> 目录下的启动脚本，启动脚本使用 <cite>gunicorn</cite> 能够提高服务器的并发能力。</p>
+<div class="section" id="id6">
+<h3>一键启动<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<p><cite>web/settings</cite> 目录提供了顶点云 Web 服务器的启动脚本，您可以运行 <cite>run.sh</cite> （Linux 系统）或 <cite>run.bat</cite> （Windows 系统）来启动服务器。默认会开启在本机（127.0.0.1）的 5001 端口。您可以修改启动脚本中的 IP 地址和端口号。</p>
+</div>
+<div class="section" id="id7">
+<h3>手动启动<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h3>
+<p>您也可以选择手动控制服务器的启动。通常在 Debug 情况下使用此方式，因为 Flask 对并发请求的原生支持并不很令人满意。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">source</span> venv/bin/activate        <span class="c1"># Windows 下请执行 venv/Scripts/activate.bat</span>
+python manage.py runserver      <span class="c1"># 您可以指定 -h 和 -p 参数，分别代表开放服务器的IP 地址和端口号</span>
+</pre></div>
+</div>
+<p>现在您可以从本机的浏览器访问您的服务器了。</p>
+</div>
+</div>
+<div class="section" id="web-quickstart-expand">
+<span id="id8"></span><h2>扩展自定义功能<a class="headerlink" href="#web-quickstart-expand" title="永久链接至标题">¶</a></h2>
+<p>不得不说 Forec 的设计实在是太简陋了，为什么用户无法注册！幸好我学习过 <a class="reference external" href="http://flask.pocoo.org/">Flask</a> 框架，也许我应该自己添加这个功能？</p>
+<p>在阅读了 <a class="reference internal" href="app-structual.html#app-structual"><span class="std std-ref">框架分析</span></a> 后，我了解了整个顶点云 Web 服务器的结构，下面我准备添加这个简单的功能。</p>
+<p>进入 <cite>web/app/auth</cite> 目录并编辑 <cite>views.py</cite> ：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> web/app/auth
+nano views.py
+</pre></div>
+</div>
+<p>我在源码的 56 行发现了一句注释，原来默认的顶点云提供了注册接口，但将注册部分屏蔽掉了，反馈给用户的仅仅是展示界面。注册的视图函数如下所示。</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nd">@auth.route</span><span class="p">(</span><span class="s1">&#39;/register&#39;</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">register</span><span class="p">():</span>
+ <span class="c1"># 展示状态，禁止注册</span>
+ <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;auth/testing.html&#39;</span><span class="p">,</span> <span class="n">_external</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+ <span class="c1"># form = RegistrationForm()</span>
+ <span class="c1"># if current_user.is_authenticated:</span>
+ <span class="c1">#     flash(&#39;您已经登陆，登陆状态下无法注册&#39;)</span>
+ <span class="c1">#     return redirect(url_for(&#39;main.index&#39;, _external=True))</span>
+ <span class="c1"># if form.validate_on_submit():</span>
+ <span class="c1">#     user = User(email = form.email.data,</span>
+ <span class="c1">#                 nickname = form.nickname.data,</span>
+ <span class="c1">#                 password = form.password.data)</span>
+ <span class="c1">#     db.session.add(user)</span>
+ <span class="c1">#     db.session.commit()</span>
+ <span class="c1">#     token = user.generate_confirmation_token()</span>
+ <span class="c1">#     send_email(user.email,</span>
+ <span class="c1">#                &#39;确认您的帐户&#39;,</span>
+ <span class="c1">#                &#39;auth/email/confirm&#39;,</span>
+ <span class="c1">#                user=user,</span>
+ <span class="c1">#                token=token)</span>
+ <span class="c1">#     flash(&#39;一封确认邮件已经发送到您填写的邮箱，&#39;</span>
+ <span class="c1">#           &#39;请查看以激活您的帐号&#39;)</span>
+ <span class="c1">#     login_user(user)</span>
+ <span class="c1">#     return redirect(&#39;http://mail.&#39;+user.email.split(&#39;@&#39;)[-1])</span>
+ <span class="c1"># return render_template(&#39;auth/register.html&#39;, form=form)</span>
+</pre></div>
+</div>
+<p>我决定开放注册接口，因此我将被注释的部分取消注释，将视图函数中的第一句 <cite>return</cite> 删除。</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nd">@auth.route</span><span class="p">(</span><span class="s1">&#39;/register&#39;</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">register</span><span class="p">():</span>
+ <span class="c1"># 展示状态，禁止注册</span>
+ <span class="c1"># return render_template(&#39;auth/testing.html&#39;, _external=True)</span>
+
+ <span class="n">form</span> <span class="o">=</span> <span class="n">RegistrationForm</span><span class="p">()</span>
+ <span class="k">if</span> <span class="n">current_user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+     <span class="n">flash</span><span class="p">(</span><span class="s1">&#39;您已经登陆，登陆状态下无法注册&#39;</span><span class="p">)</span>
+     <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;main.index&#39;</span><span class="p">,</span> <span class="n">_external</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+ <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">validate_on_submit</span><span class="p">():</span>
+     <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">email</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">email</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                 <span class="n">nickname</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">nickname</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                 <span class="n">password</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+     <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+     <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+     <span class="n">token</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">generate_confirmation_token</span><span class="p">()</span>
+     <span class="n">send_email</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+                <span class="s1">&#39;确认您的帐户&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;auth/email/confirm&#39;</span><span class="p">,</span>
+                <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
+                <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span>
+     <span class="n">flash</span><span class="p">(</span><span class="s1">&#39;一封确认邮件已经发送到您填写的邮箱，&#39;</span>
+           <span class="s1">&#39;请查看以激活您的帐号&#39;</span><span class="p">)</span>
+     <span class="n">login_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+     <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;http://mail.&#39;</span><span class="o">+</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+ <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;auth/register.html&#39;</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>我重新启动了服务器，现在注册接口已经打开。</p>
+<p>接下来请您阅读 <a class="reference internal" href="web-structual.html#web-structual"><span class="std std-ref">框架分析</span></a> 。</p>
+</div>
 </div>
 
 
@@ -59,7 +227,23 @@
 
 <p>
   <a href="index.html">回到主页</a>
-</p><div class="relations">
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">快速上手</a><ul>
+<li><a class="reference internal" href="#id2">假想环境</a></li>
+<li><a class="reference internal" href="#id3">针对假想环境修改配置文件</a></li>
+<li><a class="reference internal" href="#id4">添加自定义类到表驱动</a></li>
+<li><a class="reference internal" href="#web-quickstart-runserver">启动服务器</a><ul>
+<li><a class="reference internal" href="#id6">一键启动</a></li>
+<li><a class="reference internal" href="#id7">手动启动</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#web-quickstart-expand">扩展自定义功能</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>

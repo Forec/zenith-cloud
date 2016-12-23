@@ -54,29 +54,29 @@ def logout():
 @auth.route('/register', methods = ['GET', 'POST'])
 def register():
     # 展示状态，禁止注册
-    return render_template('auth/testing.html', _external=True)
+    # return render_template('auth/testing.html', _external=True)
 
-    # form = RegistrationForm()
-    # if current_user.is_authenticated:
-    #     flash('您已经登陆，登陆状态下无法注册')
-    #     return redirect(url_for('main.index', _external=True))
-    # if form.validate_on_submit():
-    #     user = User(email = form.email.data,
-    #                 nickname = form.nickname.data,
-    #                 password = form.password.data)
-    #     db.session.add(user)
-    #     db.session.commit()
-    #     token = user.generate_confirmation_token()
-    #     send_email(user.email,
-    #                '确认您的帐户',
-    #                'auth/email/confirm',
-    #                user=user,
-    #                token=token)
-    #     flash('一封确认邮件已经发送到您填写的邮箱，'
-    #           '请查看以激活您的帐号')
-    #     login_user(user)
-    #     return redirect('http://mail.'+user.email.split('@')[-1])
-    # return render_template('auth/register.html', form=form)
+    form = RegistrationForm()
+    if current_user.is_authenticated:
+        flash('您已经登陆，登陆状态下无法注册')
+        return redirect(url_for('main.index', _external=True))
+    if form.validate_on_submit():
+        user = User(email = form.email.data,
+                    nickname = form.nickname.data,
+                    password = form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        token = user.generate_confirmation_token()
+        send_email(user.email,
+                   '确认您的帐户',
+                   'auth/email/confirm',
+                   user=user,
+                   token=token)
+        flash('一封确认邮件已经发送到您填写的邮箱，'
+              '请查看以激活您的帐号')
+        login_user(user)
+        return redirect('http://mail.'+user.email.split('@')[-1])
+    return render_template('auth/register.html', form=form)
 
 # -------------------------------------------------------------------
 # confirm 函数提供了用户注册邮箱激活入口，根据向用户发送的激活链接尾部的

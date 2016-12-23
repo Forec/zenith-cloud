@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>应用设计要点 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>应用设计要点 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -54,7 +54,7 @@
 <li>维持逻辑转发和功能处理函数的独立。您应当理解我们将 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> 中各个函数使用包含 <code class="docutils literal"><span class="pre">switch</span></code> 块的公有方法转发的目的和意义。</li>
 <li>可以模仿但请不要学习。我们的功能处理函数大量使用了 <code class="docutils literal"><span class="pre">goto</span></code> 语句。虽然它能够让程序很快跳出错误，但我们更建议使用 <code class="docutils literal"><span class="pre">panic</span></code> 、 <code class="docutils literal"><span class="pre">recover</span></code> 机制。我们在设计功能处理函数时最终选择了使用 <code class="docutils literal"><span class="pre">goto</span></code> ，并不代表我们提倡这种方式。请您根据自己的喜好来决定是模仿还是使用更多更优的方式。</li>
 </ol>
-<p>感谢您的阅读！到这里顶点云的应用程序服务器文档就结束了，您可以阅读 <a class="reference internal" href="app-log.html#app-log"><span class="std std-ref">顶点云应用服务器变动记录</span></a> 以了解顶点云开发过程的变动历史，或者阅读 <a class="reference internal" href="zenith-web.html#zenith-web"><span class="std std-ref">顶点云 Web 服务器</span></a> 以了解顶点云 Web 服务器的相关信息。</p>
+<p>感谢您的阅读！到这里顶点云的应用程序服务器文档就结束了，您可以阅读 <a class="reference internal" href="app-log.html#app-log"><span class="std std-ref">顶点云应用服务器变动记录</span></a> 以了解顶点云应用程序服务器开发过程的变动历史，或者阅读 <a class="reference internal" href="zenith-web.html#zenith-web"><span class="std std-ref">顶点云 Web 服务器</span></a> 以了解顶点云 Web 服务器的相关信息。</p>
 </div>
 
 

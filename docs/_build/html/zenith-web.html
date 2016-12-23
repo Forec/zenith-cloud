@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>顶点云 Web 服务器 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>顶点云 Web 服务器 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -46,13 +46,16 @@
             
   <div class="section" id="web">
 <span id="zenith-web"></span><h1>顶点云 Web 服务器<a class="headerlink" href="#web" title="永久链接至标题">¶</a></h1>
-<p>此部分文档将主要介绍顶点云 Web 服务器的框架和视图函数，文档分成几个部分，我推荐你按如下顺序阅读：
-《 <a class="reference internal" href="web-installation.html#web-installation"><span class="std std-ref">部署顶点云 Web 服务器</span></a> 》：部署顶点云 Web 服务器
-《 <a class="reference internal" href="web-config.html#web-config"><span class="std std-ref">Web 服务器全局配置</span></a> 》：Web 服务器全局设置
-《 <a class="reference internal" href="web-quickstart.html#web-quickstart"><span class="std std-ref">快速上手</span></a> 》：快速上手
-《 <a class="reference internal" href="web-structual.html#web-structual"><span class="std std-ref">框架分析</span></a> 》：框架分析
-《 <a class="reference internal" href="web-blueprint.html#web-blueprint"><span class="std std-ref">蓝本介绍</span></a> 》：蓝本介绍
-《 <a class="reference internal" href="web-viewfunction.html#web-viewfunction"><span class="std std-ref">视图函数说明</span></a> 》：视图函数说明</p>
+<p>此部分文档将主要介绍顶点云 Web 服务器的框架和视图函数，文档分成几个部分，我推荐你按如下顺序阅读：</p>
+<ul class="simple">
+<li><a class="reference internal" href="web-installation.html#web-installation"><span class="std std-ref">部署顶点云 Web 服务器</span></a></li>
+<li><a class="reference internal" href="web-config.html#web-config"><span class="std std-ref">Web 服务器全局配置</span></a></li>
+<li><a class="reference internal" href="web-quickstart.html#web-quickstart"><span class="std std-ref">快速上手</span></a></li>
+<li><a class="reference internal" href="web-structual.html#web-structual"><span class="std std-ref">框架分析</span></a></li>
+<li><a class="reference internal" href="web-blueprint.html#web-blueprint"><span class="std std-ref">蓝本介绍</span></a></li>
+<li><a class="reference internal" href="web-viewfunction.html#web-viewfunction"><span class="std std-ref">视图函数说明</span></a></li>
+<li><a class="reference internal" href="web-test.html#web-test"><span class="std std-ref">Web 服务器测试</span></a></li>
+</ul>
 <p>顶点云的 Web 服务器使用 <a class="reference external" href="http://flask.pocoo.org/">Flask</a> 框架，Flask 的介绍不在本文档的范围内，如果你想了解 Flask 请移步：</p>
 <ul class="simple">
 <li><a class="reference external" href="http://flask.pocoo.org/docs/0.11/">Flask 文档</a></li>
@@ -62,13 +65,48 @@
 <p>这部分文档比较松散，首先简单介绍顶点云 Web 服务器部署和配置，之后将从框架、视图函数处理到部分实现细节说明顶点云 Web 服务器如何处理用户请求、实现文件共享、目录上传等。</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="web-installation.html">部署顶点云 Web 服务器</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web-config.html">Web 服务器全局配置</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web-quickstart.html">快速上手</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web-structual.html">框架分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web-blueprint.html">蓝本介绍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web-installation.html">部署顶点云 Web 服务器</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web-installation.html#id1">获取源码</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-installation.html#id2">安装第三方支持</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-installation.html#id5">运行测试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web-config.html">Web 服务器全局配置</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web-config.html#id1">样例配置文件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-config.html#web-config-detailed">样例文件详细解释</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-config.html#web-config-add">添加自定义配置类到表</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web-quickstart.html">快速上手</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web-quickstart.html#id2">假想环境</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-quickstart.html#id3">针对假想环境修改配置文件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-quickstart.html#id4">添加自定义类到表驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-quickstart.html#web-quickstart-runserver">启动服务器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-quickstart.html#web-quickstart-expand">扩展自定义功能</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web-structual.html">框架分析</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web-structual.html#web-structual-manage">管理器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-structual.html#web-app-factory">工厂方法</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web-blueprint.html">蓝本介绍</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web-blueprint.html#auth">Auth 蓝本</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-blueprint.html#main">Main 蓝本</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-blueprint.html#id2">自定义蓝本</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web-models.html">模型介绍</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web-models.html#web-models-database">数据库</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-models.html#web-models-class">内置自定义类</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web-viewfunction.html">视图函数说明</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web-viewfunction.html#auth">Auth 蓝本视图函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web-viewfunction.html#main">Main 蓝本视图函数</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="web-test.html">Web 服务器测试</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web-viewfunction.html">视图函数说明</a></li>
 </ul>
 </div>
 </div>

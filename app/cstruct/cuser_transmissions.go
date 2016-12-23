@@ -97,8 +97,8 @@ func (u *cuser) get(db *sql.DB, command string, t trans.Transmitable) {
 		goto GET_VERIFY
 	}
 	queryRow.Scan(&isdir, &private, &ownerid, &pass, &cfileid, &filename, &path, &downloaded)
-	if int64(ownerid) != u.id && pass != args[2] || private {
-		// 用户不是资源所有者且提取码不正确 或 资源为私有
+	if int64(ownerid) != u.id && pass != args[2] || int64(ownerid) != u.id && private {
+		// 用户不是资源所有者且提取码不正确 或 用户不是资源所有者且资源为私有
 		valid = 3 // 用户不具有权限，valid = 3：无法下载
 		goto GET_VERIFY
 	}
@@ -471,10 +471,10 @@ func (u *cuser) put(db *sql.DB, command string, t trans.Transmitable) {
 		t.SendBytes(auth.Int64ToBytes(500))
 		fmt.Println("服务器内部错误，无法更新实体文件引用数，错误信息：", err.Error())
 	} else {
-		u.used += size	
+		u.used += int64(size)
 		db.Exec(fmt.Sprintf(`update cuser set used=%d where uid=%d`,
-			u.used, u.uid))		// 更新用户使用云盘容量
-	
+			u.used, u.id)) // 更新用户使用云盘容量
+
 		t.SendBytes(auth.Int64ToBytes(200))
 		fmt.Println("上传请求，传输操作结束")
 	}

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>框架分析 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>框架分析 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -46,6 +46,53 @@
             
   <div class="section" id="web-structual">
 <span id="id1"></span><h1>框架分析<a class="headerlink" href="#web-structual" title="永久链接至标题">¶</a></h1>
+<p>此部分文档主要介绍顶点云 Web 服务器的框架结构。</p>
+<p>顶点云服务器源码文件结构如下：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>- web
+  - app
+    - auth
+    - main
+    - static
+      - thumbnail
+    - templates
+    - ...
+    - models.py
+  - settings
+  - config.py
+  - manage.py
+  - work.db
+</pre></div>
+</div>
+<p>以上几个目录对应的功能如下：</p>
+<ul class="simple">
+<li><em>auth</em> ：对应 <a class="reference internal" href="web-blueprint.html#web-blueprint-auth"><span class="std std-ref">Auth 蓝本</span></a> ，用于处理用户注册、登录等需要特权的请求。</li>
+<li><em>main</em> ：对应 <a class="reference internal" href="web-blueprint.html#web-blueprint-main"><span class="std std-ref">Main 蓝本</span></a> ，用于处理用户大部分不需要特权的请求，以及主要的功能实现。</li>
+<li><em>static</em> ：对应 Flask 框架中存储静态文件的目录，此目录存储 Web 服务器使用的图片、js、css等文件。</li>
+<li><em>static/thumbnail</em> ：此目录存储用户自定义的头像文件。</li>
+<li><em>template</em> ：此目录存储 Web 服务器渲染网页使用的模板。</li>
+<li><em>models.py</em> ：对应 <a class="reference internal" href="web-models.html#web-models"><span class="std std-ref">模型介绍</span></a> 中介绍的各类模型。</li>
+<li><em>config.py</em> ：对应 <a class="reference internal" href="web-config.html#web-config"><span class="std std-ref">Web 服务器全局配置</span></a> 中的配置文件。</li>
+<li><em>manage.py</em> ：管理服务器的配置文件，包含了一系列自定义命令，你可以查看 <a class="reference internal" href="#web-structual-manage"><span class="std std-ref">管理器</span></a> 以了解更多。</li>
+</ul>
+<p>各模块之间关系如下图所示：</p>
+<p><img alt="uml" src="_images/web-uml.png" /></p>
+<div class="section" id="web-structual-manage">
+<span id="id2"></span><h2>管理器<a class="headerlink" href="#web-structual-manage" title="永久链接至标题">¶</a></h2>
+<p><cite>manage.py</cite> 管理着顶点云 Web 服务器。它提供了很多操作服务器的基础命令，如启动、初始化、测试等，你可以通过 <cite>python manage.py &lt;command&gt;</cite> 来运行不同命令。默认的顶点云 Web 服务器管理器提供的命令有：</p>
+<ul class="simple">
+<li><cite>shell</cite> ：启动交互式 Python 命令行并自动导入顶点云 Web 服务器的各类模块</li>
+<li><cite>db</cite> ：数据库迁移类命令，如 <cite>db migrate</cite> 、 <cite>db init</cite> 等</li>
+<li><cite>test</cite> ：启动 <cite>web/tests</cite> 目录下的单元测试</li>
+<li><cite>init</cite> ：初始化数据库，随机生成用户和数据</li>
+<li><cite>simple_init</cite> ：简单初始化数据库，只加入五个特定的用户</li>
+</ul>
+</div>
+<div class="section" id="web-app-factory">
+<span id="id3"></span><h2>工厂方法<a class="headerlink" href="#web-app-factory" title="永久链接至标题">¶</a></h2>
+<p><cite>web/app/__init__.py</cite> 中包含了 Web 服务器的工厂方法，当你通过 <cite>manage.py</cite> 执行命令时， <cite>manage.py</cite> 会调用工厂方法生成一个应用实例。</p>
+<p>工厂方法名为 <cite>create_app</cite> ，正如我们在 <a class="reference internal" href="web-quickstart.html#web-quickstart-expand"><span class="std std-ref">扩展自定义功能</span></a> 中介绍的那样，修改 <cite>manage.py</cite> 的第 13 行实际是修改了工厂方法的参数。这个工厂方法根据传入的参数从 <a class="reference internal" href="web-config.html#web-config"><span class="std std-ref">Web 服务器全局配置</span></a> 中寻找对应表项（配置类），并使用该配置类生成服务器实例。</p>
+<p>接下来请您阅读 <a class="reference internal" href="web-blueprint.html#web-blueprint"><span class="std std-ref">蓝本介绍</span></a> 。</p>
+</div>
 </div>
 
 
@@ -59,7 +106,16 @@
 
 <p>
   <a href="index.html">回到主页</a>
-</p><div class="relations">
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">框架分析</a><ul>
+<li><a class="reference internal" href="#web-structual-manage">管理器</a></li>
+<li><a class="reference internal" href="#web-app-factory">工厂方法</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>

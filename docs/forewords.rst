@@ -1,4 +1,4 @@
-.. _app-forewords:
+.. _forewords:
 
 前言
 =======

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>部署顶点云应用程序服务器 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>部署顶点云应用程序服务器 &#8212; 顶点云  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -66,6 +66,11 @@
 <div class="highlight-shell"><div class="highlight"><pre><span></span>go get github.com/mattn/go-sqlite3
 </pre></div>
 </div>
+</div>
+<div class="section" id="id4">
+<h2>运行测试<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>顶点云的应用程序服务器提供了一部分单元测试，您可以运行单元测试以确保环境配置正常。</p>
+<p>进入 <cite>app/test</cite> 目录，运行 <cite>runtest.sh</cite> （Linux 系统）或 <cite>runtest.bat</cite> （Windows系统）。若测试结果显示通过则顶点云的应用程序服务器部署成功。</p>
 <p>至此，顶点云应用程序已部署完成。顶点云可运行在任何主流体系结构计算机以及任何操作系统上。接下来请您阅读 <a class="reference internal" href="app-config.html#app-config"><span class="std std-ref">应用程序服务器全局设置</span></a> 以根据您的系统配置顶点云。</p>
 </div>
 </div>
@@ -87,6 +92,7 @@
 <li><a class="reference internal" href="#">部署顶点云应用程序服务器</a><ul>
 <li><a class="reference internal" href="#id2">获取源码</a></li>
 <li><a class="reference internal" href="#id3">安装第三方库</a></li>
+<li><a class="reference internal" href="#id4">运行测试</a></li>
 </ul>
 </li>
 </ul>

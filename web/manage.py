@@ -10,7 +10,7 @@ from app.models    import User, Role, File, Permission, \
 from flask_script  import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
-app = create_app('default')
+app = create_app('testing')
     # 按配置方案创建应用
 
 manager = Manager(app)
@@ -38,6 +38,25 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 # 向管理器注册数据库迁移指令
 manager.add_command("db", MigrateCommand)
 
+# 获取覆盖报告
+@manager.command
+def coverage():
+    """Coverage report"""
+    import os, coverage, unittest
+    COV = coverage.coverage(branch=True, include='app/*')
+    COV.start()
+    tests = unittest.TestLoader().discover("tests")
+    unittest.TextTestRunner(verbosity=2).run(tests)
+    COV.stop()
+    COV.save()
+    print('Coverage Summmary:')
+    COV.report()
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    covdir = os.path.join(basedir, 'temp/coverage')
+    COV.html_report(directory=covdir)
+    print('HTML version: file://%s/index.html' % covdir)
+    COV.erase()
+
 # 管理器注册测试指令
 @manager.command
 def test():
@@ -45,6 +64,7 @@ def test():
     import unittest
     tests = unittest.TestLoader().discover("tests")
     unittest.TextTestRunner(verbosity=2).run(tests)
+
 
 # 管理器注册初始化数据库指令
 @manager.command
