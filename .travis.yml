@@ -6,7 +6,7 @@ install:
  - pip install -r web/requirements.txt
  - pip install coveralls
 script:
- - python3 web/manage.py runserver &
+ - mkdir web/tests/temp/
  - python3 web/manage.py coverage
 after_success:
  - coveralls

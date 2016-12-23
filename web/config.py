@@ -63,7 +63,7 @@ class DevelopmentConfig(Config):            # 开发者环境配置
 class TestingConfig(Config):                # 测试环境配置
     TESTING = True
     WTF_CSRF_ENABLED = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'temp/test.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'temp/test.sqlite')
     ZENITH_PATH_SEPERATOR = '/'
     ZENITH_FILE_STORE_PATH = 'temp/store/'
     ZENITH_TEMPFILE_STORE_PATH = ZENITH_FILE_STORE_PATH + \
