@@ -9,5 +9,5 @@ install:
  - pip install -r requirements.txt
  - go get github.com/mattn/go-sqlite3
 script:
- - go run ./cloud/cloud.go &
- - python3 manage.py runserver &
+ - go run app/cloud/cloud.go &
+ - python3 web/manage.py runserver &
