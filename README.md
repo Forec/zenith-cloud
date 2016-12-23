@@ -3,6 +3,7 @@
 [![License](http://7xktmz.com1.z0.glb.clouddn.com/license-UDL.svg)](https://github.com/Forec/zenith-cloud/blob/master/LICENSE) 
 [![Build Status](https://travis-ci.org/Forec/zenith-cloud.png)](https://travis-ci.org/Forec/zenith-cloud) 
 [![Documentation Status](https://readthedocs.org/projects/zenith-cloud/badge/?version=latest)](http://zenith-cloud.readthedocs.io/zh_CN/latest/?badge=latest)
+[![Coverage Status](https://coveralls.io/repos/github/Forec/zenith-cloud/badge.svg?branch=master)](https://coveralls.io/github/Forec/zenith-cloud?branch=master)
 
 [![Zenith Cloud](http://7xktmz.com1.z0.glb.clouddn.com/zenith-cloud-index.png)](http://cloud.forec.cn)
 
