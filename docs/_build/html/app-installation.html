@@ -54,8 +54,11 @@
 <div class="section" id="id2">
 <h2>获取源码<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
 <p>顶点云的应用程序服务器源码托管在 <a class="reference external" href="https://github.com/Forec/zenith-cloud">GitHub</a> 上，您可以使用 Git 克隆仓库或直接通过 GitHub 下载源码的压缩包。假设您熟悉 Git，请通过以下命令获取源码。</p>
+<p><strong>请注意</strong> ：顶点云的 GitHub 仓库中包含了应用程序服务器和 Web 服务器两部分，因为 Go 语言要求编译的包需要在 <cite>GOPATH</cite> 目录下，因此你需要将 <cite>app</cite> 目录移动到 <cite>GOPATH</cite> 下，并将其重命名为 <cite>cloud-storage</cite> 。</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>git clone https://github.com/Forec/zenith-cloud.git
-<span class="nb">cd</span> zenith-cloud/app/
+    <span class="nb">cd</span> zenith-cloud
+    mv app <span class="nv">$GOPATH</span>/cloud-storage
+<span class="nb">cd</span> <span class="nv">$GOPATH</span>/cloud-storage
 </pre></div>
 </div>
 <p>此时您应当已经进入顶点云的应用程序服务器源码目录。</p>

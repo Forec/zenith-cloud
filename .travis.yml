@@ -1,7 +1,8 @@
-language: go
-go:
- - 1.7.3
-go_import_path: ./app
- - go get github.com/mattn/go-sqlite3
+language: 
+ - python
+python:
+ - 3.5.0
+install: 
+ - pip install -r web/requirements.txt
 script:
- - go run app/cloud/cloud.go &
+ - python3 web/manage.py runserver &

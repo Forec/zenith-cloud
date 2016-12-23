@@ -52,7 +52,9 @@
 <p>有一天我意外获得了一台免费的 CVM，而我恰巧获得了一次得到顶点云源码的机会。这台云主机使用的操作系统为 CentOS 7.2，公网 IP 地址为 <code class="docutils literal"><span class="pre">123.123.123.123</span></code> ，已安装好 Golang 并配置了环境变量。下面的指令均通过 SSH 远程操作。</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="nv">$GOPATH</span>
 git clone https://github.com/Forec/zenith-cloud.git
-<span class="nb">cd</span> zenith-cloud/app/
+    <span class="nb">cd</span> zenith-cloud
+    mv app <span class="nv">$GOPATH</span>/cloud-storage
+<span class="nb">cd</span> <span class="nv">$GOPATH</span>/cloud-storage
 </pre></div>
 </div>
 <p>我已经获得了顶点云应用程序服务器的源码，接下来安装第三方库。</p>

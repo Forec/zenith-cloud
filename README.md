@@ -10,7 +10,9 @@
 
 # 开发者文档
 
-顶点云最新的开发者文档可在 [此处](http://zenith-cloud.readthedocs.io/zh_CN/latest/) 查看。
+顶点云最新的开发者文档可在 [此处](http://zenith-cloud.readthedocs.io/zh_CN/latest/) 查看，开发者文档提供了对顶点云应用程序服务器和 Web 服务器的详细介绍。
+
+我同时也在博客新建了专栏 [《顶点云设计与实现》](http://blog.forec.cn/columns/zenith-cloud.html)，详细记录了顶点云从构想、设计到具体代码实现的流程。
 
 # 许可证
 此仓库中的全部代码均受仓库中 [License](https://github.com/Forec/cloud-storage-webserver/blob/master/LICENSE) 声明的许可证保护。

@@ -14,7 +14,9 @@
 
     cd $GOPATH
     git clone https://github.com/Forec/zenith-cloud.git
-    cd zenith-cloud/app/
+	cd zenith-cloud
+	mv app $GOPATH/cloud-storage
+    cd $GOPATH/cloud-storage
 
 我已经获得了顶点云应用程序服务器的源码，接下来安装第三方库。
 
