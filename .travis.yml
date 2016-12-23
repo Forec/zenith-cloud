@@ -6,7 +6,8 @@ install:
  - pip install -r web/requirements.txt
  - pip install coveralls
 script:
- - mkdir web/tests/temp/
+ - mkdir web/temp/
+ - touch web/temp/test.sqlite
  - python3 web/manage.py coverage
 after_success:
  - coveralls
