@@ -6,7 +6,7 @@ python:
 go:
  - 1.7.3
 install: 
- - pip install -r requirements.txt
+ - pip install -r web/requirements.txt
  - go get github.com/mattn/go-sqlite3
 script:
  - go run app/cloud/cloud.go &
