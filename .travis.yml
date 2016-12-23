@@ -1,10 +1,11 @@
 language: 
- - python
  - go
-python:
- - 3.5.0
+ - python
 go:
  - 1.7.3
+python:
+ - 3.5.0
+go_import_path: ./app
 install: 
  - pip install -r web/requirements.txt
  - go get github.com/mattn/go-sqlite3
