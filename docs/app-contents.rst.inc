@@ -14,7 +14,7 @@
    app-structual
    app-test
    app-proxy
-   app-tutorial
+   app-tutorials
 	
 API 参考
 --------

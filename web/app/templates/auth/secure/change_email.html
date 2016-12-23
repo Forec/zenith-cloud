@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}顶点云 - 修改电子邮箱{% endblock %}
+
+{% block page_content %}
+<section id="top" class="two">
+    <div class="container">
+        <header>
+            <h2>更改你的注册邮箱</h2>
+            <br/>
+            {{ wtf.quick_form(form) }}
+        </header>
+    </div>
+</section>
+{% endblock %}

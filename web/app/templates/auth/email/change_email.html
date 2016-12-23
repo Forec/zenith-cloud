@@ -1,0 +1,6 @@
+<p>尊敬的 {{ user.nickname }},</p>
+<p>要验证您的邮箱，请 <a href="{{ url_for('auth.change_email', token=token, _external=True) }}">点击此处</a>.</p>
+<p>或者将以下链接粘贴到浏览器地址栏中访问：</p>
+<p>{{ url_for('auth.change_email', token=token, _external=True) }}</p>
+<p>Zenith Cloud Team</p>
+<p><small>注：请勿回复此邮件，您的回复将不会被响应。</small></p>

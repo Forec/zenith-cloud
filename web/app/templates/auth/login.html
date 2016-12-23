@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}顶点云 - 登陆{% endblock %}
+
+{% block page_content %}
+<section id="top" class="two">
+    <div class="container">
+        <header>
+            <h2><stong>登录</stong>顶点云</h2>
+            {{ wtf.quick_form(form) }}
+        </header>
+        <footer>
+            <p><small>尚未注册？<a href="{{ url_for('auth.register', _external=True) }} ">现在加入顶点云</a></small>
+                <br/>
+                <small>忘记密码？<a href="{{ url_for('auth.password_reset_request', _external=True) }}">点此重置您的密码</a></small></p>
+        </footer>
+    </div>
+</section>
+{% endblock %}

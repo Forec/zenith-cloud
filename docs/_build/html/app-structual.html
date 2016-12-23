@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
-    <link rel="next" title="传输测试" href="app-test.html" />
+    <link rel="next" title="测试" href="app-test.html" />
     <link rel="prev" title="协议设计" href="app-protocal.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -46,6 +46,45 @@
             
   <div class="section" id="app-structual">
 <span id="id1"></span><h1>框架分析<a class="headerlink" href="#app-structual" title="永久链接至标题">¶</a></h1>
+<p>此部分文档主要介绍顶点云应用程序服务器的框架结构。</p>
+<p>顶点云服务器源码文件结构如下：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>- app
+   - authenticate
+         - authenticate.go
+             - authenticate_test.go
+       - client
+         - client.go
+       - cloud
+         - cloud.go
+             - work.db
+       - config
+         - config.go
+       - cstruct
+         - cuser.go
+             - ulist.go
+             - cuser_operations.go
+             - cuser_transmissions.go
+             - ...
+       - server
+         - server.go
+       - transmit
+         - transmit.go
+             - transmit_test.go
+</pre></div>
+</div>
+<p>以上几个目录对应的模型结构如下：</p>
+<ul class="simple">
+<li><em>authenticate</em> ：对应 <a class="reference internal" href="app-protocal.html#app-protocal-authentication-procedure"><span class="std std-ref">认证流程</span></a> 中的流程以及 API 文档中的 <a class="reference internal" href="app-api.html#app-api-cipher"><span class="std std-ref">数字处理模块</span></a> 。</li>
+<li><em>client</em> ：对应 <a class="reference internal" href="app-test.html#app-test"><span class="std std-ref">测试</span></a> 中的测试客户端。</li>
+<li><em>cloud</em> ：用于创建和启动 <em>server</em> 实例。</li>
+<li><em>config</em> ：对应 <a class="reference internal" href="app-config.html#app-config"><span class="std std-ref">应用程序服务器全局设置</span></a> 。</li>
+<li><em>cstruct</em> ：对应 <a class="reference internal" href="app-models.html#app-models-class"><span class="std std-ref">内置自定义类</span></a> 。</li>
+<li><em>server</em> ：对应 <a class="reference internal" href="app-models.html#app-models-class"><span class="std std-ref">内置自定义类</span></a> 中的 <em>server</em> 类。</li>
+<li><em>transmit</em> ：对应 <a class="reference internal" href="app-protocal.html#app-protocal-transmitter"><span class="std std-ref">传输器设计</span></a> 、 <a class="reference internal" href="app-models.html#app-models-transmitter"><span class="std std-ref">传输器</span></a> 。</li>
+</ul>
+<p>服务器各模块之间关系如下图所示：</p>
+<p><img alt="uml" src="_images/uml.png" /></p>
+<p>接下来请您阅读 <a class="reference internal" href="app-test.html#app-test"><span class="std std-ref">测试</span></a> 。</p>
 </div>
 
 
@@ -65,7 +104,7 @@
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-app.html">顶点云应用程序服务器</a><ul>
       <li>Previous: <a href="app-protocal.html" title="上一章">协议设计</a></li>
-      <li>Next: <a href="app-test.html" title="下一章">传输测试</a></li>
+      <li>Next: <a href="app-test.html" title="下一章">测试</a></li>
   </ul></li>
   </ul></li>
 </ul>

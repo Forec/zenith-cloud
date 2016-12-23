@@ -27,7 +27,7 @@
 .. code-block:: shell
 
 	cd test
-	./runTest.sh
+	./runtest.sh
 	
 非常顺利！测试脚本告诉我所有测试均已完成，顶点云应用程序各个基础模块能够在这台服务器上运转正常。
 
@@ -80,6 +80,8 @@
 	
 似乎运行成功了？我决定配置一下测试客户端，看看是否能够正常使用。
 
+.. _app-quickstart-runtest-client:
+
 运行测试客户端
 -----------------
 
@@ -94,7 +96,7 @@
 	cd client
 	go build client.go && ./client
 	
-测试客户端提示我输入命令，看起来似乎运行正常。我决定做如下尝试。
+测试客户端提示我输入命令，看起来似乎运行正常。我决定做如下尝试（顶点云的默认测试客户端没有屏蔽服务器发送的保活信息，这一点会留在 :ref:`app-test-client-modify` 中作为教程，如果你在测试过程中觉得频繁出现的保活信息很困扰，可以注释掉 ``client/client.go`` 的第 70 行）。
 
 .. code-block:: shell
 

@@ -548,3 +548,4 @@ Login
 """"""""""""""""
 
 *Login* 函数位于 ``server/server.go`` 中，用于认证用户请求的合法性。此函数在服务器的 *Communicate* 方法中调用，*Communicate* 根据 *Login* 的返回值决定如何处理用户请求。
+

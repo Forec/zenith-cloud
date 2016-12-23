@@ -1,0 +1,48 @@
+<ul class="comments">
+    {% for comment in comments %}
+    <li class="comment">
+        <div class="comment-thumbnail">
+            <a href="{{ url_for('main.user', id=comment.author.uid, _external=True) }}">
+                <img class="img-rounded comment-thumbnail" src="{{ comment.author.gravatar(size=40) }}">
+            </a>
+        </div>
+
+        <div class="comment-content">
+            <div class="comment-date">发布时间：{{ moment(comment.timestamp).fromNow() }}</div>
+            <div class="comment-author"><a href="{{ url_for('.user', id=comment.author.uid, _external=True) }}">{{ comment.author.nickname }}</a></div>
+            <div class="comment-body">
+                {% if comment.disabled %}
+                    <p><i>此评论已被 评论发布者 或 资源发布者 或 管理员 设置为不可见。</i></p>
+                {% endif %}
+                {% if moderate or not comment.disabled %}
+                    {% if comment.body_html %}
+                        {{ comment.body_html | safe }}
+                    {% else %}
+                        {{ comment.body }}
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <div class="post-footer">
+                {% if moderate %}
+                    {% if comment.disabled %}
+                    <a href="{{ url_for('.moderate_comments_enable', id=comment.id, page=page, _external=True) }}">
+                        <span class="label label-primary">设置为可见</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('.moderate_comments_disable', id=comment.id, page=page, _external=True) }}">
+                        <span class="label label-danger">设置为不可见</span>
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+                {% if  (current_user == comment.author or current_user == comment.file.owner) and not comment.disabled and not moderate %}
+                    <a href="{{ url_for('.moderate_comments_disable_own', id=comment.id, page=page, _external=True) }}">
+                        <span class="label label-danger">将评论设置为不可见（此操作不可逆）</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

@@ -5,12 +5,12 @@
    :alt: 顶点云：专为北邮人设计的云存储系统
    :align: right
 
-欢迎阅读顶点云服务器的开发者文档。本文档分为两部分：《 :ref:`zenith-web` 》和《 :ref:`zenith-app` 》。其中，Web 服务器使用 `Flask`_ 框架，应用程序服务器使用 `Golang`_ ，这二者不在本文档的范围之内，如有兴趣请移步：
+欢迎阅读顶点云服务器的开发者文档。本文档分为两部分：《 :ref:`zenith-app` 》和《 :ref:`zenith-web` 》。其中，Web 服务器使用 `Flask`_ 框架，应用程序服务器使用 `Golang`_ ，这二者不在本文档的范围之内，如有兴趣请移步：
 
 -	`Flask 文档 <http://flask.pocoo.org/docs/0.11/>`_
 -	`Go 语言文档 <https://golang.org/doc/>`_
 
-《 :ref:`zenith-web` 》和《 :ref:`zenith-app` 》均包含对应的部署说明和上手指南，我建议您按文档推荐的顺序阅读。
+《 :ref:`zenith-app` 》和《 :ref:`zenith-web` 》均包含对应的部署说明和快速上手指南，我建议您按文档推荐的顺序阅读。
 
 
 .. _Golang: https://golang.org/

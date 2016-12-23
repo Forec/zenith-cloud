@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "main/_macros.html" as macros %}
+
+{% block title %}顶点云 - 我的云盘{% endblock %}
+
+{% block page_content %}
+<section id="top" class="two">
+    <div class="container">
+        <header>
+
+            <div>
+                <form method="POST" action="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front', _external=True) }}">
+                    {{ form.hidden_tag() }}
+                    {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
+                </form>
+            </div>
+            <br/>
+
+            <div style="text-align:right">
+
+                <a href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key='', direction='front', _external=True) }}">
+                    {% if key != '' %}
+                        <button type="button" class="btn btn-success">清空筛选条件</button>
+                    {% endif %}
+                </a>
+
+                <a href="{{ url_for('main.upload', path=_path, _external=True) }}">
+                    <button type="button" class="btn btn-success">上传</button>
+                </a>
+
+                <a href="{{ url_for('main.newfolder', path=_path, _external=True) }}">
+                    <button type="button" class="btn btn-success">新文件夹</button>
+                </a>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {% if _type == 'video' %}
+                            只看视频
+                        {% elif _type == 'music' %}
+                            只看音乐
+                        {% elif _type == 'photo' %}
+                            只看图片
+                        {% elif _type == 'document' %}
+                            只看文档
+                        {% elif _type == 'compress' %}
+                            只看压缩文件
+                        {% else %}
+                            选择查看方式
+                        {% endif %}
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='all',direction=_direction, order=_order, key=key, _external=True) }}">全部</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='music', direction=_direction, order=_order, key=key, _external=True) }}">音乐</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='video', direction=_direction, order=_order, key=key, _external=True) }}">视频</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='photo', direction=_direction, order=_order, key=key, _external=True) }}">图片</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='document', direction=_direction, order=_order, key=key, _external=True) }}">文档</a>
+                        <a class="dropdown-item" href="{{ url_for('main.cloud', type='compress', direction=_direction, order=_order, key=key, _external=True) }}">压缩文件</a>
+                        <div class="dropdown-divider"></div>
+                        {% if _direction == "front" %}
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='reverse', _external=True) }}">按时间排序</a>
+                        {% else %}
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='time', path=_path, key=key, direction='front', _external=True) }}">按时间排序</a>
+                        {% endif %}
+
+                        {% if _direction == "front" %}
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='reverse', _external=True) }}">按名称排序</a>
+                        {% else %}
+                            <a class="dropdown-item" href="{{ url_for('main.cloud', type=_type, order='name', path=_path, key=key, direction='front', _external=True) }}">按名称排序</a>
+                        {% endif %}
+                  </div>
+                </div>
+
+            </div>
+
+            {% if _type == "all" %}
+                <div style="text-align:left">
+                    <div class="link-block">
+                    当前路径：
+                    {% for __path, _pathView in pathlists %}
+                        <a class="link-item" href="{{ url_for('main.cloud', path=__path, order=_order, direction=_direction, _external=True) }}">
+                            {{ _pathView }}</a>
+                    {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div style="text-align:center">
+                {% if files %}
+                {% include 'main/cloud/_ownfiles.html' %}
+                {% else %}
+                    {% if key == '' %}
+                        <h3 class="text-warning">这里什么都没有</h3>
+                    {% else %}
+                        <h3 class="text-warning">没有检索到相关文件</h3>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            {% if pagination %}
+            <div class="pagination">
+                {{ macros.pagination_widget(pagination, 'main.cloud', key=key,
+                    type=_type, order=_order, direction=_direction) }}
+            </div>
+            {% endif %}
+
+        </header>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}

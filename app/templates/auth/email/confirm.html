@@ -1,8 +1,0 @@
-<p>尊敬的 {{ user.nickname }},</p>
-<p>欢迎加入 <b>顶点云</b>！</p>
-<p>为了验证您的帐户，请您 <a href="{{ url_for('auth.confirm', token=token, _external=True) }}">点击此处</a>.</p>
-<p>或者，您可以将以下链接复制到浏览器地址栏中打开：</p>
-<p>{{ url_for('auth.confirm', token=token, _external=True) }}</p>
-</br>
-<p>Zenith Cloud Team</p>
-<p><small>注：请勿回复此邮件，您的回复将不会被响应。</small></p>

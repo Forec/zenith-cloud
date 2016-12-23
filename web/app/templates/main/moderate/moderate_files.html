@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% import "main/_macros.html" as macros %}
+
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}顶点云 - 文件管理{% endblock %}
+
+{% block page_content %}
+<section id="top" class="two">
+    <div class="container">
+        <header>
+            <div>
+                <form method="POST" action="{{ url_for('main.moderate_files', _external=True) }}">
+                    {{ form.hidden_tag() }}
+                    {{ form.key(class="form-control", placeholder="根据关键字检索文件") }}
+                </form>
+            </div>
+
+            {% set moderate = True %}
+            <div style="text-align:left">
+                {% include 'main/_files.html' %}
+            </div>
+
+            {% if pagination %}
+            <div class="pagination">
+                {{ macros.pagination_widget(pagination, '.moderate_files') }}
+            </div>
+            {% endif %}
+        </header>
+    </div>
+</section>
+{% endblock %}

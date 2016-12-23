@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<!--
+	Fractal by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>顶点云</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/assets/main.css', _external=True) }}" />
+		<link rel="shortcut icon" href="{{ url_for('static', filename = 'images/favicon.ico', _external=True) }}" type="image/x-icon">
+		<link rel="icon" href="{{ url_for('static', filename = 'images/favicon.ico', _external=True) }}" type="image/x-icon">
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+	</head>
+	<body id="top">
+
+		<!-- Header -->
+			<header id="header">
+				<div class="content">
+					<h1>顶点云</h1>
+					<p>专为北邮人设计的共享云存储服务<br />
+					全面、便携、快速，数据从未如此贴近你</p>
+					<ul class="actions">
+						<li><a href="#" class="button special icon fa-download">客户端</a></li>
+						<li><a href="{{ url_for('auth.login', _external=True) }}" class="button special icon fa-cloud">网页版</a></li>
+						<li><a href="#one" class="button icon fa-chevron-down scrolly">了解更多</a></li>
+					</ul>
+				</div>
+				<div class="image phone">
+					<div class="inner">
+						<img src="{{ url_for('static', filename = 'images/phone.png', _external=True) }}" alt="Welcome to Zenith Cloud" />
+					</div>
+				</div>
+			</header>
+
+		<!-- One -->
+			<section id="one" class="wrapper style2 special">
+				<header class="major">
+					<h2>随时随地，文件触手可及</h2>
+				</header>
+				<ul class="icons major">
+					<li><span class="icon fa-code"><span class="label">Code</span></span></li>
+					<li><span class="icon fa-film"><span class="label">Film</span></span></li>
+					<li><span class="icon fa-music"><span class="label">Music</span></span></li>
+					<li><span class="icon fa-refresh"><span class="label">Process</span></span></li>
+					<li><span class="icon fa-cloud"><span class="label">Upload</span></span></li>
+				</ul>
+			</section>
+
+		<!-- Two -->
+			<section id="two" class="wrapper">
+				<div class="inner alt">
+					<section class="spotlight">
+						<div class="image"><img src="{{ url_for('static', filename = 'images/rocket.jpg', _external=True) }}" alt="" /></div>
+						<div class="content">
+							<h3>免费、高速的云存储空间</h3>
+							<p>顶点云运行在架设于北邮校园内的服务器上，为学生提供完全免费的基础存储空间，申请即可使用。顶点云可提供最高 42M/s 的下载速度，更重要的是，使用顶点云无需任何流量。</p>
+						</div>
+					</section>
+					<section class="spotlight">
+						<div class="image"><img src="{{ url_for('static', filename = 'images/coffee.jpg', _external=True) }}" alt="" /></div>
+						<div class="content">
+							<h3>简单的操作方式</h3>
+							<p>顶点云为用户提供了 Windows 下的客户端程序，以及简易友好的 Web 界面。用户无需繁杂的学习就能熟悉功能：既可以在 PC 机上访问本地文件一般浏览顶点云，也可以在移动端通过浏览器操纵自己的云空间。</p>
+						</div>
+					</section>
+					<section class="spotlight">
+						<div class="image"><img src="{{ url_for('static', filename = 'images/camera.jpg', _external=True) }}" alt="" /></div>
+						<div class="content">
+							<h3>文件共享</h3>
+							<p>顶点云提供了文件共享服务，你可以获取他人的共享资源，也可以发布任何想分享的文件，轻触便可使用内置的聊天功能将分享链接发送给好友。不必担心私有文件被盗取，顶点云会守护您的隐私。</p>
+						</div>
+					</section>					
+					<section class="spotlight">
+						<div class="image"><img src="{{ url_for('static', filename = 'images/network.jpg', _external=True) }}" alt="" /></div>
+						<div class="content">
+							<h3>不仅仅是校园网</h3>
+							<p>顶点云对服务做了 NAT 穿透，可以在校园外的任何地方使用，只需一台联网设备，文件触手可及。身在校外，无需 VPN 仍可轻松访问。</p>
+						</div>
+					</section>
+					<section class="special">
+						<ul class="icons labeled">
+							<li><span class="icon fa-rocket"><span class="label">高速传输</span></span></li>
+							<li><span class="icon fa-refresh"><span class="label">随时同步</span></span></li>
+							<li><span class="icon fa-cloud"><span class="label">免费空间</span></span></li>
+							<li><span class="icon fa-code-fork"><span class="label">共享代码</span></span></li>
+							<li><span class="icon fa-desktop"><span class="label">客户端</span></span></li>
+						</ul>
+					</section>
+				</div>
+			</section>
+
+		<!-- Three -->
+			<section id="three" class="wrapper style2 special">
+				<header class="major">
+					<h2>和世界共享你的文件</h2>
+					<p>顶点云代码已开源，可在 <a href="https://github.com/Forec/cloud-storage-webserver">GitHub</a> 获取<br />
+					专为北邮人设计，邮箱认证后即可获得 1GB 免费云存储空间</p>
+				</header>
+				<ul class="actions">
+					<li><a href="#" class="button special icon fa-download">下载客户端</a></li>
+					<li><a href="{{ url_for('auth.login', _external=True) }}" class="button">使用网页版</a></li>
+					<li><a href="#" class="button">关注我们</a></li>
+				</ul>
+			</section>
+
+		<!-- Footer -->
+			<footer id="footer">
+				<ul class="icons">
+					<li><a href="https://github.com/Forec/" class="icon fa-github"><span class="label">GitHub</span></a></li>
+					<li><a href="mailto:forec@bupt.edu.cn" class="icon fa-share"><span class="label">联系我们</span></a></li>
+					<li><a href="#" class="icon fa-book"><span class="label">文档</span></a></li>
+				</ul>
+				<p class="copyright">&copy; 顶点云团队 2016</br > 顶点云由 <a href="https://github.com/Forec">Forec</a> 提出并设计，客户端程序由 <a href="https://github.com/non1996">non1996</a> 编写</p>
+			</footer>
+
+		<!-- Scripts -->
+			<script src="{{ url_for('static', filename='js/template/jquery.min.js', _external=True) }}"></script>
+			<script src="{{ url_for('static', filename='js/template/jquery.scrolly.min.js', _external=True) }}"></script>
+			<script src="{{ url_for('static', filename='js/template/skel.min.js', _external=True) }}"></script>
+			<script src="{{ url_for('static', filename='js/template/util.js', _external=True) }}"></script>
+			<!--[if lte IE 8]><!--<script src="assets/js/ie/respond.min.js"></script>--><![endif]-->
+			<script src="{{ url_for('static', filename='js/template/main.js', _external=True) }}"></script>
+
+	</body>
+</html>

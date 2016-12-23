@@ -46,6 +46,15 @@
             
   <div class="section" id="app-design">
 <span id="id1"></span><h1>应用设计要点<a class="headerlink" href="#app-design" title="永久链接至标题">¶</a></h1>
+<p>顶点云服务器设计过程主要经过需求分析、协议设计、模块划分以及在代码实现过程中微调。</p>
+<p>我们建议，如果您想使用顶点云的代码做一些自定义开发工作，最好能够维护如下几条准则，这是我们根据设计过程中遇到过的问题总结出的经验：</p>
+<ol class="arabic simple">
+<li>先设计基本的模型结构，之后逐步实现业务逻辑，最后根据业务逻辑扩展模型结构。我们在设计顶点云的基础功能时，经常遇到需要调整结构的情况，因为先前考虑的不足，很多临时加入的判断条件需要模型修改才能支持。因此我们建议，除非您已经有非常完善的设计流程、框架，或者您要开发规模更大的功能，否则最好在业务逻辑实现前不要过早确定最终的模型。</li>
+<li>维持服务器和用户代理的独立。您应当理解我们将 <a class="reference internal" href="app-models.html#app-models-server"><span class="std std-ref">server</span></a> 和 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> 划分开的目的，降低模块间的耦合度是维持顶点云逐步推进的重要基础。</li>
+<li>维持逻辑转发和功能处理函数的独立。您应当理解我们将 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> 中各个函数使用包含 <code class="docutils literal"><span class="pre">switch</span></code> 块的公有方法转发的目的和意义。</li>
+<li>可以模仿但请不要学习。我们的功能处理函数大量使用了 <code class="docutils literal"><span class="pre">goto</span></code> 语句。虽然它能够让程序很快跳出错误，但我们更建议使用 <code class="docutils literal"><span class="pre">panic</span></code> 、 <code class="docutils literal"><span class="pre">recover</span></code> 机制。我们在设计功能处理函数时最终选择了使用 <code class="docutils literal"><span class="pre">goto</span></code> ，并不代表我们提倡这种方式。请您根据自己的喜好来决定是模仿还是使用更多更优的方式。</li>
+</ol>
+<p>感谢您的阅读！到这里顶点云的应用程序服务器文档就结束了，您可以阅读 <a class="reference internal" href="app-log.html#app-log"><span class="std std-ref">顶点云应用服务器变动记录</span></a> 以了解顶点云开发过程的变动历史，或者阅读 <a class="reference internal" href="zenith-web.html#zenith-web"><span class="std std-ref">顶点云 Web 服务器</span></a> 以了解顶点云 Web 服务器的相关信息。</p>
 </div>
 
 

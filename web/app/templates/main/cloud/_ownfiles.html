@@ -1,0 +1,114 @@
+<ul class="posts">
+    {% for file, file_type in files %}
+    <li class="post">
+        <div class="post-thumbnail">
+            {% if file.isdir == True %}
+            <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/folder.png', _external=True) }}">
+            {% else %}
+                {% if file_type == "video" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/video.png', _external=True) }}">
+                {% elif file_type == "photo" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/photo.png', _external=True) }}">
+                {% elif file_type == "compress" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/compress.png', _external=True) }}">
+                {% elif file_type == "doc" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/doc.png', _external=True) }}">
+                {% elif file_type == "ppt" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/ppt.png', _external=True) }}">
+                {% elif file_type == "excel" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/excel.png', _external=True) }}">
+                {% elif file_type == "txt" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/txt.png', _external=True) }}">
+                {% elif file_type == "md" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/md.png', _external=True) }}">
+                {% elif file_type == "music" %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/music.png', _external=True) }}">
+                {% else %}
+                <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename='icons/file.png', _external=True) }}">
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="post-content">
+            <div class="post-header">
+
+                <div class="post-author">
+                    <p style="line-height:100%;margin:6px 0px 0px 0px">
+                    {% if file.isdir == True %}
+                    <a href="{{ url_for('.cloud', _external=True, path= file.path ~ file.filename ~ '/', direction=_direction, order=_order) }}">
+                        {{ file.filename }}</a>
+                    {% else %}
+                    <a href="{{ url_for('.file', id=file.uid, _external=True) }}">{{ file.filename }}</a>
+                    {% endif %}
+                    </p>
+                </div>
+
+                <div class="post-date">
+                    {% if not file.isdir %}
+                        {% if file.cfileid > 0 %}
+                            文件大小：
+                            {% if file.cfile.size < 1024 %}
+                                {{ file.cfile.size }} B
+                            {% elif file.cfile.size < 1048576 %}
+                                {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                            {% elif file.cfile.size < 1073741824 %}
+                                {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                            {% else %}
+                                {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                            {% endif %}
+                            &nbsp;&nbsp;
+                        {% endif %}
+                    {% endif %}
+                    创建时间：{{ moment(file.created).fromNow() }}
+                </div>
+
+            </div>
+
+            <div class="post-footer">
+
+                <span class="dropdown">
+                    <span class = "label label-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作</span>
+
+                    <ul class="dropdown-menu   dropdown-menu-right">
+                        {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
+                        <li><a href="{{ url_for('main.download', id=file.uid, _external=True) }}">下载</a></li>
+                        {% endif %}
+
+                        {% if current_user == file.owner %}
+	                    <li><a href="{{ url_for('main.copy', id=file.uid, path='/', _external=True) }}">复制</a></li>
+	                    <li><a href="{{ url_for('main.move', id=file.uid, path='/', _external=True) }}">移动</a></li>
+	                    <li><a href="{{ url_for('main.edit_file', id=file.uid, _external=True) }}">编辑</a></li>
+                        <li><a href="{{ url_for('main.delete_file',id=file.uid, _external=True) }}">删除</a></li>
+                            {% if file.private %}
+                                <li><a href="{{ url_for('main.set_share', id=file.uid, _external=True) }}">共享</a></li>
+                            {% else %}
+                                <li><a href="{{ url_for('main.set_private', id=file.uid, _external=True) }}">取消共享</a></li>
+                            {% endif %}
+	                    {% elif current_user.is_administrator() %}
+                        <li><a href="{{ url_for('main.moderate_files_delete',id=file.uid, _external=True) }}">删除 [管理员]</a></li>
+                            {% if file.private %}
+                                <li><a href="{{ url_for('main.set_share', id=file.uid, _external=True) }}">共享 [管理员]</a></li>
+                            {% else %}
+                                <li><a href="{{ url_for('main.set_private', id=file.uid, _external=True) }}">取消共享 [管理员]</a></li>
+                            {% endif %}
+                        {% endif %}
+                        <li><a href="{{ url_for('.file', id=file.uid, _external=True) }}">资源外链</a></li>
+
+                        <li>
+                            <a href="{{ url_for('.file', id=file.uid, _external=True) }}#comments">
+                                {% if file.comments.count() == 0 %}
+                                    暂无评论
+                                {% else %}
+                                    {{ file.comments.count() }} 条评论
+                                {% endif %}
+                            </a>
+                        </li>
+
+
+                    </ul>
+                </span>
+
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

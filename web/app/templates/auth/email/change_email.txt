@@ -1,0 +1,9 @@
+尊敬的 {{ user.nickname }},
+
+要验证您的邮箱，请点击以下链接:
+
+{{ url_for('auth.change_email', token=token, _external=True) }}
+
+Zenith Cloud Team
+
+注：请勿回复此邮件，您的回复将不会被响应。

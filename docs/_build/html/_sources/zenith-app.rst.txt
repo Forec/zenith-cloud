@@ -13,7 +13,6 @@
 - :ref:`app-structual`
 - :ref:`app-test`
 - :ref:`app-proxy`
-- :ref:`app-tutorial`
 
 顶点云应用程序服务器使用 `Golang`_ 编写，Go 语言的语法和特性不在本文档的范围内，如果你想了解 Go 语言请移步：
 

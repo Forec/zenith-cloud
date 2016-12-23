@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>传输测试 &#8212; 顶点云 Web 服务器  文档</title>
+    <title>测试 &#8212; 顶点云 Web 服务器  文档</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -45,7 +45,77 @@
           <div class="body" role="main">
             
   <div class="section" id="app-test">
-<span id="id1"></span><h1>传输测试<a class="headerlink" href="#app-test" title="永久链接至标题">¶</a></h1>
+<span id="id1"></span><h1>测试<a class="headerlink" href="#app-test" title="永久链接至标题">¶</a></h1>
+<p>此部分文档主要介绍顶点云的单元测试和测试客户端。顶点云提供了对部分内置模块的单元测试，覆盖了 <a class="reference internal" href="app-protocal.html#app-protocal-authentication-procedure"><span class="std std-ref">认证流程</span></a> 、 <a class="reference internal" href="app-protocal.html#app-protocal-transmitter"><span class="std std-ref">传输器设计</span></a> 和 <a class="reference internal" href="app-models.html#app-models-class"><span class="std std-ref">内置自定义类</span></a> 中的绝大部分。 <a class="reference internal" href="app-models.html#app-models-server"><span class="std std-ref">server</span></a> 可通过顶点云配备的 <a class="reference internal" href="#app-test-client"><span class="std std-ref">测试客户端</span></a> 手动测试。</p>
+<div class="section" id="app-test-code">
+<span id="id2"></span><h2>单元测试<a class="headerlink" href="#app-test-code" title="永久链接至标题">¶</a></h2>
+<p>此部分主要涉及几个内置包的单元测试。你可以直接运行 <code class="docutils literal"><span class="pre">test/runtest.sh</span></code> 或 <code class="docutils literal"><span class="pre">test/runtest.bat</span></code> 来激活全部单元测试。</p>
+<p><code class="docutils literal"><span class="pre">authenticate</span></code> 和 <code class="docutils literal"><span class="pre">cstruct</span></code> 两个包的单元测试比较简单，均采用简单的输入-输出样例比对测试。</p>
+<p><code class="docutils literal"><span class="pre">transmit</span></code> 包由一个微型测试服务器和一个微型测试客户端并发进行单元测试，其中涉及到 <code class="docutils literal"><span class="pre">authenticate</span></code> 包的部分功能，因此也可视作认证模块。</p>
+<p>下面主要介绍 <code class="docutils literal"><span class="pre">transmit</span></code> 包的单元测试。</p>
+<div class="section" id="app-test-transmit">
+<span id="id3"></span><h3>传输器测试<a class="headerlink" href="#app-test-transmit" title="永久链接至标题">¶</a></h3>
+<p>传输器的测试由一个微型服务器和配套的微型客户端实现。大致逻辑如下：</p>
+<ul class="simple">
+<li>微型服务器在指定测试 IP 和端口启动</li>
+<li>微型客户端在新线程中启动并尝试连接服务器以获取服务</li>
+<li>服务器向客户端发送指定测试文件</li>
+<li>服务器向客户端发送指定测试字符串</li>
+<li>客户端接收完毕后退出</li>
+<li>服务器发送结束后等待一段时间，认为客户端已经退出后检查客户端接收到的文件/字符串是否正确，正确则测试通过</li>
+</ul>
+<p>传输器的测试代码位于 <code class="docutils literal"><span class="pre">authenticate/authenticate_test.go</span></code> 。测试代码主要包含两个函数，声明如下：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">TestTransmission</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nx">client_test</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>函数 <code class="docutils literal"><span class="pre">TestTransmission</span></code> 用于启动微型服务器、为微型客户端提供支持以及检查传输是否正确。函数 <code class="docutils literal"><span class="pre">client_test</span></code> 用于延时启动微型客户端并接收服务器的传输请求。</p>
+<p>默认测试使用的传输文件名为 <code class="docutils literal"><span class="pre">test_in.txt</span></code> ，顶点云提供的默认测试文件大小为 2.34MB。你可以在测试代码中替换 <code class="docutils literal"><span class="pre">test_in_filename</span></code> 为你自己的测试传输文件路径。</p>
+</div>
+</div>
+<div class="section" id="app-test-client">
+<span id="id4"></span><h2>测试客户端<a class="headerlink" href="#app-test-client" title="永久链接至标题">¶</a></h2>
+<p>服务器逻辑功能较复杂，很难使用单元测试逐一覆盖，并且用户在使用中通常具有随机性。因此顶点云没有为服务器的每一个接口、用户代理的每一项处理函数添加单元测试，而是编写了测试客户端以手动测试。</p>
+<p>测试用客户端代码位于 <code class="docutils literal"><span class="pre">client/client.go</span></code> ，共约 500 行， <em>client</em> 类主要的方法有：</p>
+<ul class="simple">
+<li><em>Run</em> ：启动测试客户端并提供与用户的交互</li>
+<li><em>Connect</em> ：负责客户端与服务器建立连接</li>
+<li><em>Authenticate</em> ：在 <em>Connect</em> 成功之后负责与服务器建立认证</li>
+<li><em>ThreadConnect</em> ：用于与服务器之间建立一个新传输器，并交付数据传输处理函数使用</li>
+<li><em>getFile</em> ：用于处理用户的下载请求</li>
+<li><em>putFile</em> ：用于处理用户的上传请求</li>
+</ul>
+<p>测试客户端的界面相对专门设计的 GUI 客户端不是那么友好，但它确实是非常简单有效的测试工具。用户使用测试客户端时使用的指令需要严格按照 <a class="reference internal" href="app-protocal.html#app-protocal-command"><span class="std std-ref">命令格式</span></a> 的要求，参数之间的分隔符要与 <code class="docutils literal"><span class="pre">config/config.go</span></code> 中 <em>SEPERATER</em> 项指定的字符（串）相同。</p>
+<p>例如，你可以按照 <a class="reference internal" href="app-quickstart.html#app-quickstart-runtest-client"><span class="std std-ref">运行测试客户端</span></a> 中的样例使用测试客户端。</p>
+</div>
+<div class="section" id="app-test-client-modify">
+<span id="id5"></span><h2>修改测试客户端<a class="headerlink" href="#app-test-client-modify" title="永久链接至标题">¶</a></h2>
+<p>这里主要介绍如何修改测试客户端以适应新的需求。</p>
+<p>顶点云提供的测试客户端刻意留下了一个小 bug 以供你消遣：测试客户端没有屏蔽掉服务器定时发送的保活消息。你可以先自己简要阅读测试客户端代码，大致确定此 bug 的位置并尝试修复。</p>
+<p>在测试客户端扩展功能与向用户代理添加功能类似。如果要添加的功能与数据传输相关，那么你需要在 <em>Run</em> 函数中添加转发逻辑，之后实现你的处理函数。</p>
+<p>例如，在 <a class="reference internal" href="app-quickstart.html#app-quickstart"><span class="std std-ref">快速上手</span></a> 中我们为用户代理添加了新的功能。如果添加的功能不是简单的获取用户名，而是某个需要特殊处理流程的功能（如命令云主机处理一幅上传的图片并返回处理后的结果），则需要在 <code class="docutils literal"><span class="pre">client/client.go</span></code> 的第 230 行后插入转发逻辑：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="k">case</span> <span class="nb">len</span><span class="p">(</span><span class="nx">input</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">3</span> <span class="o">&amp;&amp;</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">ToUpper</span><span class="p">(</span><span class="nx">input</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="s">&quot;PUT&quot;</span><span class="p">:</span>
+    <span class="c1">// 上传文件</span>
+        <span class="k">go</span> <span class="nx">c</span><span class="p">.</span><span class="nx">putFile</span><span class="p">(</span><span class="nx">input</span><span class="p">)</span>
+<span class="k">case</span> <span class="nb">len</span><span class="p">(</span><span class="nx">input</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">ToUpper</span><span class="p">(</span><span class="nx">input</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="s">&quot;GENERATE&quot;</span><span class="p">:</span>
+    <span class="c1">// 插入新的转发逻辑，命令云存储服务器处理一幅上传的图片并返回处理后的内容</span>
+        <span class="k">go</span> <span class="nx">c</span><span class="p">.</span><span class="nx">generateImage</span><span class="p">(</span><span class="nx">input</span><span class="p">)</span>
+<span class="k">default</span><span class="p">:</span>
+    <span class="c1">// 简单命令交互</span>
+</pre></div>
+</div>
+<p>之后我们需要实现自定义处理函数 <code class="docutils literal"><span class="pre">generateImage</span></code> ，该函数应当被添加到 <code class="docutils literal"><span class="pre">client.go</span></code> 的任意位置。其大致格式如下所示：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">Client</span><span class="p">)</span> <span class="nx">generateImage</span><span class="p">(</span><span class="nx">input</span> <span class="kt">string</span><span class="p">){</span>
+    <span class="c1">// 验证指令合法</span>
+        <span class="c1">// ...</span>
+        <span class="nx">newThread</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">ThreadConnect</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">ip</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">port</span><span class="p">)</span>
+        <span class="c1">// ...</span>
+    <span class="c1">// 剩余自定义业务逻辑</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>接下来请您阅读 <a class="reference internal" href="app-proxy.html#app-proxy"><span class="std std-ref">用户代理</span></a> 。</p>
+</div>
 </div>
 
 
@@ -59,7 +129,20 @@
 
 <p>
   <a href="index.html">回到主页</a>
-</p><div class="relations">
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">测试</a><ul>
+<li><a class="reference internal" href="#app-test-code">单元测试</a><ul>
+<li><a class="reference internal" href="#app-test-transmit">传输器测试</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#app-test-client">测试客户端</a></li>
+<li><a class="reference internal" href="#app-test-client-modify">修改测试客户端</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>

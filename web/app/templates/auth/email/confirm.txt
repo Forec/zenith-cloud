@@ -1,0 +1,11 @@
+尊敬的 {{ user.nickname }},
+
+欢迎加入 顶点云
+
+为了验证您的帐户，请您点击下面的链接：
+
+{{ url_for('auth.confirm', token=token, _external=True) }}
+
+Zenith Cloud Team
+
+注：请勿回复此邮件，您的回复将不会被响应。

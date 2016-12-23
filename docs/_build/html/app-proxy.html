@@ -27,8 +27,8 @@
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
-    <link rel="next" title="教程 - 添加自定义用户代理" href="app-tutorial.html" />
-    <link rel="prev" title="传输测试" href="app-test.html" />
+    <link rel="next" title="教程" href="app-tutorials.html" />
+    <link rel="prev" title="测试" href="app-test.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -46,6 +46,40 @@
             
   <div class="section" id="app-proxy">
 <span id="id1"></span><h1>用户代理<a class="headerlink" href="#app-proxy" title="永久链接至标题">¶</a></h1>
+<p>此部分文档主要介绍用户代理的一些逻辑处理函数。这部分函数是顶点云功能实现的主体，但无法将具体的实现逻辑一一梳理。这里只会简单介绍各个逻辑处理函数的功能。</p>
+<div class="section" id="app-proxy-requests">
+<span id="id2"></span><h2>交互式命令处理<a class="headerlink" href="#app-proxy-requests" title="永久链接至标题">¶</a></h2>
+<p>此部分相关代码均位于 <code class="docutils literal"><span class="pre">cstruct/cuser_operations.go</span></code> 中，该代码文件中的函数结构如下所示：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">DealWithRequests</span>
+     <span class="o">-</span> <span class="nx">ls</span>
+     <span class="o">-</span> <span class="nx">touch</span>
+     <span class="o">-</span> <span class="nx">rm</span>
+     <span class="o">-</span> <span class="nx">cp</span>
+     <span class="o">-</span> <span class="nx">mv</span>
+     <span class="o">-</span> <span class="nx">fork</span>
+     <span class="o">-</span> <span class="nx">send</span>
+     <span class="o">-</span> <span class="nx">chmod</span>
+</pre></div>
+</div>
+<p>只有 <code class="docutils literal"><span class="pre">DealWithRequests</span></code> 为公有方法，用于命令-逻辑转发，其他函数均为逻辑处理函数，不对其他包开放。</p>
+<p>你可以参考这些逻辑处理函数实现的流程来模仿实现更多的自定义处理函数。顶点云应用程序服务器目前提供的交互式命令有限，仍有很多功能尚未提供，欢迎你为顶点云扩展更多自定义功能。新拓展的功能可以以独立文件形式提供，只要保证同属于 <code class="docutils literal"><span class="pre">cstruct</span></code> 包即可。</p>
+</div>
+<div class="section" id="app-proxy-transmission">
+<span id="id3"></span><h2>数据传输命令处理<a class="headerlink" href="#app-proxy-transmission" title="永久链接至标题">¶</a></h2>
+<p>此部分相关代码均位于 <code class="docutils literal"><span class="pre">cstruct/cuser_transmissions.go</span></code> 中，该代码文件中的函数结构如下图所示：</p>
+<div class="highlight-go"><div class="highlight"><pre><span></span><span class="nx">DealWithTransmissions</span><span class="p">:</span>
+     <span class="o">-</span> <span class="nx">get</span>
+     <span class="o">-</span> <span class="nx">put</span>
+</pre></div>
+</div>
+<p>只有 <code class="docutils literal"><span class="pre">DealWithTransmissions</span></code> 为公有方法，用于命令-逻辑转发，其他函数均为逻辑处理函数，不对其他包开放。</p>
+<p>与数据传输命令相关的连接均会加入到当前用户的活动连接池中。当前用户的活动连接池需要由 <code class="docutils literal"><span class="pre">DealWithTransmissions</span></code> 方法维护，在处理完当前转发的逻辑处理函数后，<code class="docutils literal"><span class="pre">DealWithTransmissions</span></code> 在销毁前会移除当前结束的活动连接。</p>
+</div>
+<div class="section" id="id4">
+<h2>添加代理<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>添加代理的方式可以参考 <a class="reference internal" href="app-quickstart.html#app-quickstart-expand"><span class="std std-ref">扩展自定义功能</span></a> 以及 <a class="reference internal" href="app-test.html#app-test-client-modify"><span class="std std-ref">修改测试客户端</span></a> 。</p>
+<p>接下来您可以阅读 <a class="reference internal" href="app-tutorials.html#app-tutorials"><span class="std std-ref">教程</span></a> 。</p>
+</div>
 </div>
 
 
@@ -59,13 +93,23 @@
 
 <p>
   <a href="index.html">回到主页</a>
-</p><div class="relations">
+</p>
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">用户代理</a><ul>
+<li><a class="reference internal" href="#app-proxy-requests">交互式命令处理</a></li>
+<li><a class="reference internal" href="#app-proxy-transmission">数据传输命令处理</a></li>
+<li><a class="reference internal" href="#id4">添加代理</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="zenith-app.html">顶点云应用程序服务器</a><ul>
-      <li>Previous: <a href="app-test.html" title="上一章">传输测试</a></li>
-      <li>Next: <a href="app-tutorial.html" title="下一章">教程 - 添加自定义用户代理</a></li>
+      <li>Previous: <a href="app-test.html" title="上一章">测试</a></li>
+      <li>Next: <a href="app-tutorials.html" title="下一章">教程</a></li>
   </ul></li>
   </ul></li>
 </ul>

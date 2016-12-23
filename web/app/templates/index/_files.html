@@ -1,0 +1,136 @@
+<ul class="posts">
+    {% for file in files %}
+    <li class="post">
+        <div class="post-thumbnail">
+            <a href="{{ url_for('.user', id=file.owner.uid, _external=True) }}">
+                <img class="img-rounded profile-thumbnail" src="{{ file.owner.gravatar(size=56) }}">
+            </a>
+        </div>
+        <div class="post-content">
+            <div class="post-header">
+                <div class="post-author">
+                    <p style="line-height:100%;margin:6px 0px 0px 0px">
+                    发布者：
+                    <a href="{{ url_for('.user', id=file.owner.uid, _external=True) }}">
+                        {{ file.owner.nickname }}
+                    </a>
+                    &nbsp;&nbsp;&nbsp;
+                    {% if file.isdir %}
+                    目录：
+                    {% else %}
+                    文件：
+                    {% endif %}
+                    {% if file.owner == current_user %}
+                    {% if file.isdir %}
+                    <a href="{{ url_for('.cloud', path= file.path ~ file.filename ~ '/', _external=True) }}">
+                        {{ file.filename }}
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('.file', id=file.uid , _external=True) }}">
+                        {{ file.filename }}
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('.file', id=file.uid, _external=True) }}">
+                        {{ file.filename }}
+                    </a>
+                    {% endif %}
+                    </p>
+                </div>
+
+                <div class="post-date">
+                    {% if not file.isdir %}
+                        {% if file.cfileid > 0 %}
+                            文件大小：
+                            {% if file.cfile.size < 1024 %}
+                                {{ file.cfile.size }} B
+                            {% elif file.cfile.size < 1048576 %}
+                                {{ "%f"|format(file.cfile.size / 1024)|truncate(6, end='') }} KB
+                            {% elif file.cfile.size < 1073741824 %}
+                                {{ "%f"|format(file.cfile.size / 1048576)|truncate(6, end='') }} MB
+                            {% else %}
+                                {{ "%f"|format(file.cfile.size / 1073741824)|truncate(6, end='') }} GB
+                            {% endif %}
+                        {% endif %}
+                    &nbsp;&nbsp;
+                    {% endif %}
+                    发布时间：{{ moment(file.created).fromNow() }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="post-body">
+                <span>
+                {% if file.isdir %}
+                目录描述：
+                {% else %}
+                文件描述：
+                {% endif %}
+                {% if file.description %}
+                    {% if file.description == '' %}
+                        无
+                    {% else %}
+                        {{ file.description|truncate(140, False) }}
+                    {% endif %}
+                {% else %}
+                    无
+                {% endif %}
+                </span>
+            </div>
+
+            <div class="post-footer">
+                <span class="dropdown">
+                    <span class = "label label-primary dropdown-toggle"
+                          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作</span>
+
+                    <ul class="dropdown-menu  dropdown-menu-right">
+                        {% if file.private == False or current_user == file.owner or current_user.is_administrator()%}
+                        <li><a href="{{ url_for('main.download', id=file.uid, _external=True) }}">下载</a></li>
+                        {% endif %}
+
+                        {% if file.private == False and current_user != file.owner and current_user.is_authenticated%}
+                        <li><a href="{{ url_for('main.fork', id=file.uid, _external=True) }}">Fork</a></li>
+                        {% endif %}
+
+                        {% if file.isdir and current_user != file.owner and current_user.is_authenticated %}
+                        <li><a href="{{ url_for('main.view_share_folder_entry', id=file.uid, _external=True) }}">进入目录</a></li>
+                        {% endif %}
+
+                        {% if current_user == file.owner %}
+	                    <li><a href="{{ url_for('main.copy', id=file.uid, path='/', _external=True) }}">复制</a></li>
+	                    <li><a href="{{ url_for('main.move', id=file.uid, path='/', _external=True) }}">移动</a></li>
+	                    <li><a href="{{ url_for('main.edit_file', id=file.uid, _external=True) }}">编辑</a></li>
+                        <li><a href="{{ url_for('main.delete_file',id=file.uid, _external=True) }}">删除</a></li>
+                            {% if file.private %}
+                                <li><a href="{{ url_for('main.set_share', id=file.uid, _external=True) }}">共享</a></li>
+                            {% else %}
+                                <li><a href="{{ url_for('main.set_private', id=file.uid, _external=True) }}">取消共享</a></li>
+                            {% endif %}
+	                    {% elif current_user.is_administrator() %}
+                        <li><a href="{{ url_for('main.moderate_files_delete',id=file.uid, _external=True) }}">删除 [管理员]</a></li>
+                            {% if file.private %}
+                                <li><a href="{{ url_for('main.set_share', id=file.uid, _external=True) }}">共享 [管理员]</a></li>
+                            {% else %}
+                                <li><a href="{{ url_for('main.set_private', id=file.uid, _external=True) }}">取消共享 [管理员]</a></li>
+                            {% endif %}
+                        {% endif %}
+                        <li><a href="{{ url_for('.file', id=file.uid, _external=True) }}">资源外链</a></li>
+
+                        <li>
+                            <a href="{{ url_for('.file', id=file.uid, _external=True) }}#comments">
+                                {% if file.comments.count() == 0 %}
+                                    暂无评论
+                                {% else %}
+                                    {{ file.comments.count() }} 条评论
+                                {% endif %}
+                            </a>
+                        </li>
+
+                    </ul>
+                </span>
+
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
