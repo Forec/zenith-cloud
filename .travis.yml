@@ -8,6 +8,7 @@ install:
 script:
  - mkdir web/temp/
  - touch web/temp/test.sqlite
- - python3 web/manage.py coverage
+ - cd web
+ - python3 manage.py coverage
 after_success:
  - coveralls
