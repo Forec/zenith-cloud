@@ -119,7 +119,7 @@ go build cloud.go
 go build client.go <span class="o">&amp;&amp;</span> ./client
 </pre></div>
 </div>
-<p>测试客户端提示我输入命令，看起来似乎运行正常。我决定做如下尝试（顶点云的默认测试客户端没有屏蔽服务器发送的保活信息，这一点会留在 <a class="reference internal" href="app-test.html#app-test-client-modify"><span class="std std-ref">修改测试客户端</span></a> 中作为教程，如果你在测试过程中觉得频繁出现的保活信息很困扰，可以注释掉 <code class="docutils literal"><span class="pre">client/client.go</span></code> 的第 70 行）。</p>
+<p>测试客户端提示我输入命令，看起来似乎运行正常。我决定做如下尝试：</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>请输入命令：ls+0+/
 UID  PATH    FILE        CREATED TIME   SIZE   SHARED  MODE
 请输入命令：touch+test.txt+/home/+0

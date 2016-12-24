@@ -98,7 +98,7 @@
 	cd client
 	go build client.go && ./client
 	
-测试客户端提示我输入命令，看起来似乎运行正常。我决定做如下尝试（顶点云的默认测试客户端没有屏蔽服务器发送的保活信息，这一点会留在 :ref:`app-test-client-modify` 中作为教程，如果你在测试过程中觉得频繁出现的保活信息很困扰，可以注释掉 ``client/client.go`` 的第 70 行）。
+测试客户端提示我输入命令，看起来似乎运行正常。我决定做如下尝试：
 
 .. code-block:: shell
 

@@ -66,8 +66,6 @@
 <span class="kd">const</span> <span class="nx">TEST_IP</span> <span class="p">=</span> <span class="s">&quot;127.0.0.1&quot;</span>
 <span class="kd">const</span> <span class="nx">TEST_PORT</span> <span class="p">=</span> <span class="mi">10087</span>
 <span class="kd">const</span> <span class="nx">SEPERATER</span> <span class="p">=</span> <span class="s">&quot;+&quot;</span>
-<span class="kd">const</span> <span class="nx">CHECK_LIVE_SEPERATE</span> <span class="p">=</span> <span class="mi">5</span>
-<span class="kd">const</span> <span class="nx">CHECK_LIVE_TAG</span> <span class="p">=</span> <span class="s">&quot;[check]&quot;</span>
 <span class="kd">const</span> <span class="nx">CHECK_MESSAGE_SEPERATE</span> <span class="p">=</span> <span class="mi">5</span>
 </pre></div>
 </div>
@@ -92,8 +90,6 @@
 <li><code class="docutils literal"><span class="pre">TEST_IP</span></code> ：测试服务器时开放的 IP 地址。</li>
 <li><code class="docutils literal"><span class="pre">TEST_PORT</span></code> ：测试服务器时开放的端口。</li>
 <li><code class="docutils literal"><span class="pre">SEPERATER</span></code> ：此项指定了服务器和客户端约定的命令格式使用的分隔符，默认情况下为 <code class="docutils literal"><span class="pre">+</span></code> 。如果你不了解命令格式，可以查看 <a class="reference internal" href="app-protocal.html#app-protocal-command"><span class="std std-ref">命令格式</span></a> 。</li>
-<li><code class="docutils literal"><span class="pre">CHECK_LIVE_SEPERATE</span></code> ：此项指定了服务器保活检测的执行间隔，默认为 5。服务器会每隔 <code class="docutils literal"><span class="pre">CHECK_LIVE_SEPERATE</span></code> 秒向所有用户发送一条特定的消息以检查用户是否仍然存活，如果某个用户无法接收到服务器发送的消息，则认为该用户意外中断连接，服务器会登出该用户。</li>
-<li><code class="docutils literal"><span class="pre">CHECK_LIVE_TAG</span></code> ：此项指定了服务器保活检测时发送的特定消息前缀，默认为 <code class="docutils literal"><span class="pre">[check]</span></code> 。</li>
 <li><code class="docutils literal"><span class="pre">CHECK_MESSAGE_SEPERATE</span></code> ：此项指定了服务器转发消息执行的间隔，默认为 5。服务器会每隔 <code class="docutils literal"><span class="pre">CHECK_MESSAGE_SEPERATE</span></code> 秒向每个用户转发其他用户发送给他的消息。如果你不明白此项的意义，请查看 <a class="reference internal" href="app-protocal.html#app-protocal-chat"><span class="std std-ref">用户通讯</span></a> 。</li>
 </ol>
 <p>例如，在使用 WiFi 连接的 Ubuntu 16.04 下部署服务器以供 Windows 客户端使用时，可参考的配置文件如下：</p>

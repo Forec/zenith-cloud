@@ -29,8 +29,6 @@
    const TEST_IP = "127.0.0.1"
    const TEST_PORT = 10087
    const SEPERATER = "+"
-   const CHECK_LIVE_SEPERATE = 5
-   const CHECK_LIVE_TAG = "[check]"
    const CHECK_MESSAGE_SEPERATE = 5
 	
 样例配置文件每项均有对应注释，您也可以查看下面的 :ref:`app-config-detailed` 了解每一项的具体功能。
@@ -72,11 +70,7 @@
 
 15. ``SEPERATER`` ：此项指定了服务器和客户端约定的命令格式使用的分隔符，默认情况下为 ``+`` 。如果你不了解命令格式，可以查看 :ref:`app-protocal-command` 。
 
-16. ``CHECK_LIVE_SEPERATE`` ：此项指定了服务器保活检测的执行间隔，默认为 5。服务器会每隔 ``CHECK_LIVE_SEPERATE`` 秒向所有用户发送一条特定的消息以检查用户是否仍然存活，如果某个用户无法接收到服务器发送的消息，则认为该用户意外中断连接，服务器会登出该用户。
-
-17. ``CHECK_LIVE_TAG`` ：此项指定了服务器保活检测时发送的特定消息前缀，默认为 ``[check]`` 。
-
-18. ``CHECK_MESSAGE_SEPERATE`` ：此项指定了服务器转发消息执行的间隔，默认为 5。服务器会每隔 ``CHECK_MESSAGE_SEPERATE`` 秒向每个用户转发其他用户发送给他的消息。如果你不明白此项的意义，请查看 :ref:`app-protocal-chat` 。
+16. ``CHECK_MESSAGE_SEPERATE`` ：此项指定了服务器转发消息执行的间隔，默认为 5。服务器会每隔 ``CHECK_MESSAGE_SEPERATE`` 秒向每个用户转发其他用户发送给他的消息。如果你不明白此项的意义，请查看 :ref:`app-protocal-chat` 。
 
 例如，在使用 WiFi 连接的 Ubuntu 16.04 下部署服务器以供 Windows 客户端使用时，可参考的配置文件如下：
 
