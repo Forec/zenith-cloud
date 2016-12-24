@@ -4,11 +4,11 @@ python:
  - 3.5.0
 install: 
  - pip install -r web/requirements.txt
- - pip install coveralls
+ - pip install python-coveralls
 script:
  - mkdir web/temp/
  - touch web/temp/test.sqlite
  - cd web
- - coverage run --source=manage.py test --coverage
+ - python manage.py test --coverage
 after_success:
  - coveralls
