@@ -9,6 +9,6 @@ script:
  - mkdir web/temp/
  - touch web/temp/test.sqlite
  - cd web
- - python3 manage.py coverage
+ - python3 manage.py test --coverage
 after_success:
  - coveralls

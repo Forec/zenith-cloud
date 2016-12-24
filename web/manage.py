@@ -18,7 +18,7 @@ from app.models    import User, Role, File, Permission, \
 from flask_script  import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
-app = create_app('development')
+app = create_app('default')
     # 按配置方案创建应用
 
 manager = Manager(app)
