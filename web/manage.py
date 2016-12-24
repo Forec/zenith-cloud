@@ -1,8 +1,16 @@
 # 作者：Forec
-# 最后修改日期：2016-12-19
+# 最后修改日期：2016-12-24
 # 邮箱：forec@bupt.edu.cn
 # 关于此文件：此文件为服务器的管理入口，注册了数据库初始化、shell控
 #    制、测试等函数。
+
+import os
+COV = None
+if os.environ.get('ZENITH_COVERAGE'):
+    import coverage
+    # 启动检测
+    COV = coverage.coverage(branch=True, include='app/*')
+    COV.start()
 
 from app           import create_app, db
 from app.models    import User, Role, File, Permission, \
@@ -10,7 +18,7 @@ from app.models    import User, Role, File, Permission, \
 from flask_script  import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
-app = create_app('testing')
+app = create_app('development')
     # 按配置方案创建应用
 
 manager = Manager(app)
@@ -38,32 +46,28 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 # 向管理器注册数据库迁移指令
 manager.add_command("db", MigrateCommand)
 
-# 获取覆盖报告
-@manager.command
-def coverage():
-    """Coverage report"""
-    import os, coverage, unittest
-    COV = coverage.coverage(branch=True, include='app/*')
-    COV.start()
-    tests = unittest.TestLoader().discover("tests")
-    unittest.TextTestRunner(verbosity=2).run(tests)
-    COV.stop()
-    COV.save()
-    print('Coverage Summmary:')
-    COV.report()
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    covdir = os.path.join(basedir, 'temp/coverage')
-    COV.html_report(directory=covdir)
-    print('HTML version: file://%s/index.html' % covdir)
-    COV.erase()
-
 # 管理器注册测试指令
 @manager.command
-def test():
+def test(coverage=False):
     """Run the unit tests"""
+    if coverage and not os.environ.get('ZENITH_COVERAGE'):
+        import sys
+        os.environ['ZENITH_COVERAGE'] = '1'
+        # 重启全局部分
+        os.execvp(sys.executable, [sys.executable] + sys.argv)    
     import unittest
     tests = unittest.TestLoader().discover("tests")
     unittest.TextTestRunner(verbosity=2).run(tests)
+    if COV:
+        COV.stop()
+        COV.save()
+        print('Coverage Summary:')
+        COV.report()
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        covdir = os.path.join(basedir, 'temp/coverage')
+        COV.html_report(directory=covdir)
+        print('HTML version: file://%s/index.html' % covdir) 
+        COV.erase()   
 
 
 # 管理器注册初始化数据库指令

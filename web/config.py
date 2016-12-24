@@ -105,5 +105,5 @@ config = {
     'linux': LinuxConfig,                   # 提供的 Linux 模板环境
     'windows': WindowsConfig,               # 提供的 Windows模板环境
     'testing' : TestingConfig,              # 测试环境
-    'default' : DevelopmentConfig           # 默认为开发环境
+    'default' : TestingConfig           # 默认为开发环境
 }

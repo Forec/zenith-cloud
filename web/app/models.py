@@ -13,6 +13,7 @@ from flask import url_for
 from flask_login import UserMixin, AnonymousUserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer
 from markdown import markdown
+from sqlalchemy import text
 from . import db, login_manager
 
 # ----------------------------------------------------------------------
@@ -298,9 +299,9 @@ class User(UserMixin, db.Model):
         else:
             # 用户试图删除一个目录，寻找到该目录下的全部文件
             files_related = File.query.filter(
-                    File.path.like(file.path+file.filename+'/%'))
+                    File.path.like(text(file.path+file.filename+'/%')))
             # 确保删除当前用户的文件
-            files_related = files_related.filter("ownerid=:_id").\
+            files_related = files_related.filter(text("ownerid=:_id")).\
                 params(_id=self.uid).all()
             for _file in files_related:
                 if _file.cfileid > 0:
@@ -637,7 +638,7 @@ class User(UserMixin, db.Model):
             if _user is None:
                 continue
             # 过滤关注的人和共享文件
-            files = File.query.filter("private=0 and ownerid=:d").\
+            files = File.query.filter(text("private=0 and ownerid=:d")).\
                 params(d=_user.uid).all()
             fileList.extend(files)
         return fileList

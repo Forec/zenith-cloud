@@ -8,7 +8,7 @@
 import os, random, shutil, zipfile, os.path
 from config       import basedir
 from datetime     import datetime, timedelta
-from sqlalchemy   import or_, and_
+from sqlalchemy   import or_, and_, text
 from flask        import render_template, session, redirect, url_for, \
                         abort, flash, request, current_app, \
                         make_response, send_from_directory
@@ -132,7 +132,7 @@ def index():
     if show_followed:
         query = current_user.followed_files
     else:
-        query = File.query.filter("private=0").all()
+        query = File.query.filter(text("private=0")).all()
     page = request.args.get('page', 1, type=int)
     key = request.args.get('key', '', type=str)
 
@@ -624,7 +624,7 @@ def edit_file(id):
                                     id=file.uid,
                                     _external=True))
         _file = File.query.\
-            filter('filename=:lfn and ownerid=:_id and path=:_path').\
+            filter(text('filename=:lfn and ownerid=:_id and path=:_path')).\
             params(lfn = form.filename.data,
                    _id = current_user.uid,
                    _path = file.path).first()
@@ -669,7 +669,7 @@ def moderate_comments():
         comment = Comment.query
     else:
         comment = Comment.query.\
-            filter(Comment.body.like('%'+key+'%'))
+            filter(Comment.body.like(text('%'+key+'%')))
         # 当评论管理员指定关键字时，按关键字搜索相关评论
     pagination = comment.order_by(
             Comment.timestamp.desc()).\
@@ -747,9 +747,9 @@ def moderate_files():
         file = File.query
     else:
         file = File.query.filter(or_(File.filename.\
-                                        like('%'+key+'%'),
+                                        like(text('%'+key+'%')),
                                      File.description.\
-                                        like('%'+key+'%')))
+                                        like(text('%'+key+'%'))))
         # 当管理员指定关键字时，按关键字搜索相关文件/目录。关键字搜索的
         # 区域包括文件/目录名及其描述
     pagination = file.order_by(File.created.desc()).\
@@ -811,8 +811,8 @@ def messages():
     form.key.data = key
     if key == '':   # 用户没有按关键字搜索，则显示消息主界面
         uncheck_messages = Message.query.\
-            filter("(sendid=:sid and send_delete=0) or"
-                   " (targetid=:sid and recv_delete=0)").\
+            filter(text("(sendid=:sid and send_delete=0) or"
+                   " (targetid=:sid and recv_delete=0)")).\
             params(sid=current_user.uid).\
             order_by(Message.created.desc()).all()
             # 获取所有和当前用户相关的消息并按创建时间从近到远排序
@@ -852,7 +852,7 @@ def messages():
     else:       # 用户指定了搜索关键字，则搜索和关键字匹配的全部消息
         _messages = Message.query.\
                         filter(and_(Message.message.\
-                                        like('%' + key + '%'),
+                                        like(text('%' + key + '%')),
                                     or_(Message.receiver==current_user,
                                         Message.sender==current_user)))
         pagination = _messages.order_by(Message.created.desc()).\
@@ -885,7 +885,7 @@ def cloud():
         for suffix in list:
             string += "or filename like '%" + \
                       suffix + "' "
-        return '('+string[3:]+')'
+        return text('('+string[3:]+')')
     type = request.args.get('type', 'all', type=str)
         # 用户指定的文件类型，默认为 'all'
     path = request.args.get('path', '/', type=str)
@@ -908,8 +908,8 @@ def cloud():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 "
-                                   "and filename=:f and ownerid=:d").\
+        isPath = File.query.filter(text("path=:p and isdir=1 "
+                                   "and filename=:f and ownerid=:d")).\
                             params(p=___path,
                                    f=___filename,
                                    d=current_user.uid).first()
@@ -942,10 +942,10 @@ def cloud():
     elif type == 'compress':
         query = current_user.files.filter(generateFilelike(compressList))
     else:
-        query = current_user.files.filter("path=:p").params(p=path)
+        query = current_user.files.filter(text("path=:p")).params(p=path)
 
     # 确保只显示属于当前用户的目录和文件
-    query = query.filter("ownerid=:_oid").params(_oid=current_user.uid)
+    query = query.filter(text("ownerid=:_oid")).params(_oid=current_user.uid)
 
     if key != '':
         # 当用户指定关键字时，在当前目录下递归检索所有可能文件。
@@ -953,16 +953,16 @@ def cloud():
                         'compress']:
             # 若用户已指定查询类型
             query = query.\
-                filter("filename like :lfn and "
-                     "ownerid=:id and path like :_path").\
+                filter(text("filename like :lfn and "
+                     "ownerid=:id and path like :_path")).\
                       params(lfn = '%' + key + '%',
                              id = current_user.uid,
                              _path = path + '%')
         else:
             # 用户未指定查询类型时在整个目录下递归检索
             query = File.query.\
-                filter("filename like :lfn and "
-                     "ownerid=:_suid and path like :_path").\
+                filter(text("filename like :lfn and "
+                     "ownerid=:_suid and path like :_path")).\
                       params(lfn = '%' + key + '%',
                              _suid = current_user.uid,
                              _path = path + '%')
@@ -1063,7 +1063,7 @@ def view_do():
         for suffix in list:
             string += "or filename like '%" + \
                       suffix + "' "
-        return '('+string[3:]+')'
+        return text('('+string[3:]+')')
 
     # generateSharedPathList 是 generatePathList 函数的另一版本，此
     # 函数不生成根目录，而是以用户共享的目录为根。
@@ -1137,8 +1137,8 @@ def view_do():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 "
-                                   "and filename=:f and ownerid=:d").\
+        isPath = File.query.filter(text("path=:p and isdir=1 "
+                                   "and filename=:f and ownerid=:d")).\
                             params(p=___path,
                                    f=___filename,
                                    d=rootfile.ownerid).first()
@@ -1196,13 +1196,13 @@ def view_do():
             filter(generateFilelike(compressList))
     else:
         query = rootfile.owner.files.\
-            filter("path=:p").params(p=path)
+            filter(text("path=:p")).params(p=path)
 
     # 确保只显示属于共享用户的共享目录和文件
     # 代码中的 _path 不可被修改为其他占位符！
     query = query.\
-        filter("ownerid=:oid and private=0 and "
-               "path like :_path and linkpass=:_link").\
+        filter(text("ownerid=:oid and private=0 and "
+               "path like :_path and linkpass=:_link")).\
         params(oid=rootfile.ownerid,
                _path=path+'%',
                _link=rootfile.linkpass)
@@ -1213,16 +1213,16 @@ def view_do():
                         'compress']:
             # 若用户已指定查询类型
             query = query.\
-                filter("filename like :lfn and "
-                     "ownerid=:id and path like :_path").\
+                filter(text("filename like :lfn and "
+                     "ownerid=:id and path like :_path")).\
                       params(lfn = '%' + key + '%',
                              id = rootfile.ownerid,
                              _path = path + '%')
         else:
             # 用户未指定查询类型时在整个目录下递归检索
             query = File.query.\
-                filter("filename like :lfn and "
-                     "ownerid=:id and path like :_path").\
+                filter(text("filename like :lfn and "
+                     "ownerid=:id and path like :_path")).\
                       params(lfn = '%' + key + '%',
                              id = rootfile.ownerid,
                              _path = path + '%')
@@ -1384,29 +1384,29 @@ def download_do(token):
         if file.owner == current_user:
             # 用户为目录所有者，则可以直接下载目录下全部文件
             subFolderList = File.query.\
-                filter("path like :p and ownerid=:d and isdir=1").\
+                filter(text("path like :p and ownerid=:d and isdir=1")).\
                 params(p = file.path + file.filename + '/%',
                        d = current_user.uid).all()
             subFolderList = sorted(subFolderList,
                                    key = lambda x:len(x.path),
                                    reverse = False)
             subFileList = File.query.\
-                filter("path like :p and ownerid=:d and isdir=0").\
+                filter(text("path like :p and ownerid=:d and isdir=0")).\
                 params(p = file.path + file.filename + '/%',
                        d = current_user.uid).all()
         else:
             # 用户试图下载其他用户共享的目录，则需过滤目录下的私有文件
             subFolderList = File.query.\
-                filter("path like :p and ownerid=:d "
-                       "and isdir=1 and private=0").\
+                filter(text("path like :p and ownerid=:d "
+                       "and isdir=1 and private=0")).\
                 params(p = file.path + file.filename + '/%',
                        d = file.ownerid).all()
             subFolderList = sorted(subFolderList,
                                    key = lambda x:len(x.path),
                                    reverse = False)
             subFileList = File.query.\
-                filter("path like :p and ownerid=:d "
-                       "and isdir=0 and private=0").\
+                filter(text("path like :p and ownerid=:d "
+                       "and isdir=0 and private=0")).\
                 params(p = file.path + file.filename + '/%',
                        d = file.ownerid).all()
         subFolderList.insert(0, file)
@@ -1536,8 +1536,8 @@ def upload():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and isdir=1 "
-                                   "and filename=:f and ownerid=:d").\
+        isPath = File.query.filter(text("path=:p and isdir=1 "
+                                   "and filename=:f and ownerid=:d")).\
                             params(p=___path,
                                    f=___filename,
                                    d=current_user.uid).first()
@@ -1615,7 +1615,7 @@ def upload():
             i = 0
             while 1:
                 isSameExist = File.query.\
-                    filter("path=:p and filename=:f and ownerid=:d").\
+                    filter(text("path=:p and filename=:f and ownerid=:d")).\
                     params(p=path,
                            f = tempname,
                            d=current_user.uid).first()
@@ -1693,7 +1693,7 @@ def upload():
                             os.path.join(parent,
                                          _filename))
                         # 计算每个文件的 md5
-                    cf = CFILE.query.filter("md5=:_md5").\
+                    cf = CFILE.query.filter(text("md5=:_md5")).\
                         params(_md5=md5).first()
                     if cf is None:
                         # 此文件需加入 CFILE
@@ -1711,7 +1711,7 @@ def upload():
                             break
                         db.session.add(cf)
                         db.session.commit()
-                        cf = CFILE.query.filter("md5=:_md5").\
+                        cf = CFILE.query.filter(text("md5=:_md5")).\
                             params(_md5=md5).first()
                         if cf is None:
                             # 加入数据库失败
@@ -1769,8 +1769,8 @@ def upload():
 
             if form.share.data:
                 baseFolder = File.query.\
-                                filter('filename=:_lfn and path=:_path '
-                                       'and ownerid=:_id').\
+                                filter(text('filename=:_lfn and path=:_path '
+                                       'and ownerid=:_id')).\
                                 params(_lfn = tempname,
                                        _path = path,
                                        _id = current_user.uid).\
@@ -1790,7 +1790,7 @@ def upload():
             md5 = CFILE.md5FromFile(
                     randomBasePath + filename)  # 计算文件 md5
             cfile = CFILE.query.\
-                    filter("md5=:_md5").\
+                    filter(text("md5=:_md5")).\
                     params(_md5=md5).first()        # 查询是否已存在对应文件
 
             if cfile is None:
@@ -1815,7 +1815,7 @@ def upload():
                 db.session.commit()
                     # commit 以获得 cfileid
                 cf = CFILE.query.\
-                    filter('md5=:_md5').\
+                    filter(text('md5=:_md5')).\
                     params(_md5=md5).first()
                 if cf is None:
                     clear(randomBasePath)
@@ -1850,8 +1850,8 @@ def upload():
             db.session.add(f)
             db.session.commit()
             f = File.query.\
-                filter('filename=:_lfn and path=:_path '
-                       'and ownerid=:_id').\
+                filter(text('filename=:_lfn and path=:_path '
+                       'and ownerid=:_id')).\
                 params(_lfn = filename,
                        _path = path,
                        _id = current_user.uid).\
@@ -1907,7 +1907,7 @@ def copy():
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
         isPath = File.query.\
-            filter("path=:p and filename=:f and ownerid=:d").\
+            filter(text("path=:p and filename=:f and ownerid=:d")).\
             params(p=___path,
                    f=___filename,
                    d=current_user.uid).first()
@@ -1916,7 +1916,7 @@ def copy():
 
     # 抽取所有当前路径下的目录并按用户指定方式排序
     query = current_user.files.\
-        filter("path=:p and uid<>:id and isdir=1 and ownerid=:d").\
+        filter(text("path=:p and uid<>:id and isdir=1 and ownerid=:d")).\
         params(p=path,
                id=file.uid,
                d=current_user.uid)
@@ -1981,8 +1981,8 @@ def copy_check(token):
         ___filenameLen = -(len(___filename)+1)
         ___path = _path[:___filenameLen]
         isPath = File.query.\
-            filter("path=:p and isdir=1 and "
-                   "filename=:f and ownerid=:d").\
+            filter(text("path=:p and isdir=1 and "
+                   "filename=:f and ownerid=:d")).\
             params(p=___path,
                    f=___filename,
                    d=current_user.uid).first()
@@ -1996,7 +1996,7 @@ def copy_check(token):
     i = 0       # 确定是第几次增加后缀，即根据 i 添加 '-副本i'
     while 1:
         isSameExist = File.query.\
-            filter("path=:p and filename=:f and ownerid=:d").\
+            filter(text("path=:p and filename=:f and ownerid=:d")).\
             params(p=_path,
                    f = tempname,
                    d=current_user.uid).first()
@@ -2042,7 +2042,7 @@ def copy_check(token):
         # 用户试图拷贝目录
         movePath = file.path + file.filename + '/'
         filelist = File.query.\
-            filter("path like :p and ownerid=:id").\
+            filter(text("path like :p and ownerid=:id")).\
             params(id=current_user.uid,
                    p=movePath+'%')
         baseLen = len(file.path + file.filename)
@@ -2158,7 +2158,7 @@ def move():
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
         isPath = File.query.\
-            filter("path=:p and filename=:f and ownerid=:d").\
+            filter(text("path=:p and filename=:f and ownerid=:d")).\
             params(p=___path,
                    f=___filename,
                    d=current_user.uid).first()
@@ -2167,7 +2167,7 @@ def move():
 
     # 抽取所有当前路径下的文件/目录并按用户指定方式排序
     query = current_user.files.\
-        filter("path=:p and uid<>:id and isdir=1 and ownerid=:d").\
+        filter(text("path=:p and uid<>:id and isdir=1 and ownerid=:d")).\
         params(p=path,
                id=file.uid,
                d=current_user.uid)
@@ -2232,7 +2232,8 @@ def move_check(token):
         ___filenameLen = -(len(___filename)+1)
         ___path = _path[:___filenameLen]
         isPath = File.query.\
-            filter("path=:p and isdir=1 and filename=:f and ownerid=:d").\
+            filter(text("path=:p and isdir=1 and "
+                        "filename=:f and ownerid=:d")).\
             params(p=___path,
                    f=___filename,
                    d =current_user.uid).first()
@@ -2244,7 +2245,7 @@ def move_check(token):
     i = 0
     while 1:
         isSameExist = File.query.\
-            filter("path=:p and filename=:f and ownerid=:d").\
+            filter(text("path=:p and filename=:f and ownerid=:d")).\
             params(p=_path,
                    f = tempname,
                    d=current_user.uid).first()
@@ -2299,7 +2300,7 @@ def move_check(token):
         # 用户试图移动目录
         movePath = file.path + file.filename + '/'
         filelist = File.query.\
-            filter("path like :p and ownerid=:id").\
+            filter(text("path like :p and ownerid=:id")).\
             params(id=current_user.uid,
                    p=movePath+'%')
         baseLen = len(file.path + file.filename)
@@ -2417,14 +2418,15 @@ def fork_do():
         ___filename = path.split('/')[-2]
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
-        isPath = File.query.filter("path=:p and filename=:f and ownerid=:d").\
+        isPath = File.query.filter(text(
+                "path=:p and filename=:f and ownerid=:d")).\
             params(p=___path, f=___filename, d=current_user.uid).first()
         if isPath is None or isPath.owner != current_user:
             abort(403)
 
     # 抽取所有当前路径下的目录并按用户指定方式排序
     query = current_user.files.\
-        filter("path=:p and ownerid=:d and isdir=1").\
+        filter(text("path=:p and ownerid=:d and isdir=1")).\
         params(p=path,
                d=current_user.uid)
     if order == 'name':
@@ -2501,8 +2503,8 @@ def fork_check(token):
         ___filenameLen = -(len(___filename)+1)
         ___path = _path[:___filenameLen]
         isPath = File.query.\
-            filter("path=:p and isdir=1 and "
-                   "filename=:f and ownerid=:d").\
+            filter(text("path=:p and isdir=1 and "
+                   "filename=:f and ownerid=:d")).\
             params(p=___path,
                    f=___filename,
                    d=current_user.uid).first()
@@ -2516,7 +2518,7 @@ def fork_check(token):
     i = 0
     while 1:
         isSameExist = File.query.\
-            filter("path=:p and filename=:f and ownerid=:d").\
+            filter(text("path=:p and filename=:f and ownerid=:d")).\
             params(p=_path,
                    f = tempname,
                    d = current_user.uid).first()
@@ -2559,7 +2561,7 @@ def fork_check(token):
         # 用户试图 Fork 整个目录
         movePath = file.path + file.filename + '/'
         filelist = File.query.\
-            filter("path like :p and ownerid=:id and private=0").\
+            filter(text("path like :p and ownerid=:id and private=0")).\
             params(id=file.ownerid,
                    p=movePath+'%')
             # 筛选该目录下所有的非私有文件
@@ -2657,8 +2659,8 @@ def newfolder():
         ___filenameLen = -(len(___filename)+1)
         ___path = path[:___filenameLen]
         isPath = File.query.\
-            filter("path=:_path and isdir=1 and "
-                   "filename=:lfn and ownerid=:_id").\
+            filter(text("path=:_path and isdir=1 and "
+                   "filename=:lfn and ownerid=:_id")).\
             params(_path=___path,
                    lfn=___filename,
                    _id=current_user.uid).first()
@@ -2673,7 +2675,7 @@ def newfolder():
         i = 0
         while 1:
             isSameExist = File.query.\
-                filter("path=:p and filename=:f and ownerid=:d").\
+                filter(text("path=:p and filename=:f and ownerid=:d")).\
                 params(p=path,
                        f = tempname,
                        d=current_user.uid).first()
@@ -2708,7 +2710,7 @@ def newfolder():
         db.session.commit()
         # 提交以获得 uid 并产生 perlink
         f = File.query.\
-            filter('filename=:lfn and path=:_path and ownerid=:_id ').\
+            filter(text('filename=:lfn and path=:_path and ownerid=:_id')).\
             params(lfn = tempname,
                    _path = path,
                    _id = current_user.uid).first()
@@ -2812,8 +2814,8 @@ def chat(id):
                                 _external=True))
 
     _messages = Message.query.\
-        filter("(sendid=:sid and targetid=:tid and recv_delete=0) or "
-               "(sendid=:tid and targetid=:sid and send_delete=0)").\
+        filter(text("(sendid=:sid and targetid=:tid and recv_delete=0) or "
+               "(sendid=:tid and targetid=:sid and send_delete=0)")).\
         params(sid=remote.uid,
                tid=current_user.uid)
     pagination = _messages.order_by(Message.created.desc()).\
@@ -2848,7 +2850,7 @@ def chat(id):
 def close_chat(id):
     remote = User.query.get_or_404(id)
     messageList = Message.query.\
-        filter("sendid=:sid and targetid=:tid").\
+        filter(text("sendid=:sid and targetid=:tid")).\
         params(sid=remote.uid,
                tid=current_user.uid)
     for message in messageList:
@@ -2868,8 +2870,8 @@ def close_chat(id):
 def delete_chat(id):
     remote = User.query.get_or_404(id)
     messageList = Message.query.\
-        filter("(sendid=:sid and targetid=:tid) or "
-               "(sendid=:tid and targetid=:sid)").\
+        filter(text("(sendid=:sid and targetid=:tid) or "
+               "(sendid=:tid and targetid=:sid)")).\
         params(sid=remote.uid,
                tid=current_user.uid)
     for message in messageList:
@@ -2909,7 +2911,7 @@ def set_share(id):
         db.session.add(file)
         if file.isdir:
             underFiles = File.query.\
-                filter("path like :p and ownerid=:d and private=1").\
+                filter(text("path like :p and ownerid=:d and private=1")).\
                 params(p=file.path+file.filename+'/%',
                        d=file.ownerid).all()
             for _file in underFiles:
@@ -2953,7 +2955,7 @@ def set_private(id):
     if file.isdir:
         # 对目录下的全部共享文件重置共享密码
         underFiles = File.query.\
-            filter("path like :p and ownerid=:d and private=0").\
+            filter(text("path like :p and ownerid=:d and private=0")).\
             params(p=file.path+file.filename+'/%',
                    d=file.ownerid).all()
         for _file in underFiles:
