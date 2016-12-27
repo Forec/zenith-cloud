@@ -18,6 +18,7 @@ Web 服务器测试
 |                                 |  `newfolder`                                                |
 |                                 |  `set_share`、`set_private`                                 |
 |                                 |  `messages`、`chat`、`delete_message`、`recall_message`     |
+|                                 |  `reset_password_request`、`reset_password`                 |
 +---------------------------------+-------------------------------------------------------------+
 
 到这里顶点云 Web 服务器的开发者文档部分就结束了，您可以阅读 :ref:`web-design` 来查看我们对设计者提出的几点建议，也可以阅读 :ref:`zenith-app` 以了解顶点云 应用程序服务器的相关信息。

@@ -81,6 +81,64 @@ class FlaskClientTestCase(unittest.TestCase):
 		data = response.get_data(as_text=True)
 		self.assertTrue('您已经验证了您的邮箱' in data)		
 
+
+	# 测试重置密码、修改邮箱、修改密码
+	def test_reset_and_change(self):
+
+		# 登录用户尝试违例访问重置页面
+		user = User.query.filter_by(email='test@forec.cn').first()
+		response = self.client.get(url_for('auth.password_reset', token = '123'),
+				follow_redirects = True)
+		data = response.get_data(as_text=True)  # 重定向到 main.index
+		self.assertTrue('顶点云' in data)
+
+		# 登出
+		response = self.client.get(url_for('auth.logout'), follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('您已经登出' in data)
+
+		# 忘记密码界面
+		response = self.client.get(url_for('auth.password_reset_request'),
+                        follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('重置密码' in data)
+
+		# 申请重置密码
+		response = self.client.post(url_for('auth.password_reset_request'), data={
+			'email': 'test@forec.cn'
+			}, follow_redirects=True)
+		data = response.get_data(as_text = True)     # 重定向到登陆界面
+		self.assertTrue('一封指导您' in data)
+
+		# 尝试访问重置页面
+		user = User.query.filter_by(email='test@forec.cn').first()
+		token = user.generate_reset_token()
+		response = self.client.get(url_for('auth.password_reset', token = token),
+				follow_redirects = True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('重置密码' in data)
+
+		# 发送确认令牌并重置密码
+		user = User.query.filter_by(email='test@forec.cn').first()
+		token = user.generate_reset_token()
+		response = self.client.post(url_for('auth.password_reset', token = token),data={
+            'email': 'test@forec.cn',
+            'password': 'test1',
+            'password2': 'test1'
+            }, follow_redirects = True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('重置成功' in data)
+
+		# 未登录用户尝试违例 token 重置
+		user = User.query.filter_by(email='test@forec.cn').first()
+		response = self.client.post(url_for('auth.password_reset', token='123'), data ={
+            'email': 'test@forec.cn',
+            'password': 'hacker',
+            'password2': 'hacker'
+        }, follow_redirects = True)
+		data = response.get_data(as_text=True)  # 403
+		self.assertTrue('权限' in data)
+
 	# 测试云盘新建文件夹操作
 	def test_clouds(self):
 		# 测试我的云盘主界面

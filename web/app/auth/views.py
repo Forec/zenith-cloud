@@ -4,7 +4,7 @@
 # 关于此文件：此文件包含了服务器认证部分的视图函数，包括登录、注册、密码重置等。
 # 蓝本：auth
 
-from flask       import render_template, redirect, url_for, request, flash
+from flask       import render_template, redirect, url_for, request, flash, abort
 from flask_login import login_user, login_required, logout_user, current_user
 from .           import auth
 from .forms      import LoginForm, RegistrationForm, ChangePasswordForm,\
@@ -209,8 +209,7 @@ def password_reset(token):
             return redirect(url_for('auth.login',
                                     _external=True))
         else:
-            return redirect(url_for('main.index',
-                                    _external=True))
+            abort(403)
     return render_template('auth/reset_password.html',
                            form=form)
 
