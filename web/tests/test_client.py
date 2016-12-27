@@ -111,12 +111,26 @@ class FlaskClientTestCase(unittest.TestCase):
 		data= response.get_data(as_text=True)
 		self.assertTrue('设置共享密码' in data)
 
+		# 测试创建私有重名新文件夹 test1(id = 3)
+		response = self.client.post(url_for('main.newfolder', path='/'), data={
+			'foldername': 'test1',
+			'body': 'this is test3'
+			}, follow_redirects=True)	 # 重定向 main.file
+		data= response.get_data(as_text=True)
+		self.assertTrue('目标目录存在' in data)   # 存在同名
+
 		# 设置共享密码
 		response = self.client.post(url_for('main.set_share', id=2), data={
 			'password': '1234'
 			}, follow_redirects=True)	 # 重定向到 main.index
 		data = response.get_data(as_text=True)
 		self.assertTrue('共享密码为 1234' in data)
+
+        # 测试设置私有
+		response = self.client.get(url_for('main.set_private', id=2),
+                                    follow_redirects=True)	 # 重定向到 main.index
+		data = response.get_data(as_text=True)
+		self.assertTrue('已被设置为私有' in data)
 
 	# 测试复制
 	def test_copy(self):
@@ -138,14 +152,14 @@ class FlaskClientTestCase(unittest.TestCase):
 		data = response.get_data(as_text = True)
 		self.assertTrue('确认拷贝' in data)
 
-		# 拷贝操作执行
+		# 拷贝操作执行，且此操作有同名
 		user = User.query.filter_by(email='test@forec.cn').first()
 		token = user.generate_copy_token(fileid=1, _path='/', expiration=3600)
 		response = self.client.get(url_for('main.copy_check',
 										   token=token),
 								   follow_redirects=True)
 		data = response.get_data(as_text=True)
-		self.assertTrue('已拷贝到' in data and '文件夹' in data)
+		self.assertTrue('已拷贝到' in data and '文件夹' in data and '存在同名')
 
 	# 测试移动
 	def test_move(self):
@@ -167,14 +181,31 @@ class FlaskClientTestCase(unittest.TestCase):
 		data = response.get_data(as_text = True)
 		self.assertTrue('确认移动' in data)
 
-		# 移动操作执行
+		# 无需移动操作执行
 		user = User.query.filter_by(email='test@forec.cn').first()
 		token = user.generate_move_token(fileid=1, _path='/', expiration=3600)
 		response = self.client.get(url_for('main.move_check',
 										   token=token),
 								   follow_redirects=True)
 		data = response.get_data(as_text=True)
-		self.assertTrue('已移动到' in data and '文件夹' in data)
+		self.assertTrue('您要移动的' in data)
+
+		# 创建私有新文件夹 test2(id = 2)
+		response = self.client.post(url_for('main.newfolder', path='/test1/'), data={
+			'foldername': 'test2',
+			'body': 'this is test2'
+			}, follow_redirects=True)	 # 重定向 main.file
+		data= response.get_data(as_text=True)
+		self.assertTrue('this is test2' in data)
+
+		# 移动操作执行
+		user = User.query.filter_by(email='test@forec.cn').first()
+		token = user.generate_move_token(fileid=2, _path='/', expiration=3600)
+		response = self.client.get(url_for('main.move_check',
+										   token=token),
+								   follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('已移动到' in data)
 
 	# 测试 Fork
 	def test_fork(self):
@@ -271,7 +302,7 @@ class FlaskClientTestCase(unittest.TestCase):
 										   ),
 								   follow_redirects=True)
 		data = response.get_data(as_text=True)
-		self.assertTrue('提取码错误' in data)
+		self.assertTrue('权限' in data)
 
 		# 执行 Fork
 		user = User.query.filter_by(email='forec_test@forec.cn').first()
@@ -282,8 +313,8 @@ class FlaskClientTestCase(unittest.TestCase):
 		response = self.client.get(url_for('main.fork_check',
 										   token= token),
 								   follow_redirects=True)
-		data= response.get_data(as_text=True)
-		self.assertTrue('已 Fork 用户 test 的文件' in data)
+		data = response.get_data(as_text=True)
+		self.assertTrue('已 Fork' in data)
 
 		# 错误 Pass 进入 Fork
 		user = User.query.filter_by(email='forec_test@forec.cn').first()
@@ -295,5 +326,83 @@ class FlaskClientTestCase(unittest.TestCase):
 										   token= token),
 								   follow_redirects=True)
 		data= response.get_data(as_text=True)
-		self.assertTrue('没有权限' in data)
-		
+		self.assertTrue('权限' in data)
+
+	def test_chat(self):
+        # 测试消息界面
+
+		# 登出
+		response = self.client.get(url_for('auth.logout'), follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('您已经登出' in data)
+
+		# 注册新用户
+		response = self.client.post(url_for('auth.register'), data={
+			'email': 'forec_test@forec.cn',
+			'nickname': 'forec_test',
+			'password': 'cattt',
+			'password2': 'cattt'})
+		self.assertTrue(response.status_code == 302)
+
+		# 使用新注册用户登录
+		response = self.client.post(url_for('auth.login'), data={
+			'email': 'forec_test@forec.cn',
+			'password': 'cattt',
+			'remember_me' : False
+			}, follow_redirects=True)
+		data = response.get_data(as_text = True)
+		self.assertTrue(re.search('forec_test', data))
+		self.assertTrue('您的帐户尚未通过验证' in data)
+
+		# 发送确认令牌
+		user = User.query.filter_by(email='forec_test@forec.cn').first()
+		token = user.generate_confirmation_token()
+		response = self.client.get(url_for('auth.confirm', token = token),
+				follow_redirects = True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('您已经验证了您的邮箱' in data)
+
+        # 测试全部聊天
+		response = self.client.get(url_for('main.messages'),
+                    follow_redirects=True)
+		data= response.get_data(as_text=True)
+		self.assertTrue('消息列表' in data)
+
+        # 测试与 test 用户的聊天界面
+		response = self.client.get(url_for('main.chat', id=1),
+                    follow_redirects=True)
+		data= response.get_data(as_text=True)
+		self.assertTrue('与 test 的聊天' in data)
+
+        # 测试向 test 用户发送消息，此消息 id = 1
+		response = self.client.post(url_for('main.chat', id=1), data={
+			'body': 'this is a test message'
+			}, follow_redirects=True)	 # 重定向 main.chat
+		data= response.get_data(as_text=True)
+		self.assertTrue('消息已发送' in data)
+
+        # 测试聊天搜索功能
+		response = self.client.post(url_for('main.messages'), data={
+            'key': 'this is a test'
+            }, follow_redirects=True)
+		data= response.get_data(as_text=True)
+		self.assertTrue('this is a test message' in data)
+
+        # 测试向 test 用户发送消息，此消息 id = 2
+		response = self.client.post(url_for('main.chat', id=1), data={
+			'body': 'this is another test message'
+			}, follow_redirects=True)	 # 重定向 main.chat
+		data= response.get_data(as_text=True)
+		self.assertTrue('消息已发送' in data)
+
+        # 测试撤回消息（id=2的消息）
+		response = self.client.get(url_for('main.recall_message', id=2),
+                    follow_redirects=True)	 # 重定向 main.chat
+		data= response.get_data(as_text=True)
+		self.assertTrue('消息已被撤回' in data)
+
+        # 测试删除消息（id=1的消息）
+		response = self.client.get(url_for('main.delete_message', id=1),
+                    follow_redirects=True)	 # 重定向 main.chat
+		data= response.get_data(as_text=True)
+		self.assertTrue('与 test 的聊天' in data)

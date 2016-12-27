@@ -3,7 +3,7 @@
     <li class="comment">
         <div class="comment-thumbnail">
             <a href="{{ url_for('main.user', id=message.sender.uid, _external=True) }}">
-                <img class="img-rounded profile-thumbnail" src=
+                <img class="img-rounded comment-thumbnail" src=
                         "
                         {% if message.sender == current_user %}
                         {{ message.receiver.gravatar(size=40) }}

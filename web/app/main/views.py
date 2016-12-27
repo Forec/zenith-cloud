@@ -852,7 +852,7 @@ def messages():
     else:       # 用户指定了搜索关键字，则搜索和关键字匹配的全部消息
         _messages = Message.query.\
                         filter(and_(Message.message.\
-                                        like(text('%' + key + '%')),
+                                        like(text("'%" + key + "%'")),
                                     or_(Message.receiver==current_user,
                                         Message.sender==current_user)))
         pagination = _messages.order_by(Message.created.desc()).\

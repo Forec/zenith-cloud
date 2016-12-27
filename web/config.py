@@ -75,8 +75,8 @@ class WindowsConfig(Config):
     ZENITH_FILE_STORE_PATH = 'G:\\Cloud\\'  # 服务器存储用户文件的路径
     ZENITH_TEMPFILE_STORE_PATH = ZENITH_FILE_STORE_PATH + \
                                  'TEMP' + ZENITH_PATH_SEPERATOR
-    ZENITH_SERVER_ADDRESS = '127.0.0.1'# or 'cloud.forec.cn' # 服务器部署的域名/IP地址
-    SERVER_NAME = ZENITH_SERVER_ADDRESS
+    #ZENITH_SERVER_ADDRESS = '127.0.0.1'# or 'cloud.forec.cn' # 服务器部署的域名/IP地址
+    #SERVER_NAME = ZENITH_SERVER_ADDRESS
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'work.db')
     MAIL_SERVER = 'smtp.exmail.qq.com'
     MAIL_PORT = 25 # SSL is 465
