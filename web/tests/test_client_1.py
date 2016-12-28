@@ -43,6 +43,11 @@ class ZENITHClientTestCase(unittest.TestCase):
 		response = self.client.get(url_for('main.index'))
 		self.assertTrue('顶点云' in response.get_data(as_text=True))
 
+	# 测试404
+	def test_404(self):
+		response = self.client.get(url_for('main.index') + '/2')
+		self.assertTrue('资源不存在' in response.get_data(as_text=True))
+
 	# 测试介绍页
 	def test_home_page(self):
 		response = self.client.get(url_for('main.home'))
