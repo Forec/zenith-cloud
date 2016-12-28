@@ -12,12 +12,12 @@ Web 服务器测试
 +=================================+=============================================================+
 | `test_basic.py`                 |  测试环境是否正常，服务器是否启动                           |
 +---------------------------------+-------------------------------------------------------------+
-| `test_client.py`                |  `copy`、`copy_check`                                       |
-|                                 |  `move`、`move_check`                                       |
-|                                 |  `fork`、`fork_do`、`fork_check`、`fork_verify`             |
-|                                 |  `newfolder`                                                |
-|                                 |  `set_share`、`set_private`                                 |
-|                                 |  `messages`、`chat`、`delete_message`、`recall_message`     |
+| `test_client.py`                |  `copy`、`copy_check`、                                     |
+|                                 |  `move`、`move_check`、                                     |
+|                                 |  `fork`、`fork_do`、`fork_check`、`fork_verify`、           |
+|                                 |  `newfolder`、                                              |
+|                                 |  `set_share`、`set_private`、                               |
+|                                 |  `messages`、`chat`、`delete_message`、`recall_message`、   |
 |                                 |  `reset_password_request`、`reset_password`                 |
 +---------------------------------+-------------------------------------------------------------+
 

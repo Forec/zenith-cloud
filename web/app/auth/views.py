@@ -58,7 +58,7 @@ def register():
 
     form = RegistrationForm()
     if current_user.is_authenticated:
-        flash('您已经登陆，登陆状态下无法注册')
+        flash('您已经登录，登录状态下无法注册')
         return redirect(url_for('main.index', _external=True))
     if form.validate_on_submit():
         user = User(email = form.email.data,
@@ -148,7 +148,7 @@ def change_email_request():
             return redirect(url_for('main.index',
                                     _external=True))
         else:
-            flash('错误的的用户名或密码')
+            flash('密码错误')
     return render_template("auth/secure/change_email.html",
                            form=form)
 

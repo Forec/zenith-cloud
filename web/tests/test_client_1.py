@@ -3,7 +3,7 @@ from flask import url_for
 from app import create_app, db
 from app.models import User, Role
 
-class FlaskClientTestCase(unittest.TestCase):
+class ZENITHClientTestCase(unittest.TestCase):
 	def setUp(self):
 		self.app = create_app('testing')
 		self.app_context = self.app.app_context()
@@ -50,6 +50,20 @@ class FlaskClientTestCase(unittest.TestCase):
 
 	# 测试注册、登录、登出
 	def test_register_and_login(self):
+		# 已登陆用户尝试访问注册界面
+		response = self.client.get(url_for('auth.register'), follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('您已经登录' in data)
+
+		# 已登陆用户尝试注册新用户
+		response = self.client.post(url_for('auth.register'), data={
+			'email': 'forec_test@forec.cn',
+			'nickname': 'forec_test',
+			'password': 'cattt',
+			'password2': 'cattt'}, follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('登录状态下无法注册' in data)
+
 		# 登出
 		response = self.client.get(url_for('auth.logout'), follow_redirects=True)
 		data = response.get_data(as_text=True)
@@ -63,6 +77,25 @@ class FlaskClientTestCase(unittest.TestCase):
 			'password2': 'cattt'})
 		self.assertTrue(response.status_code == 302)
 
+		# 登出
+		response = self.client.get(url_for('auth.logout'), follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('您已经登出' in data)
+
+		# 登陆界面
+		response = self.client.get(url_for('auth.login'), follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('登录' in data)
+
+		# 使用违法用户登录
+		response = self.client.post(url_for('auth.login'), data={
+			'email': 'ttt@forec.cn',
+			'password': 'ttt',
+			'remember_me' : False
+			}, follow_redirects=True)
+		data = response.get_data(as_text = True)
+		self.assertTrue('错误的用户名或密码' in data)
+
 		# 使用新注册用户登录
 		response = self.client.post(url_for('auth.login'), data={
 			'email': 'forec_test@forec.cn',
@@ -72,6 +105,18 @@ class FlaskClientTestCase(unittest.TestCase):
 		data = response.get_data(as_text = True)
 		self.assertTrue(re.search('forec_test', data))
 		self.assertTrue('您的帐户尚未通过验证' in data)
+
+		# 已登陆用户跳转登陆界面，跳转到 index，此时尚未验证
+		response = self.client.get(url_for('auth.login'), follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('您的帐户尚未通过验证' in data)
+
+		# 发送错误的令牌
+		user = User.query.filter_by(email='forec_test@forec.cn').first()
+		response = self.client.get(url_for('auth.confirm', token = '123'),
+				follow_redirects = True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('此验证链接无效或已过期' in data)
 		
 		# 发送确认令牌
 		user = User.query.filter_by(email='forec_test@forec.cn').first()
@@ -81,63 +126,10 @@ class FlaskClientTestCase(unittest.TestCase):
 		data = response.get_data(as_text=True)
 		self.assertTrue('您已经验证了您的邮箱' in data)		
 
-
-	# 测试重置密码、修改邮箱、修改密码
-	def test_reset_and_change(self):
-
-		# 登录用户尝试违例访问重置页面
-		user = User.query.filter_by(email='test@forec.cn').first()
-		response = self.client.get(url_for('auth.password_reset', token = '123'),
-				follow_redirects = True)
-		data = response.get_data(as_text=True)  # 重定向到 main.index
-		self.assertTrue('顶点云' in data)
-
-		# 登出
-		response = self.client.get(url_for('auth.logout'), follow_redirects=True)
+		# 已验证用户跳转登陆界面，跳转到 index
+		response = self.client.get(url_for('auth.login'), follow_redirects=True)
 		data = response.get_data(as_text=True)
-		self.assertTrue('您已经登出' in data)
-
-		# 忘记密码界面
-		response = self.client.get(url_for('auth.password_reset_request'),
-                        follow_redirects=True)
-		data = response.get_data(as_text=True)
-		self.assertTrue('重置密码' in data)
-
-		# 申请重置密码
-		response = self.client.post(url_for('auth.password_reset_request'), data={
-			'email': 'test@forec.cn'
-			}, follow_redirects=True)
-		data = response.get_data(as_text = True)     # 重定向到登陆界面
-		self.assertTrue('一封指导您' in data)
-
-		# 尝试访问重置页面
-		user = User.query.filter_by(email='test@forec.cn').first()
-		token = user.generate_reset_token()
-		response = self.client.get(url_for('auth.password_reset', token = token),
-				follow_redirects = True)
-		data = response.get_data(as_text=True)
-		self.assertTrue('重置密码' in data)
-
-		# 发送确认令牌并重置密码
-		user = User.query.filter_by(email='test@forec.cn').first()
-		token = user.generate_reset_token()
-		response = self.client.post(url_for('auth.password_reset', token = token),data={
-            'email': 'test@forec.cn',
-            'password': 'test1',
-            'password2': 'test1'
-            }, follow_redirects = True)
-		data = response.get_data(as_text=True)
-		self.assertTrue('重置成功' in data)
-
-		# 未登录用户尝试违例 token 重置
-		user = User.query.filter_by(email='test@forec.cn').first()
-		response = self.client.post(url_for('auth.password_reset', token='123'), data ={
-            'email': 'test@forec.cn',
-            'password': 'hacker',
-            'password2': 'hacker'
-        }, follow_redirects = True)
-		data = response.get_data(as_text=True)  # 403
-		self.assertTrue('权限' in data)
+		self.assertTrue('我的云盘' in data)
 
 	# 测试云盘新建文件夹操作
 	def test_clouds(self):
