@@ -63,23 +63,6 @@ func (s *Server) InitDB() bool {
 	return true
 }
 
-// CheckLive：保活协程，定时检查用户是否下线
-// CHECK_LIVE_SEPERATE 控制检查间隔，单位为秒
-func (s *Server) CheckLive() {
-	chRate := time.Tick(conf.CHECK_LIVE_SEPERATE * time.Second)
-	for {
-		<-chRate
-		for _, u := range s.loginUserList {
-			// 为每个已登陆用户启动一个协程，检查是否仍存在连接
-			go func(usr cs.User) {
-				if !s.BroadCast(usr, conf.CHECK_LIVE_TAG) {
-					usr.Logout()
-				}
-			}(u)
-		}
-	}
-}
-
 // CheckBoardCast：消息转发协程，定时检查是否存在用户间消息交互
 // CHECK_MESSAGE_SEPERATE 控制检查间隔，单位为秒
 func (s *Server) CheckBroadCast() {
@@ -87,11 +70,19 @@ func (s *Server) CheckBroadCast() {
 	var queryRows *sql.Rows
 	var queryRow *sql.Row
 	var mesid, uid, messageCount int
-	var message, created string
+	var message, created, nickname string
 	var err error
 	for {
 		<-chRate
 		for _, u := range s.loginUserList {
+			// 通知此用户已使用的网盘容量
+			uUsed := u.GetUsed()
+			if uUsed <= 0 {
+				u.SetUsed(-uUsed)
+			}
+
+			s.BroadCast(u, fmt.Sprintf("[zenith]%d", u.GetUsed()))
+
 			// 从数据库抽取当前某个已登录用户作为接收者的尚未发送的消息数量
 			queryRow = s.db.QueryRow(fmt.Sprintf(`select count (*) from cmessages where
 				targetid=%d and sended=0`, u.GetId()))
@@ -117,8 +108,18 @@ func (s *Server) CheckBroadCast() {
 					fmt.Println("错误：扫描消息信息失败，错误信息为：", err.Error())
 					break
 				}
-				if s.BroadCast(u, fmt.Sprintf("%d%s%s%s%s", uid, conf.SEPERATER, message,
-					conf.SEPERATER, created)) {
+				queryRow = s.db.QueryRow(fmt.Sprintf(`select nickname from cuser 
+					where uid=%d`, uid))
+				if queryRow == nil {
+					continue
+				}
+				err = queryRow.Scan(&nickname)
+				if err != nil {
+					fmt.Println("错误：扫描 nickname 出错，错误信息为：", err.Error())
+					continue
+				}
+				if s.BroadCast(u, fmt.Sprintf("%s%s%s%s%s", nickname, conf.SEPERATER,
+					message, conf.SEPERATER, created)) {
 					id_list = append(id_list, mesid)
 				} else {
 					break
@@ -148,7 +149,7 @@ func (s *Server) BroadCast(u cs.User, message string) bool {
 	if u.GetInfos() == nil {
 		return false
 	}
-	return u.GetInfos().SendBytes([]byte(message))
+	return u.InfoSend(message)
 }
 
 // AddUser：向在线列表添加用户

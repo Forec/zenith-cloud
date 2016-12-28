@@ -145,7 +145,7 @@ class User(UserMixin, db.Model):
     # 用户已使用的网盘空间，单位为字节
     used = db.Column(db.Integer, default=0)
     # 用户最大网盘空间，单位为字节，默认 256 MB
-    maxm = db.Column(db.Integer, default=256*1024*1024)
+    maxm = db.Column(db.Integer, default=2048*1024*1024)
 
     def __repr__(self):
         return '<User %r>' % self.nickname
@@ -267,7 +267,7 @@ class User(UserMixin, db.Model):
         if data.get('user') is None:
             return None
         user = User.query.filter_by(uid=data.get('user')).first()
-        if user.uid != self.uid  and \
+        if user is None or user.uid != self.uid  and \
             not user.can(Permission.ADMINISTER):
             return None
         # 获取要删除的 file 编号
@@ -299,7 +299,7 @@ class User(UserMixin, db.Model):
         else:
             # 用户试图删除一个目录，寻找到该目录下的全部文件
             files_related = File.query.filter(
-                    File.path.like(text(file.path+file.filename+'/%')))
+                    File.path.like(text("'" + file.path+file.filename+"/%'")))
             # 确保删除当前用户的文件
             files_related = files_related.filter(text("ownerid=:_id")).\
                 params(_id=self.uid).all()
@@ -693,7 +693,8 @@ class User(UserMixin, db.Model):
         if self.role is None:
             # 用户邮箱和管理员邮箱一致则设为管理员权限
             if self.email == current_app.config['EMAIL_ADMIN']:
-                self.role = Role.query.filter_by(permission=0xff).first()
+                self.role = Role.query.filter_by(permissions=0xff).first()
+                self.confirmed = True
             # 分配默认用户身份
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()

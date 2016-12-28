@@ -65,6 +65,7 @@ func (c *Client) MessageListening() {
 	for {
 		infos, err := c.info.RecvBytes()
 		if err != nil {
+			fmt.Println("监听线程出错，错误信息为：", err.Error())
 			return
 		}
 		fmt.Println("服务器消息：", string(infos))
@@ -82,7 +83,7 @@ func (c *Client) ThreadConnect(ip string, port int) trans.Transmitable {
 	// 连接目标主机端口
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
-		fmt.Println("ERROR: Info dialing error", err.Error())
+		fmt.Println("连接远程失败，错误信息为：", err.Error())
 		return nil
 	}
 
@@ -157,7 +158,7 @@ func (c *Client) Connect(ip string, port int) bool {
 		<-chR
 		length, err := conn.Read(buf[init:])
 		if err != nil {
-			fmt.Println("ERROR: Transmission Error.")
+			fmt.Println("连接错误：传输过程中意外断开")
 			return false
 		}
 		init += length

@@ -34,8 +34,6 @@ func main() {
 		go s.Run(*address_h, *port_p, conf.TEST_SAFELEVEL)
 		// 启动服务器消息转发协程
 		go s.CheckBroadCast()
-		// 启动保活协程
-		go s.CheckLive()
 	}
 	inputReader := bufio.NewReader(os.Stdin)
 	for {

@@ -32,7 +32,7 @@ const MAXTRANSMITTER = 20
 const DATABASE_TYPE = "sqlite3"
 
 // 服务器系统使用数据库路径
-const DATABASE_PATH = "work.db"
+const DATABASE_PATH = "F:\\Develop\\Python\\zenith-cloud\\web\\work.db"
 
 // 服务器系统初始化用户池大小
 const START_USER_LIST = 10
@@ -47,19 +47,13 @@ const TEST_PASSWORD = "TESTTHISPASSWORD"
 const TEST_SAFELEVEL = 3
 
 // 测试用IP地址
-const TEST_IP = "127.0.0.1"
+const TEST_IP = "10.201.14.176" //"127.0.0.1"
 
 // 测试用端口
 const TEST_PORT = 10087
 
 // 标准消息分隔符
 const SEPERATER = "+"
-
-// 保活线程检查间隔
-const CHECK_LIVE_SEPERATE = 5
-
-// 保活线程发送的探测包头
-const CHECK_LIVE_TAG = "[check]"
 
 // 消息传递间隔
 const CHECK_MESSAGE_SEPERATE = 5

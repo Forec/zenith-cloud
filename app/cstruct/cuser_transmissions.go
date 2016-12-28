@@ -307,7 +307,7 @@ func (u *cuser) put(db *sql.DB, command string, t trans.Transmitable) {
 	} else {
 		uid, err1 = strconv.Atoi(args[1])
 		size, err2 = strconv.Atoi(args[2])
-		if err1 != nil || err2 != nil || strings.ToUpper(args[0]) != "PUT" ||
+		if err1 != nil || err2 != nil || size <= 0 || strings.ToUpper(args[0]) != "PUT" ||
 			// 指令格式错误
 			!auth.IsMD5(args[3]) {
 			fmt.Println("指令不合法")
@@ -324,7 +324,7 @@ func (u *cuser) put(db *sql.DB, command string, t trans.Transmitable) {
 				if err == nil {
 					shouldTransmit = false
 				} else {
-					fmt.Println("上传请求，扫描cid 和引用数出错，错误信息：", err.Error())
+					fmt.Println("上传请求，未扫描到实体文件的 cid 和引用数出错，用户需要上传")
 				}
 			}
 		}

@@ -40,6 +40,7 @@ type User interface {
 	GetPassHash() string
 	GetInfos() trans.Transmitable
 	GetWorkList() []trans.Transmitable
+	InfoSend(string) bool
 	SetAvatar(string) bool
 	SetPassHash(string) bool
 	SetNickname(string) bool
@@ -165,6 +166,11 @@ func (u *cuser) SetPassHash(_passhash string) bool {
 // 用户当前活动连接池
 func (u *cuser) GetWorkList() []trans.Transmitable {
 	return u.worklist
+}
+
+// 发送消息
+func (u *cuser) InfoSend(message string) bool {
+	return u.infos.SendBytes([]byte(message))
 }
 
 // -----------------------------------------------------------------------------

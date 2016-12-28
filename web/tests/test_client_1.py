@@ -90,7 +90,7 @@ class ZENITHClientTestCase(unittest.TestCase):
 		# 使用违法用户登录
 		response = self.client.post(url_for('auth.login'), data={
 			'email': 'ttt@forec.cn',
-			'password': 'ttt',
+			'password': 'tdftt',
 			'remember_me' : False
 			}, follow_redirects=True)
 		data = response.get_data(as_text = True)
@@ -181,6 +181,12 @@ class ZENITHClientTestCase(unittest.TestCase):
                                     follow_redirects=True)	 # 重定向到 main.index
 		data = response.get_data(as_text=True)
 		self.assertTrue('已被设置为私有' in data)
+
+        # 测试访问文件夹
+		response = self.client.get(url_for('main.file', id=2),
+                                    follow_redirects=True)
+		data = response.get_data(as_text=True)
+		self.assertTrue('this is test2' in data)
 
 	# 测试复制
 	def test_copy(self):

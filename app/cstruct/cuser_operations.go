@@ -115,9 +115,7 @@ func generateArgs(command string, arglen int) []string {
 			fmt.Println("生成参数：检测到参数为空")
 			return nil
 		}
-		fmt.Printf("%s ", args[i])
 	}
-	fmt.Println()
 	return args
 }
 
@@ -160,9 +158,10 @@ func (u *cuser) send(db *sql.DB, command string) {
 	}
 
 	// 根据昵称检索用户
-	queryRow = db.QueryRow(fmt.Sprintln(`select uid from cuser where 
+	queryRow = db.QueryRow(fmt.Sprintf(`select uid from cuser where 
 		nickname='%s'`, args[1]))
 	if queryRow == nil {
+		fmt.Println("发送消息：未检索到相关 UID")
 		valid = false
 		goto SEND_VERIFY
 	}
@@ -170,6 +169,7 @@ func (u *cuser) send(db *sql.DB, command string) {
 	// 获取消息接收方用户编号
 	err = queryRow.Scan(&uid)
 	if err != nil {
+		fmt.Println("发送消息：扫描用户编号错误，错误信息：", err.Error())
 		valid = false
 		goto SEND_VERIFY
 	}
@@ -802,7 +802,7 @@ func (u *cuser) cp(db *sql.DB, command string) {
 		}
 		err = queryRow.Scan(&recordCount)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("错误：拷贝请求，扫描子路径时出错，错误信息：", err.Error())
 			valid = false
 			goto CP_VERIFY
 		}
@@ -814,7 +814,7 @@ func (u *cuser) cp(db *sql.DB, command string) {
 				subpath.u_path, time.Now().Format("2006-01-02 15:04:05"),
 				subpath.u_name))
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Println("错误：拷贝请求，插入数据记录出错，错误信息：", err.Error())
 				valid = false
 			}
 		}
@@ -858,7 +858,7 @@ func (u *cuser) cp(db *sql.DB, command string) {
 		 '', '%s', 0, 0, '%s', 1, '', %d, '')`, u.id, cfileid, args[2],
 		time.Now().Format("2006-01-02 15:04:05"), originName, isdir_int))
 	if err != nil {
-		fmt.Println("1:", err.Error())
+		fmt.Println("错误：拷贝请求，根目录拷贝失败，错误信息：", err.Error())
 		valid = false
 		goto CP_VERIFY
 	}
@@ -1027,7 +1027,7 @@ func (u *cuser) mv(db *sql.DB, command string) {
 		}
 		err = queryRow.Scan(&recordCount)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("错误：移动请求，扫描子路径数目失败，错误信息：", err.Error())
 			valid = false
 			goto MV_VERIFY
 		}
@@ -1070,7 +1070,7 @@ func (u *cuser) mv(db *sql.DB, command string) {
 			'%s%%' and ownerid=%d`, parentPath+originName+"/", u.id)
 		queryRows, err = db.Query(queryString)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("错误：移动请求，查找子目录信息失败，错误信息：", err.Error())
 			valid = false
 			goto MV_VERIFY
 		}
