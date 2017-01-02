@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = '顶点云'
-copyright = '2016, Forec'
+copyright = '2017, Forec'
 author = 'Forec'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -173,7 +173,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'Web', '顶点云 开发者文档',
-     author, 'Web', 'One line description of project.',
+     author, 'Web', '为北邮人设计的云存储平台。',
      'Miscellaneous'),
 ]
 

@@ -158,7 +158,7 @@ Web 服务器全局配置
     'default' : DevelopmentConfig           # 默认为开发环境
     }
     
-你需要添加自己的自定义配置类到此表中，如添加 ``'myconfig': MyConfig`` 。之后，修改 `manage.py` 中的第 13 行 ``app = create_app('default')`` 为 ``app = create_app('myconfig')`` 即可。
+你需要添加自己的自定义配置类到此表中，如添加 ``'myconfig': MyConfig`` 。之后，修改 `manage.py` 中的第 21 行 ``app = create_app('default')`` 为 ``app = create_app('myconfig')`` 即可。
    
 接下来请您阅读 :ref:`web-quickstart` 。
 

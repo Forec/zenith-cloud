@@ -91,7 +91,7 @@
     'myconfig' : MyConfig					# 自定义添加的配置类
     }
 
-之后修改 `manage.py` 的第 13 行为：
+之后修改 `manage.py` 的第 21 行为：
 
 .. code-block:: python
 
